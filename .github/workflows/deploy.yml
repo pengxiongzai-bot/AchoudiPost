@@ -167,6 +167,21 @@ jobs:
             elif command -v service >/dev/null 2>&1; then
               service docker start
             fi
+            mkdir -p /etc/docker
+            cat > /etc/docker/daemon.json <<'JSON'
+            {
+              "registry-mirrors": [
+                "https://docker.m.daocloud.io",
+                "https://hub-mirror.c.163.com",
+                "https://mirror.baidubce.com"
+              ]
+            }
+            JSON
+            if command -v systemctl >/dev/null 2>&1; then
+              systemctl restart docker
+            elif command -v service >/dev/null 2>&1; then
+              service docker restart
+            fi
             compose() {
               if docker compose version >/dev/null 2>&1; then
                 docker compose "$@"
@@ -179,6 +194,13 @@ jobs:
             }
             docker version
             compose version
+            for attempt in 1 2 3; do
+              compose -f deploy/docker-compose.yml pull postgres redis && break
+              if [ "$attempt" -eq 3 ]; then
+                exit 1
+              fi
+              sleep "$((attempt * 20))"
+            done
             compose -f deploy/docker-compose.yml up -d postgres redis
             compose -f deploy/docker-compose.yml build app nginx
             compose -f deploy/docker-compose.yml run --rm app npm run db:migrate:prod
