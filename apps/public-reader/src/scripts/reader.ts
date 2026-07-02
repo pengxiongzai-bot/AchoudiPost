@@ -1,0 +1,696 @@
+import { createIcons, icons } from "lucide";
+
+type TocItem = {
+  id: string;
+  text: string;
+  level: 1 | 2 | 3 | 4 | 5 | 6;
+};
+
+type PostListItem = {
+  slug: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  viewCount: number;
+  commentCount: number;
+  excerpt?: string;
+};
+
+type SearchDocument = {
+  id: string;
+  slug: string;
+  title: string;
+  body: string;
+  excerpt: string;
+  updatedAt: string;
+};
+
+type ArticleMeta = PostListItem & {
+  attachmentCount?: number;
+  canonicalPath?: string;
+};
+
+type ArticleCacheItem = {
+  slug: string;
+  html: string;
+  toc: TocItem[];
+  meta: ArticleMeta;
+  cachedAt: number;
+};
+
+type StoredCommentAttachment = {
+  name: string;
+  type: string;
+  size: number;
+  url?: string;
+};
+
+type StoredComment = {
+  id: string;
+  parentId: string | null;
+  username: string;
+  content: string;
+  attachments: StoredCommentAttachment[];
+  createdAt: string;
+};
+
+const storageKeys = {
+  theme: "fp_theme_v1",
+  listWidth: "fp_list_width_v1",
+  user: "fp_comment_user_v1",
+  device: "fp_device_id_v1",
+  comments: "fp_comments_v1",
+  rate: "fp_comment_rate_v1"
+};
+
+const app = mustGet<HTMLElement>("app");
+const postList = mustGet<HTMLElement>("postList");
+const listMeta = mustGet<HTMLElement>("listMeta");
+const searchInput = mustGet<HTMLInputElement>("searchInput");
+const articleBody = mustGet<HTMLElement>("articleBody");
+const articleTitle = mustGet<HTMLElement>("articleTitle");
+const articleDate = mustGet<HTMLElement>("articleDate");
+const articleViews = mustGet<HTMLElement>("articleViews");
+const articleComments = mustGet<HTMLElement>("articleComments");
+const topArticleTitle = mustGet<HTMLElement>("topArticleTitle");
+const topArticleDate = mustGet<HTMLElement>("topArticleDate");
+const topArticleViews = mustGet<HTMLElement>("topArticleViews");
+const topArticleComments = mustGet<HTMLElement>("topArticleComments");
+const tocBody = mustGet<HTMLElement>("tocBody");
+const tocToggle = mustGet<HTMLButtonElement>("tocToggle");
+const readerScroll = mustGet<HTMLElement>("readerScroll");
+const shareBtn = mustGet<HTMLButtonElement>("shareBtn");
+const themeBtn = mustGet<HTMLButtonElement>("themeBtn");
+const toast = mustGet<HTMLElement>("toast");
+const commentForm = mustGet<HTMLFormElement>("commentForm");
+const commentText = mustGet<HTMLTextAreaElement>("commentText");
+const commentFiles = mustGet<HTMLInputElement>("commentFiles");
+const commentList = mustGet<HTMLElement>("commentList");
+const commentUser = mustGet<HTMLElement>("commentUser");
+
+const initial = readInitialPayload();
+let activeSlug = initial?.slug ?? document.body.dataset.activeSlug ?? "";
+let posts: PostListItem[] = [];
+let searchDocs: SearchDocument[] = [];
+let query = "";
+let replyParentId: string | null = null;
+let toastTimer = 0;
+let headingObserver: IntersectionObserver | null = null;
+
+const articleCache = new Map<string, ArticleCacheItem>();
+
+if (initial) {
+  articleCache.set(initial.slug, {
+    slug: initial.slug,
+    html: articleBody.innerHTML,
+    toc: initial.toc,
+    meta: initial.meta,
+    cachedAt: Date.now()
+  });
+}
+
+void init();
+
+async function init() {
+  createIcons({ icons });
+  applyStoredTheme();
+  applyStoredListWidth();
+  applyStoredTocState();
+  enhanceCodeBlocks();
+  renderToc(initial?.toc ?? []);
+  renderComments();
+  bindEvents();
+
+  try {
+    const [postItems, searchPayload] = await Promise.all([
+      fetchJson<PostListItem[]>("/search/post-list.json"),
+      fetchJson<{ documents: SearchDocument[] }>("/search/search-index.json")
+    ]);
+    posts = postItems;
+    searchDocs = searchPayload.documents;
+    renderList();
+    prefetchIdleArticles();
+  } catch {
+    listMeta.textContent = "文章列表暂不可用";
+  }
+
+  commentUser.textContent = getRandomUsername();
+  countViewOnce(activeSlug);
+}
+
+function bindEvents() {
+  searchInput.addEventListener("input", () => {
+    query = searchInput.value.trim();
+    renderList();
+    const first = getFilteredPosts()[0];
+    if (first && first.slug !== activeSlug) {
+      void openArticle(first.slug, { push: true, countView: true });
+    }
+  });
+
+  tocToggle.addEventListener("click", () => {
+    const collapsed = app.classList.toggle("toc-collapsed");
+    localStorage.setItem("fp_toc_collapsed_v1", collapsed ? "1" : "0");
+    tocToggle.innerHTML = collapsed
+      ? '<i data-lucide="panel-left-open"></i>'
+      : '<i data-lucide="panel-left-close"></i>';
+    createIcons({ icons });
+  });
+
+  shareBtn.addEventListener("click", async () => {
+    const url = `${location.origin}/p/${activeSlug}`;
+    await navigator.clipboard.writeText(url).catch(() => undefined);
+    showToast("文章链接已复制");
+  });
+
+  themeBtn.addEventListener("click", () => {
+    const current = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = current;
+    localStorage.setItem(storageKeys.theme, current);
+    themeBtn.innerHTML = current === "dark" ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>';
+    createIcons({ icons });
+  });
+
+  commentForm.addEventListener("submit", submitComment);
+  initResizer();
+
+  window.addEventListener("popstate", () => {
+    const slug = location.pathname.startsWith("/p/")
+      ? decodeURIComponent(location.pathname.split("/p/")[1] ?? "")
+      : posts[0]?.slug;
+
+    if (slug) {
+      void openArticle(slug, { push: false, countView: false });
+    }
+  });
+}
+
+function renderList() {
+  const filtered = getFilteredPosts();
+  listMeta.textContent = query ? `匹配 ${filtered.length} 篇内容` : `共 ${filtered.length} 篇内容`;
+  postList.innerHTML = filtered
+    .map((post) => {
+      const localCommentCount = getComments(activeSlug === post.slug ? activeSlug : post.slug).length;
+      const commentCount = Math.max(post.commentCount, localCommentCount);
+      return `<button class="post-item ${post.slug === activeSlug ? "active" : ""}" type="button" data-slug="${escapeHtml(
+        post.slug
+      )}">
+        <span class="post-title" title="${escapeHtml(post.title)}">${highlight(post.title, query)}</span>
+        <span class="post-stats">
+          <span>${formatDate(post.updatedAt)}</span>
+          <span>${post.viewCount} 阅读</span>
+          <span>${commentCount} 评论</span>
+        </span>
+      </button>`;
+    })
+    .join("");
+
+  postList.querySelectorAll<HTMLButtonElement>(".post-item").forEach((button) => {
+    const slug = button.dataset.slug;
+    if (!slug) return;
+
+    button.addEventListener("click", () => {
+      void openArticle(slug, { push: true, countView: true });
+    });
+    button.addEventListener("mouseenter", () => {
+      void prefetchArticle(slug);
+    });
+  });
+}
+
+function getFilteredPosts() {
+  const sorted = [...posts].sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+  const normalized = normalize(query);
+  if (!normalized) return sorted;
+
+  const docMap = new Map(searchDocs.map((doc) => [doc.slug, doc]));
+  const postMap = new Map(sorted.map((post) => [post.slug, post]));
+  const titleHits: PostListItem[] = [];
+  const bodyHits: PostListItem[] = [];
+
+  for (const post of sorted) {
+    const doc = docMap.get(post.slug);
+    const title = normalize(post.title);
+    const body = normalize(doc?.body ?? post.excerpt ?? "");
+
+    if (title.includes(normalized)) {
+      titleHits.push(post);
+    } else if (body.includes(normalized)) {
+      bodyHits.push(post);
+    }
+  }
+
+  return [...titleHits, ...bodyHits].filter((post) => postMap.has(post.slug));
+}
+
+async function openArticle(
+  slug: string,
+  options: { push?: boolean; countView?: boolean } = {}
+) {
+  const cached = articleCache.get(slug) ?? (await prefetchArticle(slug));
+  if (!cached) return;
+
+  activeSlug = slug;
+  articleBody.innerHTML = cached.html;
+  articleTitle.textContent = cached.meta.title;
+  articleDate.textContent = `发布时间：${formatDate(cached.meta.createdAt)}`;
+  articleViews.textContent = `${cached.meta.viewCount} 阅读`;
+  articleComments.textContent = `${currentCommentCount(cached.meta)} 评论`;
+  topArticleTitle.textContent = cached.meta.title;
+  topArticleDate.textContent = formatDate(cached.meta.createdAt);
+  topArticleViews.textContent = `${cached.meta.viewCount} 阅读`;
+  topArticleComments.textContent = `${currentCommentCount(cached.meta)} 评论`;
+  document.title = cached.meta.title;
+
+  renderToc(cached.toc);
+  enhanceCodeBlocks();
+  renderComments();
+  renderList();
+  readerScroll.scrollTop = 0;
+
+  if (options.countView) {
+    countViewOnce(slug);
+  }
+
+  if (options.push && location.pathname !== `/p/${slug}`) {
+    history.pushState(null, "", `/p/${slug}`);
+  }
+}
+
+async function prefetchArticle(slug: string) {
+  const cached = articleCache.get(slug);
+  if (cached) return cached;
+
+  try {
+    const [html, meta, toc] = await Promise.all([
+      fetchText(`/p/${encodeURIComponent(slug)}/article.fragment.html`),
+      fetchJson<ArticleMeta>(`/p/${encodeURIComponent(slug)}/article.meta.json`),
+      fetchJson<TocItem[]>(`/p/${encodeURIComponent(slug)}/toc.json`)
+    ]);
+    const item = {
+      slug,
+      html,
+      meta,
+      toc,
+      cachedAt: Date.now()
+    };
+    articleCache.set(slug, item);
+    return item;
+  } catch {
+    showToast("文章暂时无法打开");
+    return null;
+  }
+}
+
+function prefetchIdleArticles() {
+  const slugs = posts
+    .filter((post) => post.slug !== activeSlug)
+    .slice(0, 4)
+    .map((post) => post.slug);
+
+  const run = () => {
+    for (const slug of slugs) {
+      void prefetchArticle(slug);
+    }
+  };
+
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(run);
+  } else {
+    globalThis.setTimeout(run, 500);
+  }
+}
+
+function renderToc(toc: TocItem[]) {
+  headingObserver?.disconnect();
+
+  if (!toc.length) {
+    tocBody.innerHTML = '<span class="toc-empty">无目录</span>';
+    return;
+  }
+
+  tocBody.innerHTML = toc
+    .map(
+      (item) =>
+        `<a class="toc-link level-${item.level}" href="#${escapeHtml(item.id)}">${escapeHtml(
+          item.text
+        )}</a>`
+    )
+    .join("");
+
+  tocBody.querySelectorAll<HTMLAnchorElement>("a").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      const id = decodeURIComponent(link.getAttribute("href")?.slice(1) ?? "");
+      articleBody.querySelector<HTMLElement>(`#${CSS.escape(id)}`)?.scrollIntoView({
+        behavior: "auto",
+        block: "start"
+      });
+    });
+  });
+
+  const headings = [...articleBody.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6")];
+  headingObserver = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((left, right) => left.boundingClientRect.top - right.boundingClientRect.top)[0];
+      if (!visible?.target.id) return;
+      tocBody.querySelectorAll(".toc-link").forEach((link) => link.classList.remove("active"));
+      tocBody
+        .querySelector(`.toc-link[href="#${CSS.escape(visible.target.id)}"]`)
+        ?.classList.add("active");
+    },
+    { root: readerScroll, rootMargin: "0px 0px -65% 0px", threshold: 0.1 }
+  );
+
+  headings.forEach((heading) => headingObserver?.observe(heading));
+}
+
+function enhanceCodeBlocks() {
+  articleBody.querySelectorAll<HTMLElement>(".code-block").forEach((block) => {
+    if (block.dataset.enhanced === "1") return;
+    block.dataset.enhanced = "1";
+    const copyButton = block.querySelector<HTMLButtonElement>(".copy-code");
+    const foldButton = block.querySelector<HTMLButtonElement>(".fold-code");
+    const pre = block.querySelector<HTMLElement>("pre");
+
+    copyButton?.addEventListener("click", async () => {
+      const text = [...block.querySelectorAll(".code-line span:last-child")]
+        .map((line) => line.textContent ?? "")
+        .join("\n");
+      await navigator.clipboard.writeText(text).catch(() => undefined);
+      showToast("代码已复制");
+    });
+
+    foldButton?.addEventListener("click", () => {
+      pre?.classList.toggle("hidden");
+      foldButton.textContent = pre?.classList.contains("hidden") ? "展开" : "折叠";
+    });
+  });
+}
+
+function submitComment(event: SubmitEvent) {
+  event.preventDefault();
+  const content = commentText.value.trim();
+  const files = [...(commentFiles.files ?? [])];
+
+  if (!content && files.length === 0) {
+    showToast("请填写评论或选择附件");
+    return;
+  }
+
+  const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
+  if (totalBytes > 500 * 1024 * 1024) {
+    showToast("附件总量不能超过 500MB");
+    return;
+  }
+
+  if (!checkCommentRate(activeSlug)) return;
+
+  const comment: StoredComment = {
+    id: crypto.randomUUID?.() ?? `${Date.now()}`,
+    parentId: replyParentId,
+    username: getRandomUsername(),
+    content,
+    attachments: files.map((file) => ({
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      url: URL.createObjectURL(file)
+    })),
+    createdAt: new Date().toISOString()
+  };
+
+  const all = getCommentStore();
+  all[activeSlug] = [...(all[activeSlug] ?? []), comment];
+  localStorage.setItem(storageKeys.comments, JSON.stringify(all));
+
+  replyParentId = null;
+  commentText.value = "";
+  commentText.placeholder = "写下评论";
+  commentFiles.value = "";
+  renderComments();
+  renderList();
+  updateCommentCounts();
+  showToast("评论已发布");
+}
+
+function renderComments() {
+  const comments = getComments(activeSlug);
+  const roots = comments
+    .filter((comment) => !comment.parentId)
+    .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+
+  commentList.innerHTML =
+    roots.map((comment) => renderComment(comment, comments, 0)).join("") ||
+    '<div class="muted">暂无评论</div>';
+
+  commentList.querySelectorAll<HTMLButtonElement>(".reply-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      replyParentId = button.dataset.id ?? null;
+      commentText.placeholder = `回复 ${button.dataset.user ?? ""}`;
+      commentText.focus();
+    });
+  });
+}
+
+function renderComment(comment: StoredComment, all: StoredComment[], level: number): string {
+  const replies = all
+    .filter((item) => item.parentId === comment.id)
+    .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
+  const attachments = comment.attachments
+    .map((file) => {
+      const isSmallImage = file.url && file.type.startsWith("image/") && file.size <= 2 * 1024 * 1024;
+      if (isSmallImage) {
+        return `<a href="${escapeHtml(file.url ?? "")}" target="_blank" rel="noreferrer"><img src="${escapeHtml(
+          file.url ?? ""
+        )}" alt="${escapeHtml(file.name)}" /></a>`;
+      }
+      return `<span class="tool-button">${escapeHtml(file.name)}</span>`;
+    })
+    .join("");
+
+  return `<div class="comment ${level > 0 ? "reply" : ""}">
+    <div class="comment-head">
+      <span><span class="comment-user">${escapeHtml(comment.username)}</span> · ${formatDateTime(
+        comment.createdAt
+      )}</span>
+      <button class="reply-btn" type="button" data-id="${escapeHtml(comment.id)}" data-user="${escapeHtml(
+        comment.username
+      )}">回复</button>
+    </div>
+    <div class="comment-body">${escapeHtml(comment.content)}</div>
+    <div class="comment-attachments">${attachments}</div>
+    ${replies.map((reply) => renderComment(reply, all, level + 1)).join("")}
+  </div>`;
+}
+
+function checkCommentRate(slug: string): boolean {
+  const user = getDeviceId();
+  const now = Date.now();
+  const today = new Date().toISOString().slice(0, 10);
+  const raw = localStorage.getItem(storageKeys.rate);
+  const rate = raw ? (JSON.parse(raw) as Record<string, number[]>) : {};
+  const dayKey = `${slug}:${user}:${today}`;
+  const fiveMinKey = `${user}:5min`;
+  const dayEntries = rate[dayKey] ?? [];
+  const fiveMinEntries = (rate[fiveMinKey] ?? []).filter((time) => now - time < 5 * 60 * 1000);
+
+  if (dayEntries.length >= 5) {
+    showToast("该文章今日评论次数已达上限");
+    return false;
+  }
+
+  if (fiveMinEntries.length >= 3 && !confirm("评论频率异常，需要确认后继续。")) {
+    return false;
+  }
+
+  rate[dayKey] = [...dayEntries, now];
+  rate[fiveMinKey] = [...fiveMinEntries, now];
+  localStorage.setItem(storageKeys.rate, JSON.stringify(rate));
+  return true;
+}
+
+function updateCommentCounts() {
+  const cached = articleCache.get(activeSlug);
+  if (!cached) return;
+  const count = currentCommentCount(cached.meta);
+  articleComments.textContent = `${count} 评论`;
+  topArticleComments.textContent = `${count} 评论`;
+}
+
+function currentCommentCount(meta: ArticleMeta): number {
+  return Math.max(meta.commentCount, getComments(meta.slug).length);
+}
+
+function getComments(slug: string): StoredComment[] {
+  return getCommentStore()[slug] ?? [];
+}
+
+function getCommentStore(): Record<string, StoredComment[]> {
+  const raw = localStorage.getItem(storageKeys.comments);
+  if (!raw) return {};
+
+  try {
+    return JSON.parse(raw) as Record<string, StoredComment[]>;
+  } catch {
+    return {};
+  }
+}
+
+function countViewOnce(slug: string) {
+  if (!slug) return;
+  const key = `fp_view_${slug}_${new Date().toISOString().slice(0, 10)}`;
+  if (localStorage.getItem(key)) return;
+  localStorage.setItem(key, "1");
+
+  navigator.sendBeacon?.(`/api/posts/${encodeURIComponent(slug)}/view`, JSON.stringify({ localId: getDeviceId() }));
+}
+
+function getRandomUsername(): string {
+  const saved = localStorage.getItem(storageKeys.user);
+  if (saved) {
+    return (JSON.parse(saved) as { name: string }).name;
+  }
+
+  const adjectives = ["安静的", "自由的", "清醒的", "温和的", "明亮的", "专注的", "透明的", "从容的"];
+  const nouns = ["河流", "山影", "晨光", "星火", "纸页", "远帆", "云层", "石径"];
+  const name = `${adjectives[Math.floor(Math.random() * adjectives.length)]}${nouns[Math.floor(Math.random() * nouns.length)]}`;
+  localStorage.setItem(storageKeys.user, JSON.stringify({ id: getDeviceId(), name }));
+  return name;
+}
+
+function getDeviceId(): string {
+  const saved = localStorage.getItem(storageKeys.device);
+  if (saved) return saved;
+  const next = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+  localStorage.setItem(storageKeys.device, next);
+  return next;
+}
+
+function initResizer() {
+  const resizer = mustGet<HTMLElement>("listResizer");
+  let dragging = false;
+
+  resizer.addEventListener("pointerdown", (event) => {
+    dragging = true;
+    resizer.setPointerCapture(event.pointerId);
+    document.body.style.userSelect = "none";
+  });
+
+  resizer.addEventListener("pointermove", (event) => {
+    if (!dragging) return;
+    const width = Math.min(560, Math.max(200, event.clientX));
+    document.documentElement.style.setProperty("--list-width", `${width}px`);
+    localStorage.setItem(storageKeys.listWidth, String(width));
+  });
+
+  resizer.addEventListener("pointerup", (event) => {
+    dragging = false;
+    resizer.releasePointerCapture(event.pointerId);
+    document.body.style.userSelect = "";
+  });
+}
+
+function applyStoredTheme() {
+  const theme = localStorage.getItem(storageKeys.theme) === "dark" ? "dark" : "light";
+  document.documentElement.dataset.theme = theme;
+  themeBtn.innerHTML = theme === "dark" ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>';
+}
+
+function applyStoredListWidth() {
+  const width = Number(localStorage.getItem(storageKeys.listWidth));
+  if (Number.isFinite(width) && width >= 200 && width <= 560) {
+    document.documentElement.style.setProperty("--list-width", `${width}px`);
+  }
+}
+
+function applyStoredTocState() {
+  if (localStorage.getItem("fp_toc_collapsed_v1") === "1") {
+    app.classList.add("toc-collapsed");
+    tocToggle.innerHTML = '<i data-lucide="panel-left-open"></i>';
+  }
+}
+
+async function fetchJson<T>(url: string): Promise<T> {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Failed to fetch ${url}`);
+  return (await response.json()) as T;
+}
+
+async function fetchText(url: string): Promise<string> {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Failed to fetch ${url}`);
+  return response.text();
+}
+
+function formatDate(value: string): string {
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(new Date(value));
+}
+
+function formatDateTime(value: string): string {
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).format(new Date(value));
+}
+
+function highlight(value: string, term: string): string {
+  if (!term) return escapeHtml(value);
+  const normalizedValue = value.toLowerCase();
+  const normalizedTerm = term.toLowerCase();
+  const index = normalizedValue.indexOf(normalizedTerm);
+  if (index < 0) return escapeHtml(value);
+
+  return `${escapeHtml(value.slice(0, index))}<mark>${escapeHtml(
+    value.slice(index, index + term.length)
+  )}</mark>${escapeHtml(value.slice(index + term.length))}`;
+}
+
+function normalize(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+function escapeHtml(value: string): string {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function showToast(message: string) {
+  toast.textContent = message;
+  toast.classList.add("show");
+  window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => toast.classList.remove("show"), 1800);
+}
+
+function mustGet<T extends HTMLElement>(id: string): T {
+  const element = document.getElementById(id);
+  if (!element) {
+    throw new Error(`Missing element #${id}`);
+  }
+  return element as T;
+}
+
+function readInitialPayload() {
+  const element = document.getElementById("initialPayload");
+  if (!element?.textContent) return undefined;
+
+  try {
+    return JSON.parse(element.textContent) as Window["__FREEDOMPOST_INITIAL__"];
+  } catch {
+    return undefined;
+  }
+}

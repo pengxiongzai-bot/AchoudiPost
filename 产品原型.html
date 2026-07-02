@@ -1,0 +1,1498 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FreedomPost 自由发布原型</title>
+  <meta name="description" content="FreedomPost 自由发布三栏阅读器原型：文章列表、目录、正文、评论与编辑态。" />
+  <style>
+    :root {
+      --bg: #f7f7f5;
+      --panel: #ffffff;
+      --panel-soft: #fbfbfa;
+      --text: #1f2328;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --line-strong: #d1d5db;
+      --accent: #111827;
+      --accent-soft: #f3f4f6;
+      --danger: #b42318;
+      --shadow: 0 10px 30px rgba(0,0,0,.06);
+      --list-width: 252px;
+      --toc-width: 240px;
+      --toc-collapsed-width: 40px;
+    }
+
+    [data-theme="dark"] {
+      --bg: #111315;
+      --panel: #171a1d;
+      --panel-soft: #1e2226;
+      --text: #e8eaed;
+      --muted: #9aa4b2;
+      --line: #2b3036;
+      --line-strong: #3b424b;
+      --accent: #f3f4f6;
+      --accent-soft: #242932;
+      --danger: #ffb4a8;
+      --shadow: none;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { height: 100%; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      line-height: 1.65;
+      overflow: hidden;
+    }
+
+    button, input, textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: 1px solid var(--line-strong);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 7px 11px;
+      transition: background .12s ease, border-color .12s ease;
+    }
+
+    button:hover { background: var(--accent-soft); }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+
+    a { color: inherit; }
+
+    .app {
+      height: 100vh;
+      display: grid;
+      grid-template-columns: var(--list-width) 6px var(--toc-width) minmax(0, 1fr);
+      grid-template-rows: 52px minmax(0, 1fr) 54px;
+      background: var(--bg);
+    }
+
+    .sidebar {
+      grid-column: 1;
+      grid-row: 1 / 4;
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .resizer {
+      grid-column: 2;
+      grid-row: 1 / 4;
+      cursor: col-resize;
+      background: transparent;
+      position: relative;
+    }
+
+    .resizer::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 2px;
+      width: 1px;
+      background: var(--line);
+    }
+
+    .resizer:hover::after { background: var(--line-strong); }
+
+    .toc {
+      grid-column: 3;
+      grid-row: 1 / 4;
+      background: var(--panel-soft);
+      border-right: 1px solid var(--line);
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .toc.collapsed {
+      width: var(--toc-collapsed-width);
+      overflow: hidden;
+    }
+
+    .app.toc-collapsed {
+      grid-template-columns: var(--list-width) 6px var(--toc-collapsed-width) minmax(0, 1fr);
+    }
+
+    .topbar {
+      grid-column: 4;
+      grid-row: 1;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 0 16px 0 18px;
+      min-width: 0;
+    }
+
+    .topbar-main {
+      min-width: 0;
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    .topbar-title {
+      font-size: 15px;
+      font-weight: 760;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 52vw;
+    }
+
+    .topbar-date {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      white-space: nowrap;
+      color: var(--muted);
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .reader-scroll {
+      grid-column: 4;
+      grid-row: 2;
+      overflow-y: auto;
+      scroll-behavior: auto;
+    }
+
+    .reader {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 44px 36px 72px;
+    }
+
+    .footer {
+      grid-column: 4;
+      grid-row: 3;
+      background: var(--panel);
+      border-top: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      white-space: nowrap;
+    }
+
+    .sidebar-head {
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .brand strong {
+      font-size: 16px;
+      letter-spacing: .01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand-name {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      line-height: 1.2;
+    }
+
+    .brand-sub {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .search {
+      width: 100%;
+      height: 38px;
+      border: 1px solid var(--line-strong);
+      border-radius: 12px;
+      padding: 0 12px;
+      color: var(--text);
+      background: var(--panel-soft);
+      outline: none;
+    }
+
+    .search:focus {
+      border-color: var(--accent);
+      background: var(--panel);
+    }
+
+    .list-meta {
+      padding: 8px 14px;
+      color: var(--muted);
+      font-size: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .post-list {
+      overflow-y: auto;
+      padding: 6px;
+    }
+
+    .post-item {
+      width: 100%;
+      display: block;
+      text-align: left;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      padding: 10px 10px;
+      color: var(--text);
+    }
+
+    .post-item:hover { background: var(--accent-soft); }
+    .post-item.active { background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--line-strong); }
+
+    .post-title {
+      display: block;
+      font-size: 14px;
+      font-weight: 620;
+      line-height: 1.45;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .post-stats {
+      display: flex;
+      gap: 8px;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toc-head {
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 0 10px 0 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .toc-title {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toc-toggle {
+      min-width: 30px;
+      height: 30px;
+      padding: 0;
+      border-radius: 9px;
+      font-weight: 800;
+    }
+
+    .toc-body {
+      padding: 10px 10px 18px;
+      overflow-y: auto;
+    }
+
+    .toc.collapsed .toc-title,
+    .toc.collapsed .toc-body { display: none; }
+
+    .toc.collapsed .toc-head {
+      padding: 0 5px;
+      justify-content: center;
+    }
+
+    .toc-link {
+      display: block;
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+      padding: 6px 6px;
+      border-radius: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .toc-link:hover { background: var(--accent-soft); color: var(--text); }
+    .toc-link.h2 { padding-left: 16px; }
+    .toc-link.h3 { padding-left: 28px; }
+    .toc-link.h4 { padding-left: 40px; }
+
+    .article-header {
+      display: none;
+    }
+
+    .article-title {
+      font-size: 36px;
+      line-height: 1.22;
+      letter-spacing: -.03em;
+      margin: 0 0 12px;
+    }
+
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .article-body {
+      font-size: 16px;
+    }
+
+    .article-body h1,
+    .article-body h2,
+    .article-body h3,
+    .article-body h4 {
+      line-height: 1.35;
+      margin: 2em 0 .7em;
+      letter-spacing: -.02em;
+    }
+
+    .article-body h1 { font-size: 30px; }
+    .article-body h2 { font-size: 25px; }
+    .article-body h3 { font-size: 21px; }
+    .article-body h4 { font-size: 18px; }
+    .article-body p { margin: 1em 0; }
+    .article-body ul, .article-body ol { padding-left: 1.4em; }
+    .article-body blockquote {
+      margin: 1.3em 0;
+      padding: .6em 1em;
+      border-left: 4px solid var(--line-strong);
+      color: var(--muted);
+      background: var(--panel-soft);
+      border-radius: 0 12px 12px 0;
+    }
+
+    .article-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.4em 0;
+      overflow: hidden;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+
+    .article-body th,
+    .article-body td {
+      border: 1px solid var(--line);
+      padding: 9px 10px;
+      vertical-align: top;
+    }
+
+    .article-body th { background: var(--panel-soft); text-align: left; }
+
+    .article-body img {
+      max-width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .article-body mark {
+      background: #fff1a8;
+      color: #111827;
+      padding: 0 .18em;
+      border-radius: 4px;
+    }
+
+    .code-block {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      margin: 1.4em 0;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+
+    .code-head {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px 0 12px;
+      background: rgba(255,255,255,.06);
+      color: #cbd5e1;
+      font-size: 12px;
+    }
+
+    .code-actions { display: flex; gap: 6px; }
+    .code-actions button {
+      height: 25px;
+      padding: 0 8px;
+      border-color: rgba(255,255,255,.18);
+      background: rgba(255,255,255,.08);
+      color: #e5e7eb;
+      border-radius: 7px;
+      font-size: 12px;
+    }
+
+    pre {
+      margin: 0;
+      overflow: auto;
+      padding: 13px 0;
+      font-size: 13px;
+      line-height: 1.6;
+      tab-size: 2;
+    }
+
+    .code-line {
+      display: grid;
+      grid-template-columns: 44px minmax(0,1fr);
+      gap: 10px;
+      padding: 0 14px 0 0;
+    }
+
+    .line-no {
+      user-select: none;
+      text-align: right;
+      color: #64748b;
+    }
+
+    .attachment-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel-soft);
+      margin: 1em 0;
+      font-size: 14px;
+    }
+
+    .comments {
+      border-top: 1px solid var(--line);
+      margin-top: 56px;
+      padding-top: 28px;
+    }
+
+    .comments h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+    }
+
+    .comment-form {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      background: var(--panel-soft);
+      margin-bottom: 22px;
+    }
+
+    .comment-form textarea,
+    .editor-title,
+    .editor-area {
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      border-radius: 12px;
+      background: var(--panel);
+      color: var(--text);
+      outline: none;
+      padding: 10px 12px;
+    }
+
+    .comment-form textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    .comment-tools {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .comment-note {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .comment-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .comment {
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      padding: 12px;
+      background: var(--panel);
+    }
+
+    .comment.reply {
+      margin-left: 28px;
+      margin-top: 10px;
+    }
+
+    .comment-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .comment-user {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .comment-body {
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .comment-attachments {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 13px;
+    }
+
+    .comment-attachments img {
+      max-width: 130px;
+      max-height: 100px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+    }
+
+    .reply-btn {
+      border: 0;
+      padding: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .reply-btn:hover { color: var(--text); background: transparent; }
+
+    .editor {
+      display: none;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 34px 36px 72px;
+    }
+
+    .editing .reader { display: none; }
+    .editing .editor { display: block; }
+
+    .editor-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .editor-toolbar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .editor-area {
+      min-height: 560px;
+      resize: vertical;
+      line-height: 1.7;
+    }
+
+    .hidden { display: none !important; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 8px;
+      color: var(--muted);
+      font-size: 12px;
+      background: var(--panel-soft);
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      background: var(--text);
+      color: var(--panel);
+      padding: 10px 14px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: opacity .15s ease, transform .15s ease;
+      z-index: 20;
+      font-size: 14px;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .admin-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(17, 24, 39, .28);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .admin-card {
+      width: min(420px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .admin-card h2 {
+      margin: 0 0 6px;
+      font-size: 22px;
+    }
+
+    .admin-card p {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .admin-field {
+      display: block;
+      margin: 12px 0;
+    }
+
+    .admin-field span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .admin-field input {
+      width: 100%;
+      height: 40px;
+      border: 1px solid var(--line-strong);
+      border-radius: 12px;
+      background: var(--panel-soft);
+      color: var(--text);
+      padding: 0 12px;
+      outline: none;
+    }
+
+    .admin-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 900px) {
+      body::before {
+        content: "第一版不考虑移动端。请在桌面宽屏查看原型。";
+        position: fixed;
+        inset: 0;
+        z-index: 99;
+        background: var(--panel);
+        color: var(--text);
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="app">
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <div class="brand">
+          <div class="brand-name">
+            <strong>FreedomPost</strong>
+            <span class="brand-sub">自由发布</span>
+          </div>
+          <button id="themeBtn" title="切换亮暗模式">☾</button>
+        </div>
+        <input id="searchInput" class="search" type="search" placeholder="搜索标题和正文，标题优先" autocomplete="off" />
+      </div>
+      <div id="listMeta" class="list-meta">加载中</div>
+      <div id="postList" class="post-list"></div>
+    </aside>
+
+    <div id="resizer" class="resizer" title="拖拽调整文章列表宽度"></div>
+
+    <nav id="toc" class="toc">
+      <div class="toc-head">
+        <span class="toc-title">文章目录</span>
+        <button id="tocToggle" class="toc-toggle" title="折叠 / 展开目录">‹</button>
+      </div>
+      <div id="tocBody" class="toc-body"></div>
+    </nav>
+
+    <header class="topbar">
+      <div class="topbar-main">
+        <strong id="topArticleTitle" class="topbar-title">加载中</strong>
+        <span id="topArticleDate" class="topbar-date"></span>
+      </div>
+      <div class="topbar-actions">
+        <span id="topArticleViews"></span>
+        <span id="topArticleComments"></span>
+        <button id="shareBtn">复制文章链接</button>
+        <span id="adminBadge" class="pill hidden">管理员模式</span>
+        <button id="editBtn" class="hidden">编辑</button>
+        <button id="saveBtn" class="hidden">保存</button>
+      </div>
+    </header>
+
+    <main id="mainScroll" class="reader-scroll">
+      <article id="reader" class="reader">
+        <header class="article-header" aria-hidden="true">
+          <h1 id="articleTitle" class="article-title"></h1>
+          <div class="article-meta">
+            <span id="articleDate"></span>
+            <span id="articleViews"></span>
+            <span id="articleComments"></span>
+          </div>
+        </header>
+        <section id="articleBody" class="article-body"></section>
+        <section class="comments">
+          <h2>评论</h2>
+          <form id="commentForm" class="comment-form">
+            <textarea id="commentText" maxlength="10000" placeholder="匿名评论。可只上传附件，不写文字。"></textarea>
+            <div class="comment-tools">
+              <label class="comment-note">
+                <input id="commentFiles" type="file" multiple />
+                附件总量不超过 500MB
+              </label>
+              <div>
+                <span id="commentUser" class="comment-note"></span>
+                <button type="submit">发布评论</button>
+              </div>
+            </div>
+          </form>
+          <div id="commentList" class="comment-list"></div>
+        </section>
+      </article>
+
+      <section id="editor" class="editor">
+        <input id="editorTitle" class="editor-title" placeholder="文章标题" />
+        <div class="editor-toolbar">
+          <button data-insert="# ">H1</button>
+          <button data-insert="## ">H2</button>
+          <button data-wrap="**">加粗</button>
+          <button data-wrap="`">代码</button>
+          <button data-block="blockquote">引用</button>
+          <button data-block="code">代码块</button>
+          <button id="pasteImageHint" type="button">支持粘贴图片</button>
+          <input id="editorFiles" type="file" multiple class="hidden" />
+          <button id="uploadBtn" type="button">上传附件</button>
+        </div>
+        <textarea id="editorArea" class="editor-area" placeholder="这里先用 Markdown/HTML 混合原型。正式版替换为所见即所得编辑器。"></textarea>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div>预留按钮区域</div>
+      <div class="footer-links">
+        <a href="#">X / Twitter</a>
+        <a href="#">YouTube</a>
+        <a href="#">Telegram</a>
+        <a href="mailto:me@example.com">Email</a>
+        <a href="#">微信</a>
+        <a href="#">QQ</a>
+        <a href="#">B站</a>
+      </div>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <div id="adminPanel" class="admin-panel hidden">
+    <form id="adminForm" class="admin-card">
+      <h2>FreedomPost 管理员登录</h2>
+      <p>管理员登录使用专用路由 <code>/admin</code>。登录后前台才显示编辑和保存。</p>
+      <label class="admin-field">
+        <span>管理员账号</span>
+        <input id="adminUsername" autocomplete="username" placeholder="输入管理员账号" />
+      </label>
+      <label class="admin-field">
+        <span>管理员密码</span>
+        <input id="adminPassword" type="password" autocomplete="current-password" placeholder="输入管理员密码" />
+      </label>
+      <div class="admin-actions">
+        <button id="adminCancel" type="button">返回阅读</button>
+        <button type="submit">登录</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const STORAGE_KEYS = {
+      posts: "pcp_posts_v1",
+      comments: "pcp_comments_v1",
+      admin: "pcp_admin_v1",
+      user: "pcp_comment_user_v1",
+      listWidth: "pcp_list_width_v1",
+      theme: "pcp_theme_v1"
+    };
+
+    const demoPosts = [
+      {
+        slug: "a8f3k2",
+        title: "为什么我要建立自己的内容平台",
+        createdAt: "2026-07-02",
+        updatedAt: "2026-07-02",
+        views: 128,
+        body: `# 为什么我要建立自己的内容平台\n\n我需要一个由自己掌控的内容空间。它不追求复杂社交，也不依赖传统平台的信息流分发。\n\n## 核心体验\n\n左侧是文章列表，右侧是内容区。点击标题后，内容应该立刻出现，不整页跳转，不等待平台加载。\n\n> 平台的第一原则是阅读体验，而不是运营组件。\n\n## 能力清单\n\n- 文章全文搜索\n- 标题匹配优先\n- 评论不需要登录\n- 管理员可以直接编辑和发布\n- 附件和图片由对象存储承载\n\n## 表格示例\n\n| 模块 | 第一版要求 |\n|---|---|\n| 文章 | 保存即公开 |\n| 评论 | 匿名、立即公开 |\n| 搜索 | 前端本地索引 |\n\n## 代码块示例\n\n\`\`\`ts\nfunction openPost(slug: string) {\n  activeSlug = slug;\n  renderPost(slug);\n  history.pushState(null, "", "/p/" + slug);\n}\n\`\`\`\n\n## Mermaid 示例\n\n\`\`\`mermaid\ngraph TD\n  A[文章列表] --> B[点击标题]\n  B --> C[内容区立即展示]\n  C --> D[评论区]\n\`\`\`\n\n## 附件卡片\n\n[附件: 产品需求说明书.md](#)\n`
+      },
+      {
+        slug: "k39d2x",
+        title: "个人简历：业务、产品与内容系统",
+        createdAt: "2026-07-01",
+        updatedAt: "2026-07-01",
+        views: 76,
+        body: `# 个人简历\n\n## 个人定位\n\n业务驱动型内容平台建设者，关注信息表达、产品设计、增长和独立发布能力。\n\n## 经验摘要\n\n- 熟悉内容平台、知识库、博客系统的业务需求。\n- 能把业务目标拆解成产品功能和验收标准。\n- 重视发布自主性、数据所有权和长期可维护性。\n\n## 作品\n\n1. 个人内容平台\n2. 文章阅读器原型\n3. 匿名评论系统设计\n`
+      },
+      {
+        slug: "q1w2e3",
+        title: "阿里云服务器与 GitHub Actions 流水线部署方案",
+        createdAt: "2026-06-30",
+        updatedAt: "2026-06-30",
+        views: 203,
+        body: `# 阿里云服务器与 GitHub Actions 流水线部署方案\n\n## 部署目标\n\n使用 Docker Compose 和 Nginx 反向代理部署个人内容平台。\n\n## 架构\n\n- Nginx：HTTPS 与反向代理\n- Web App：前台、后台和 API\n- PostgreSQL：文章、评论和访问统计\n- OSS：图片与附件存储\n\n## 发布流程\n\n\`\`\`yaml\nname: deploy\non:\n  push:\n    branches: [main]\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - name: Deploy\n        run: echo deploy to server\n\`\`\`\n\n## 备份\n\n每天备份数据库，每周备份 OSS 文件清单。\n`
+      }
+    ];
+
+    const state = {
+      posts: loadPosts(),
+      comments: loadComments(),
+      activeSlug: null,
+      query: "",
+      replyParentId: null,
+      isAdmin: localStorage.getItem(STORAGE_KEYS.admin) === "1"
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const app = $("app");
+    const mainScroll = $("mainScroll");
+    const postList = $("postList");
+    const listMeta = $("listMeta");
+    const articleTitle = $("articleTitle");
+    const articleDate = $("articleDate");
+    const articleViews = $("articleViews");
+    const articleComments = $("articleComments");
+    const topArticleTitle = $("topArticleTitle");
+    const topArticleDate = $("topArticleDate");
+    const topArticleViews = $("topArticleViews");
+    const topArticleComments = $("topArticleComments");
+    const articleBody = $("articleBody");
+    const toc = $("toc");
+    const tocBody = $("tocBody");
+    const toast = $("toast");
+    const commentUser = $("commentUser");
+
+    init();
+
+    function init() {
+      const savedTheme = localStorage.getItem(STORAGE_KEYS.theme) || "light";
+      document.documentElement.dataset.theme = savedTheme;
+
+      const savedWidth = localStorage.getItem(STORAGE_KEYS.listWidth);
+      if (savedWidth) document.documentElement.style.setProperty("--list-width", savedWidth + "px");
+
+      bindEvents();
+      updateAdminUI();
+      commentUser.textContent = "你的匿名名：" + getRandomUsername();
+
+      const routePath = currentRoutePath();
+      const slugFromPath = routePath.startsWith("/p/") ? routePath.split("/p/")[1] : "";
+      const initial = state.posts.find(p => p.slug === slugFromPath)?.slug || newestPost()?.slug;
+      openPost(initial, { replace: routePath !== "/admin", countView: true });
+      renderList();
+      if (routePath === "/admin") showAdminPanel();
+    }
+
+    function loadPosts() {
+      const saved = localStorage.getItem(STORAGE_KEYS.posts);
+      if (!saved) return demoPosts;
+      try { return JSON.parse(saved); } catch { return demoPosts; }
+    }
+
+    function savePosts() {
+      localStorage.setItem(STORAGE_KEYS.posts, JSON.stringify(state.posts));
+    }
+
+    function loadComments() {
+      const saved = localStorage.getItem(STORAGE_KEYS.comments);
+      if (!saved) return {};
+      try { return JSON.parse(saved); } catch { return {}; }
+    }
+
+    function saveComments() {
+      localStorage.setItem(STORAGE_KEYS.comments, JSON.stringify(state.comments));
+    }
+
+    function bindEvents() {
+      $("searchInput").addEventListener("input", (e) => {
+        state.query = e.target.value.trim();
+        const results = getFilteredPosts();
+        renderList();
+        if (results[0]) openPost(results[0].slug, { push: true, countView: false });
+      });
+
+      $("themeBtn").addEventListener("click", () => {
+        const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem(STORAGE_KEYS.theme, next);
+      });
+
+      $("tocToggle").addEventListener("click", () => {
+        const collapsed = toc.classList.toggle("collapsed");
+        app.classList.toggle("toc-collapsed", collapsed);
+        $("tocToggle").textContent = collapsed ? "›" : "‹";
+      });
+
+      $("shareBtn").addEventListener("click", async () => {
+        const url = location.protocol === "file:" ? "https://your-domain.example/p/" + state.activeSlug : location.origin + "/p/" + state.activeSlug;
+        await navigator.clipboard.writeText(url).catch(() => {});
+        showToast("文章链接已复制");
+      });
+
+      $("adminForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const username = $("adminUsername").value.trim();
+        const password = $("adminPassword").value;
+        if (!username || !password) {
+          showToast("请输入管理员账号和密码");
+          return;
+        }
+        state.isAdmin = true;
+        localStorage.setItem(STORAGE_KEYS.admin, "1");
+        hideAdminPanel();
+        updateAdminUI();
+        const slug = state.activeSlug || newestPost()?.slug;
+        if (slug) setRoute("/p/" + slug, true);
+        showToast("已进入管理员模式。原型中未接入真实鉴权。");
+      });
+
+      $("adminCancel").addEventListener("click", () => {
+        hideAdminPanel();
+        const slug = state.activeSlug || newestPost()?.slug;
+        if (slug) setRoute("/p/" + slug, true);
+      });
+
+      $("editBtn").addEventListener("click", enterEditMode);
+      $("saveBtn").addEventListener("click", saveCurrentPost);
+
+      $("commentForm").addEventListener("submit", submitComment);
+
+      $("uploadBtn").addEventListener("click", () => $("editorFiles").click());
+      $("editorFiles").addEventListener("change", handleEditorFiles);
+      $("editorArea").addEventListener("paste", handleEditorPaste);
+
+      document.querySelectorAll(".editor-toolbar button[data-insert], .editor-toolbar button[data-wrap], .editor-toolbar button[data-block]").forEach(btn => {
+        btn.addEventListener("click", () => applyEditorCommand(btn));
+      });
+
+      initResizer();
+
+      window.addEventListener("popstate", () => {
+        const routePath = currentRoutePath();
+        if (routePath === "/admin") {
+          showAdminPanel();
+          return;
+        }
+        hideAdminPanel();
+        const slug = routePath.startsWith("/p/") ? routePath.split("/p/")[1] : newestPost()?.slug;
+        if (slug) openPost(slug, { countView: false, push: false });
+      });
+    }
+
+    function updateAdminUI() {
+      $("adminBadge").classList.toggle("hidden", !state.isAdmin);
+      $("editBtn").classList.toggle("hidden", !state.isAdmin);
+      $("saveBtn").classList.toggle("hidden", !state.isAdmin || !document.body.classList.contains("editing"));
+    }
+
+    function showAdminPanel() {
+      $("adminPanel").classList.remove("hidden");
+      setTimeout(() => $("adminUsername").focus(), 0);
+    }
+
+    function hideAdminPanel() {
+      $("adminPanel").classList.add("hidden");
+      $("adminPassword").value = "";
+    }
+
+    function newestPost() {
+      return [...state.posts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+    }
+
+    function getActivePost() {
+      return state.posts.find(p => p.slug === state.activeSlug);
+    }
+
+    function getFilteredPosts() {
+      const sorted = [...state.posts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const q = state.query.toLowerCase();
+      if (!q) return sorted;
+      const titleMatches = sorted.filter(p => p.title.toLowerCase().includes(q));
+      const bodyMatches = sorted.filter(p => !p.title.toLowerCase().includes(q) && stripMd(p.body).toLowerCase().includes(q));
+      return [...titleMatches, ...bodyMatches];
+    }
+
+    function renderList() {
+      const posts = getFilteredPosts();
+      listMeta.textContent = state.query ? `匹配 ${posts.length} 篇内容` : `共 ${posts.length} 篇内容`;
+      postList.innerHTML = posts.map(post => {
+        const count = getPostComments(post.slug).length;
+        return `
+          <button class="post-item ${post.slug === state.activeSlug ? "active" : ""}" data-slug="${escapeHtml(post.slug)}">
+            <span class="post-title" title="${escapeHtml(post.title)}">${highlight(post.title, state.query)}</span>
+            <span class="post-stats">
+              <span>${escapeHtml(post.updatedAt)}</span>
+              <span>${post.views || 0} 访问</span>
+              <span>${count} 评论</span>
+            </span>
+          </button>
+        `;
+      }).join("");
+
+      postList.querySelectorAll(".post-item").forEach(btn => {
+        btn.addEventListener("click", () => openPost(btn.dataset.slug, { push: true, countView: true }));
+      });
+    }
+
+    function openPost(slug, options = {}) {
+      const post = state.posts.find(p => p.slug === slug);
+      if (!post) return;
+
+      state.activeSlug = slug;
+      exitEditMode(false);
+
+      if (options.countView) countViewOnce(post);
+
+      articleTitle.textContent = post.title;
+      articleDate.textContent = "发布时间：" + post.createdAt;
+      articleViews.textContent = `${post.views || 0} 阅读`;
+      articleComments.textContent = `${getPostComments(slug).length} 评论`;
+      topArticleTitle.textContent = post.title;
+      topArticleDate.textContent = "发布时间：" + post.createdAt;
+      topArticleViews.textContent = `${post.views || 0} 阅读`;
+      topArticleComments.textContent = `${getPostComments(slug).length} 评论`;
+      articleBody.innerHTML = renderMarkdown(post.body);
+      enhanceCodeBlocks();
+      renderToc();
+      renderComments();
+      renderList();
+      mainScroll.scrollTop = 0;
+
+      const url = "/p/" + slug;
+      if (options.replace) setRoute(url, true);
+      else if (options.push && currentRoutePath() !== url) setRoute(url, false);
+    }
+
+    function currentRoutePath() {
+      if (location.hash && location.hash.startsWith("#/")) return location.hash.slice(1);
+      return location.pathname;
+    }
+
+    function setRoute(path, replace = false) {
+      const target = location.protocol === "file:" ? "#" + path : path;
+      try {
+        if (replace) history.replaceState(null, "", target);
+        else history.pushState(null, "", target);
+      } catch (error) {
+        location.hash = path;
+      }
+    }
+
+    function countViewOnce(post) {
+      const key = `pcp_view_${post.slug}_${new Date().toISOString().slice(0,10)}`;
+      if (localStorage.getItem(key)) return;
+      post.views = (post.views || 0) + 1;
+      localStorage.setItem(key, "1");
+      savePosts();
+    }
+
+    function renderToc() {
+      const headings = [...articleBody.querySelectorAll("h1,h2,h3,h4")];
+      tocBody.innerHTML = headings.map((h, index) => {
+        const id = h.id || `h-${index}`;
+        h.id = id;
+        return `<a class="toc-link ${h.tagName.toLowerCase()}" href="#${id}">${escapeHtml(h.textContent)}</a>`;
+      }).join("") || `<span class="toc-link">当前文章没有目录</span>`;
+
+      tocBody.querySelectorAll("a").forEach(a => {
+        a.addEventListener("click", e => {
+          e.preventDefault();
+          articleBody.querySelector(a.getAttribute("href"))?.scrollIntoView({ behavior: "auto", block: "start" });
+        });
+      });
+    }
+
+    function renderMarkdown(input) {
+      let text = escapeHtml(input || "");
+
+      text = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (_, lang, code) => {
+        return `<div class="code-block" data-lang="${escapeHtml(lang || "text")}"><div class="code-head"><span>${escapeHtml(lang || "text")}</span><span class="code-actions"><button class="fold-code">折叠</button><button class="copy-code">复制</button></span></div><pre><code>${code}</code></pre></div>`;
+      });
+
+      text = text.replace(/^###### (.*)$/gm, "<h6>$1</h6>")
+        .replace(/^##### (.*)$/gm, "<h5>$1</h5>")
+        .replace(/^#### (.*)$/gm, "<h4>$1</h4>")
+        .replace(/^### (.*)$/gm, "<h3>$1</h3>")
+        .replace(/^## (.*)$/gm, "<h2>$1</h2>")
+        .replace(/^# (.*)$/gm, "<h1>$1</h1>");
+
+      text = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+        .replace(/`([^`]+)`/g, "<code>$1</code>")
+        .replace(/==(.*?)==/g, "<mark>$1</mark>")
+        .replace(/!\[(.*?)\]\((.*?)\)/g, '<img alt="$1" src="$2" />')
+        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+
+      text = text.replace(/^&gt; (.*)$/gm, "<blockquote>$1</blockquote>");
+
+      text = text.split(/\n{2,}/).map(block => {
+        if (/^<h\d|^<div|^<blockquote|^<table|^<ul|^<ol/.test(block.trim())) return block;
+        if (/^- \[ \] /m.test(block) || /^- \[x\] /mi.test(block)) {
+          return "<ul>" + block.split("\n").map(line => line.replace(/^- \[ \] (.*)/, '<li><input type="checkbox" disabled /> $1</li>').replace(/^- \[x\] (.*)/i, '<li><input type="checkbox" checked disabled /> $1</li>')).join("") + "</ul>";
+        }
+        if (/^- /.test(block.trim())) {
+          return "<ul>" + block.split("\n").map(line => line.replace(/^- (.*)/, "<li>$1</li>")).join("") + "</ul>";
+        }
+        if (/^\|.*\|$/m.test(block.trim())) return renderTable(block);
+        return `<p>${block.replace(/\n/g, "<br>")}</p>`;
+      }).join("\n");
+
+      text = text.replace(/<p>\[附件: (.*?)\]\((.*?)\)<\/p>/g, `<div class="attachment-card"><span>📎 $1</span><a href="$2">下载 / 查看</a></div>`);
+      return text;
+    }
+
+    function renderTable(block) {
+      const lines = block.trim().split("\n").filter(line => /^\|.*\|$/.test(line));
+      if (lines.length < 2) return `<p>${block}</p>`;
+      const rows = lines.filter((_, i) => i !== 1).map(line => line.slice(1, -1).split("|").map(c => c.trim()));
+      return `<table>${rows.map((row, i) => `<tr>${row.map(c => i === 0 ? `<th>${c}</th>` : `<td>${c}</td>`).join("")}</tr>`).join("")}</table>`;
+    }
+
+    function enhanceCodeBlocks() {
+      document.querySelectorAll(".code-block").forEach(block => {
+        const code = block.querySelector("code");
+        const lines = code.textContent.replace(/\n$/, "").split("\n");
+        code.innerHTML = lines.map((line, i) => `<span class="code-line"><span class="line-no">${i + 1}</span><span>${escapeHtml(line)}</span></span>`).join("");
+        block.querySelector(".copy-code").addEventListener("click", async () => {
+          await navigator.clipboard.writeText(lines.join("\n")).catch(() => {});
+          showToast("代码已复制");
+        });
+        block.querySelector(".fold-code").addEventListener("click", (e) => {
+          const pre = block.querySelector("pre");
+          pre.classList.toggle("hidden");
+          e.target.textContent = pre.classList.contains("hidden") ? "展开" : "折叠";
+        });
+      });
+    }
+
+    function enterEditMode() {
+      const post = getActivePost();
+      if (!post || !state.isAdmin) return;
+      document.body.classList.add("editing");
+      $("editorTitle").value = post.title;
+      $("editorArea").value = post.body;
+      $("saveBtn").classList.remove("hidden");
+      showToast("已进入编辑模式");
+    }
+
+    function exitEditMode(update = true) {
+      document.body.classList.remove("editing");
+      if (update) updateAdminUI();
+    }
+
+    function saveCurrentPost() {
+      const post = getActivePost();
+      if (!post || !state.isAdmin) return;
+      post.title = $("editorTitle").value.trim() || "未命名文章";
+      post.body = $("editorArea").value;
+      post.updatedAt = new Date().toISOString().slice(0, 10);
+      savePosts();
+      openPost(post.slug, { replace: true, countView: false });
+      enterEditMode();
+      showToast("保存成功，已立即公开");
+    }
+
+    function handleEditorFiles(e) {
+      const files = [...e.target.files];
+      if (!files.length) return;
+      const lines = files.map(file => `[附件: ${file.name}](#local-${encodeURIComponent(file.name)})`).join("\n");
+      insertAtCursor($("editorArea"), "\n" + lines + "\n");
+      showToast("附件已插入。原型中未真实上传。");
+      e.target.value = "";
+    }
+
+    function handleEditorPaste(e) {
+      const items = [...(e.clipboardData?.items || [])];
+      const image = items.find(item => item.type.startsWith("image/"));
+      if (!image) return;
+      e.preventDefault();
+      const file = image.getAsFile();
+      const url = URL.createObjectURL(file);
+      insertAtCursor($("editorArea"), `\n![粘贴图片](${url})\n`);
+      showToast("图片已粘贴并插入。原型使用本地临时地址。");
+    }
+
+    function applyEditorCommand(btn) {
+      const area = $("editorArea");
+      if (btn.dataset.insert) insertAtCursor(area, btn.dataset.insert);
+      if (btn.dataset.wrap) wrapSelection(area, btn.dataset.wrap);
+      if (btn.dataset.block === "blockquote") insertAtCursor(area, "\n> 引用内容\n");
+      if (btn.dataset.block === "code") insertAtCursor(area, "\n```ts\n// code here\n```\n");
+    }
+
+    function insertAtCursor(el, text) {
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      el.value = el.value.slice(0, start) + text + el.value.slice(end);
+      el.focus();
+      el.selectionStart = el.selectionEnd = start + text.length;
+    }
+
+    function wrapSelection(el, mark) {
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      const selected = el.value.slice(start, end) || "文本";
+      const next = mark + selected + mark;
+      el.value = el.value.slice(0, start) + next + el.value.slice(end);
+      el.focus();
+      el.selectionStart = start;
+      el.selectionEnd = start + next.length;
+    }
+
+    function getPostComments(slug) {
+      return state.comments[slug] || [];
+    }
+
+    function submitComment(e) {
+      e.preventDefault();
+      const slug = state.activeSlug;
+      const text = $("commentText").value.trim();
+      const files = [...$("commentFiles").files];
+      if (!text && files.length === 0) {
+        showToast("评论内容或附件至少需要一项");
+        return;
+      }
+      const total = files.reduce((n, f) => n + f.size, 0);
+      if (total > 500 * 1024 * 1024) {
+        showToast("单条评论附件总量不能超过 500MB");
+        return;
+      }
+      if (!checkCommentRate(slug)) return;
+
+      const attachments = files.map(file => ({
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        url: URL.createObjectURL(file)
+      }));
+
+      const comment = {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        parentId: state.replyParentId,
+        username: getRandomUsername(),
+        content: text,
+        attachments,
+        createdAt: new Date().toLocaleString("zh-CN", { hour12: false })
+      };
+
+      state.comments[slug] = state.comments[slug] || [];
+      state.comments[slug].push(comment);
+      saveComments();
+      state.replyParentId = null;
+      $("commentText").value = "";
+      $("commentFiles").value = "";
+      renderComments();
+      renderList();
+      articleComments.textContent = `${getPostComments(slug).length} 评论`;
+      topArticleComments.textContent = `${getPostComments(slug).length} 评论`;
+      showToast("评论已发布");
+    }
+
+    function checkCommentRate(slug) {
+      const now = Date.now();
+      const user = getDeviceId();
+      const dayKey = `pcp_rate_day_${slug}_${user}_${new Date().toISOString().slice(0,10)}`;
+      const minKey = `pcp_rate_5min_${user}`;
+      const dayCount = Number(localStorage.getItem(dayKey) || 0);
+      const recent = JSON.parse(localStorage.getItem(minKey) || "[]").filter(t => now - t < 5 * 60 * 1000);
+      if (dayCount >= 5) {
+        showToast("该文章今日评论次数已达上限");
+        return false;
+      }
+      if (recent.length >= 3) {
+        const ok = confirm("评论频率异常。原型用确认框模拟验证码，是否继续？");
+        if (!ok) return false;
+      }
+      localStorage.setItem(dayKey, String(dayCount + 1));
+      recent.push(now);
+      localStorage.setItem(minKey, JSON.stringify(recent));
+      return true;
+    }
+
+    function renderComments() {
+      const comments = getPostComments(state.activeSlug);
+      const roots = comments.filter(c => !c.parentId).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      $("commentList").innerHTML = roots.map(c => renderComment(c, comments, 0)).join("") || `<div class="comment-note">暂无评论。</div>`;
+      document.querySelectorAll(".reply-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.replyParentId = btn.dataset.id;
+          $("commentText").focus();
+          $("commentText").placeholder = "回复 " + btn.dataset.user;
+        });
+      });
+    }
+
+    function renderComment(comment, all, level) {
+      const replies = all.filter(c => c.parentId === comment.id).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      const files = (comment.attachments || []).map(file => {
+        const isImage = file.type.startsWith("image/") && file.size < 2 * 1024 * 1024;
+        if (isImage) return `<a href="${file.url}" target="_blank"><img src="${file.url}" alt="${escapeHtml(file.name)}" /></a>`;
+        return `<a class="pill" href="${file.url}" download="${escapeHtml(file.name)}">📎 ${escapeHtml(file.name)}</a>`;
+      }).join("");
+      return `
+        <div class="comment ${level ? "reply" : ""}">
+          <div class="comment-head">
+            <span><span class="comment-user">${escapeHtml(comment.username)}</span> · ${escapeHtml(comment.createdAt)}</span>
+            <button class="reply-btn" data-id="${comment.id}" data-user="${escapeHtml(comment.username)}">回复</button>
+          </div>
+          <div class="comment-body">${escapeHtml(comment.content || "")}</div>
+          <div class="comment-attachments">${files}</div>
+          ${replies.map(r => renderComment(r, all, level + 1)).join("")}
+        </div>
+      `;
+    }
+
+    function getRandomUsername() {
+      const saved = localStorage.getItem(STORAGE_KEYS.user);
+      if (saved) return JSON.parse(saved).name;
+      const adjectives = ["安静的", "自由的", "透明的", "迟到的", "蓝色的", "孤独的", "发光的", "清醒的", "倔强的", "温和的"];
+      const nouns = ["鲸鱼", "狐狸", "乌鸦", "猫", "鹿", "海鸥", "松鼠", "石头", "山雀", "河流"];
+      const name = adjectives[Math.floor(Math.random() * adjectives.length)] + nouns[Math.floor(Math.random() * nouns.length)];
+      localStorage.setItem(STORAGE_KEYS.user, JSON.stringify({ id: getDeviceId(), name }));
+      return name;
+    }
+
+    function getDeviceId() {
+      let id = localStorage.getItem("pcp_device_id_v1");
+      if (!id) {
+        id = crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now();
+        localStorage.setItem("pcp_device_id_v1", id);
+      }
+      return id;
+    }
+
+    function initResizer() {
+      const resizer = $("resizer");
+      let dragging = false;
+      resizer.addEventListener("mousedown", () => { dragging = true; document.body.style.userSelect = "none"; });
+      window.addEventListener("mousemove", (e) => {
+        if (!dragging) return;
+        const width = Math.min(560, Math.max(200, e.clientX));
+        document.documentElement.style.setProperty("--list-width", width + "px");
+        localStorage.setItem(STORAGE_KEYS.listWidth, String(width));
+      });
+      window.addEventListener("mouseup", () => { dragging = false; document.body.style.userSelect = ""; });
+    }
+
+    function stripMd(text) {
+      return (text || "").replace(/[#>*_`\[\]()!|=-]/g, " ");
+    }
+
+    function highlight(text, q) {
+      if (!q) return escapeHtml(text);
+      const safe = escapeHtml(text);
+      const idx = safe.toLowerCase().indexOf(q.toLowerCase());
+      if (idx < 0) return safe;
+      return safe.slice(0, idx) + "<mark>" + safe.slice(idx, idx + q.length) + "</mark>" + safe.slice(idx + q.length);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+  </script>
+</body>
+</html>

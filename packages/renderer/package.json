@@ -1,0 +1,31 @@
+{
+  "name": "@freedompost/renderer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@freedompost/security": "0.1.0",
+    "@freedompost/shared": "0.1.0",
+    "markdown-it": "latest",
+    "markdown-it-footnote": "latest",
+    "markdown-it-mark": "latest",
+    "markdown-it-task-lists": "latest"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "latest"
+  }
+}

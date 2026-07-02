@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.astro/
+.vite/
+coverage/
+runtime/
+storage/local/
+.env
+.env.*
+!.env.example
+npm-debug.log*
+*.tsbuildinfo
+certs/
+backups/

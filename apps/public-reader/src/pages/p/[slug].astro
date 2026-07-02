@@ -1,0 +1,18 @@
+---
+import ReaderShell from "../../layouts/ReaderShell.astro";
+import { articles, findArticle } from "../../lib/articles";
+
+export function getStaticPaths() {
+  return articles.map((article) => ({
+    params: { slug: article.slug }
+  }));
+}
+
+const article = findArticle(Astro.params.slug ?? "");
+
+if (!article) {
+  return Astro.redirect("/");
+}
+---
+
+<ReaderShell article={article} />

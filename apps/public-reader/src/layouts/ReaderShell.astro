@@ -1,0 +1,176 @@
+---
+import type { TocItem } from "@freedompost/shared";
+import "../styles/global.css";
+
+interface ArticleViewModel {
+  slug: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  viewCount: number;
+  commentCount: number;
+  excerpt: string;
+  html: string;
+  toc: TocItem[];
+}
+
+interface Props {
+  article: ArticleViewModel;
+}
+
+const { article } = Astro.props;
+const formattedDate = new Intl.DateTimeFormat("zh-CN", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit"
+}).format(new Date(article.createdAt));
+const initialPayload = JSON.stringify({
+  slug: article.slug,
+  meta: {
+    slug: article.slug,
+    title: article.title,
+    createdAt: article.createdAt,
+    updatedAt: article.updatedAt,
+    viewCount: article.viewCount,
+    commentCount: article.commentCount,
+    excerpt: article.excerpt
+  },
+  toc: article.toc
+});
+---
+
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{article.title}</title>
+    <meta name="description" content={article.excerpt} />
+    <link rel="canonical" href={`/p/${article.slug}`} />
+    <meta property="og:title" content={article.title} />
+    <meta property="og:description" content={article.excerpt} />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content={`/p/${article.slug}`} />
+  </head>
+  <body data-active-slug={article.slug}>
+    <div id="app" class="app-shell">
+      <aside class="article-list-panel" aria-label="文章列表">
+        <div class="brand-row">
+          <a class="brand" href="/" aria-label="FreedomPost">
+            <span class="brand-mark">F</span>
+            <span>
+              <strong>FreedomPost</strong>
+              <small>自由发布</small>
+            </span>
+          </a>
+          <button id="themeBtn" class="icon-button" type="button" aria-label="切换主题" title="切换主题">
+            <i data-lucide="moon"></i>
+          </button>
+        </div>
+        <div class="search-row">
+          <i data-lucide="search"></i>
+          <input id="searchInput" type="search" autocomplete="off" placeholder="搜索标题和正文" />
+        </div>
+        <div id="listMeta" class="list-meta">加载中</div>
+        <div id="postList" class="post-list"></div>
+      </aside>
+
+      <div id="listResizer" class="list-resizer" aria-hidden="true"></div>
+
+      <nav id="tocPanel" class="toc-panel" aria-label="文章目录">
+        <div class="toc-head">
+          <span>目录</span>
+          <button id="tocToggle" class="icon-button" type="button" aria-label="折叠目录" title="折叠目录">
+            <i data-lucide="panel-left-close"></i>
+          </button>
+        </div>
+        <div id="tocBody" class="toc-body">
+          {
+            article.toc.length > 0 ? (
+              article.toc.map((item) => (
+                <a class={`toc-link level-${item.level}`} href={`#${item.id}`}>
+                  {item.text}
+                </a>
+              ))
+            ) : (
+              <span class="toc-empty">无目录</span>
+            )
+          }
+        </div>
+      </nav>
+
+      <header class="topbar">
+        <div class="topbar-main">
+          <strong id="topArticleTitle">{article.title}</strong>
+          <span id="topArticleDate">{formattedDate}</span>
+        </div>
+        <div class="topbar-actions">
+          <span id="topArticleViews">{article.viewCount} 阅读</span>
+          <span id="topArticleComments">{article.commentCount} 评论</span>
+          <button id="shareBtn" class="tool-button" type="button">
+            <i data-lucide="share-2"></i>
+            <span>复制链接</span>
+          </button>
+          <a class="tool-button" href="/admin/">
+            <i data-lucide="lock-keyhole"></i>
+            <span>管理</span>
+          </a>
+        </div>
+      </header>
+
+      <main id="readerScroll" class="reader-scroll">
+        <article class="reader">
+          <header class="article-title-block">
+            <h1 id="articleTitle">{article.title}</h1>
+            <div class="article-meta">
+              <span id="articleDate">发布时间：{formattedDate}</span>
+              <span id="articleViews">{article.viewCount} 阅读</span>
+              <span id="articleComments">{article.commentCount} 评论</span>
+            </div>
+          </header>
+          <section id="articleBody" class="article-body" set:html={article.html} />
+
+          <section class="comments" aria-labelledby="commentsTitle">
+            <div class="section-heading">
+              <h2 id="commentsTitle">评论</h2>
+              <span id="commentUser" class="muted"></span>
+            </div>
+            <form id="commentForm" class="comment-form">
+              <textarea id="commentText" maxlength="10000" placeholder="写下评论"></textarea>
+              <div class="comment-tools">
+                <label class="file-button">
+                  <i data-lucide="paperclip"></i>
+                  <span>附件</span>
+                  <input id="commentFiles" type="file" multiple />
+                </label>
+                <button type="submit" class="primary-button">
+                  <i data-lucide="send"></i>
+                  <span>发布</span>
+                </button>
+              </div>
+            </form>
+            <div id="commentList" class="comment-list"></div>
+          </section>
+        </article>
+      </main>
+
+      <footer class="reader-footer">
+        <div class="social-links">
+          <a href="https://twitter.com" rel="noreferrer">X</a>
+          <a href="https://youtube.com" rel="noreferrer">YouTube</a>
+          <a href="https://telegram.org" rel="noreferrer">Telegram</a>
+          <a href="mailto:hello@example.com">Email</a>
+          <span>微信</span>
+          <span>QQ</span>
+          <a href="https://www.bilibili.com" rel="noreferrer">B站</a>
+        </div>
+        <div class="footer-slot"></div>
+      </footer>
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script id="initialPayload" type="application/json" is:inline set:html={initialPayload}></script>
+    <script>
+      import "../scripts/reader.ts";
+    </script>
+  </body>
+</html>

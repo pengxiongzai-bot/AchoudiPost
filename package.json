@@ -1,0 +1,36 @@
+{
+  "name": "freedompost",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@11.7.0",
+  "workspaces": [
+    "packages/shared",
+    "packages/security",
+    "packages/storage",
+    "packages/search",
+    "packages/renderer",
+    "packages/db",
+    "apps/api",
+    "apps/public-reader",
+    "apps/admin"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @freedompost/public-reader",
+    "dev:admin": "npm run dev -w @freedompost/admin",
+    "dev:api": "npm run dev -w @freedompost/api",
+    "build:packages": "npm run build -w @freedompost/shared -w @freedompost/security -w @freedompost/search -w @freedompost/renderer -w @freedompost/storage -w @freedompost/db",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run build:packages && npm run typecheck:workspaces",
+    "typecheck:workspaces": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "check": "npm run typecheck && npm run test && npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "tsx": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  }
+}
