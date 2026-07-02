@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type ClipboardEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Copy,
@@ -29,6 +29,16 @@ type Toast = {
   text: string;
 };
 
+type UploadedFile = {
+  id: string;
+  name: string;
+  mimeType: string;
+  sizeBytes: number;
+  url: string;
+  storageProvider: "local" | "oss";
+  storageKey: string;
+};
+
 function App() {
   const [isAuthed, setAuthed] = useState(false);
   const [username, setUsername] = useState("admin");
@@ -36,11 +46,18 @@ function App() {
   const [posts, setPosts] = useState<AdminPost[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
+  const editorRef = useRef<HTMLDivElement | null>(null);
+  const attachmentInputRef = useRef<HTMLInputElement | null>(null);
   const activePost = useMemo(() => posts.find((post) => post.id === activeId) ?? posts[0], [posts, activeId]);
 
   useEffect(() => {
     void fetchSession();
   }, []);
+
+  useEffect(() => {
+    if (!activePost || !editorRef.current) return;
+    editorRef.current.innerHTML = markdownToEditorHtml(activePost.markdown);
+  }, [activePost?.id]);
 
   async function fetchSession() {
     const response = await fetch("/api/admin/session", { credentials: "include" });
@@ -112,11 +129,12 @@ function App() {
 
   async function savePost() {
     if (!activePost) return;
+    const markdown = editorRef.current ? editorHtmlToMarkdown(editorRef.current) : activePost.markdown;
     const response = await fetch(`/api/admin/posts/${activePost.id}`, {
       method: "PUT",
       headers: { "content-type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ title: activePost.title, markdown: activePost.markdown })
+      body: JSON.stringify({ title: activePost.title, markdown })
     });
 
     if (!response.ok) {
@@ -155,8 +173,71 @@ function App() {
 
   async function copyLink() {
     if (!activePost) return;
-    await navigator.clipboard.writeText(`${location.origin}/p/${activePost.slug}`).catch(() => undefined);
+    await navigator.clipboard.writeText(publicArticleUrl(activePost.slug)).catch(() => undefined);
     showToast("链接已复制");
+  }
+
+  async function handleAttachmentFiles(files: FileList | null) {
+    if (!activePost || !files?.length) return;
+    try {
+      const snippets = await Promise.all([...files].map(fileToEditorHtml));
+      insertHtmlAtCaret(snippets.join(""));
+      showToast(`已上传并插入 ${files.length} 个附件`);
+    } catch {
+      showToast("附件上传失败");
+    }
+  }
+
+  async function handleEditorPaste(event: ClipboardEvent<HTMLDivElement>) {
+    const files = [...event.clipboardData.items]
+      .filter((item) => item.kind === "file" && item.type.startsWith("image/"))
+      .map((item) => item.getAsFile())
+      .filter((file): file is File => Boolean(file));
+
+    if (!files.length) return;
+
+    event.preventDefault();
+    try {
+      const snippets = await Promise.all(files.map(fileToEditorHtml));
+      insertHtmlAtCaret(snippets.join(""));
+      showToast("图片已上传并插入");
+    } catch {
+      showToast("图片上传失败");
+    }
+  }
+
+  function insertHtmlAtCaret(html: string) {
+    if (!activePost) return;
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    editor.focus();
+    const selection = window.getSelection();
+    const template = document.createElement("template");
+    template.innerHTML = html;
+    const fragment = template.content;
+    const lastNode = fragment.lastChild;
+
+    if (selection?.rangeCount && editor.contains(selection.anchorNode)) {
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(fragment);
+      if (lastNode) {
+        range.setStartAfter(lastNode);
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+    } else {
+      editor.append(fragment);
+    }
+
+    syncEditorMarkdown();
+  }
+
+  function syncEditorMarkdown() {
+    if (!activePost || !editorRef.current) return;
+    patchActivePost({ markdown: editorHtmlToMarkdown(editorRef.current) });
   }
 
   function showToast(text: string) {
@@ -246,10 +327,20 @@ function App() {
                   <Copy size={15} />
                   复制
                 </button>
-                <button type="button">
+                <button type="button" onClick={() => attachmentInputRef.current?.click()}>
                   <Upload size={15} />
                   附件
                 </button>
+                <input
+                  ref={attachmentInputRef}
+                  className="hidden-input"
+                  type="file"
+                  multiple
+                  onChange={(event) => {
+                    void handleAttachmentFiles(event.target.files);
+                    event.target.value = "";
+                  }}
+                />
                 <button type="button" onClick={deletePost}>
                   <Trash2 size={15} />
                   删除
@@ -266,27 +357,32 @@ function App() {
                 <input value={activePost.title} onChange={(event) => patchActivePost({ title: event.target.value })} />
               </label>
               <div className="toolbar">
-                <button type="button" onClick={() => patchActivePost({ markdown: `${activePost.markdown}\n\n## 新段落` })}>
+                <button type="button" onClick={() => insertHtmlAtCaret("<h2>新段落</h2><p><br></p>")}>
                   <Pencil size={15} />
                   段落
                 </button>
                 <button
                   type="button"
-                  onClick={() => patchActivePost({ markdown: `${activePost.markdown}\n\n\`\`\`ts\n// code\n\`\`\`` })}
+                  onClick={() => insertHtmlAtCaret('<pre data-lang="ts"><code>// code</code></pre><p><br></p>')}
                 >
                   代码块
                 </button>
                 <button
                   type="button"
-                  onClick={() => patchActivePost({ markdown: `${activePost.markdown}\n\n[附件: 文件名](https://example.com/file.pdf)` })}
+                  onClick={() => attachmentInputRef.current?.click()}
                 >
                   附件卡片
                 </button>
               </div>
-              <textarea
-                className="markdown-editor"
-                value={activePost.markdown}
-                onChange={(event) => patchActivePost({ markdown: event.target.value })}
+              <div
+                ref={editorRef}
+                className="rich-editor"
+                contentEditable
+                suppressContentEditableWarning
+                role="textbox"
+                aria-label="文章正文"
+                onInput={syncEditorMarkdown}
+                onPaste={handleEditorPaste}
               />
             </div>
           </>
@@ -297,6 +393,201 @@ function App() {
       {toast && <div className="toast">{toast.text}</div>}
     </main>
   );
+}
+
+async function fileToEditorHtml(file: File): Promise<string> {
+  const uploaded = await uploadFile(file);
+  if (uploaded.mimeType.startsWith("image/")) {
+    return `<figure class="editor-image" data-fp-type="image"><img src="${escapeAttribute(uploaded.url)}" alt="${escapeAttribute(uploaded.name)}" /><figcaption>${escapeHtml(uploaded.name)}</figcaption></figure><p><br></p>`;
+  }
+
+  return `<div class="editor-attachment" data-fp-type="attachment" data-name="${escapeAttribute(uploaded.name)}" data-href="${escapeAttribute(uploaded.url)}" contenteditable="false"><span>${escapeHtml(uploaded.name)}</span><a href="${escapeAttribute(uploaded.url)}" download="${escapeAttribute(uploaded.name)}">下载 / 查看</a></div><p><br></p>`;
+}
+
+async function uploadFile(file: File): Promise<UploadedFile> {
+  const formData = new FormData();
+  formData.set("file", file);
+
+  const response = await fetch("/api/admin/attachments", {
+    method: "POST",
+    credentials: "include",
+    body: formData
+  });
+
+  if (!response.ok) {
+    throw new Error("Upload failed");
+  }
+
+  const payload = (await response.json()) as { file: UploadedFile };
+  return payload.file;
+}
+
+function publicOrigin(): string {
+  if (location.port === "5173") {
+    return `${location.protocol}//${location.hostname}:4321`;
+  }
+
+  return location.origin;
+}
+
+function markdownToEditorHtml(markdown: string): string {
+  const lines = markdown.split(/\r?\n/);
+  const html: string[] = [];
+  let paragraph: string[] = [];
+  let codeLines: string[] | null = null;
+  let codeLang = "";
+
+  const flushParagraph = () => {
+    if (!paragraph.length) return;
+    html.push(`<p>${formatInlineMarkdown(paragraph.join("<br>"))}</p>`);
+    paragraph = [];
+  };
+
+  for (const line of lines) {
+    const fence = line.match(/^```(\w+)?\s*$/);
+    if (fence) {
+      if (codeLines) {
+        html.push(`<pre data-lang="${escapeAttribute(codeLang)}"><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+        codeLines = null;
+        codeLang = "";
+      } else {
+        flushParagraph();
+        codeLines = [];
+        codeLang = fence[1] ?? "";
+      }
+      continue;
+    }
+
+    if (codeLines) {
+      codeLines.push(line);
+      continue;
+    }
+
+    if (!line.trim()) {
+      flushParagraph();
+      continue;
+    }
+
+    const image = line.match(/^!\[(.*)]\((.*)\)$/);
+    if (image) {
+      flushParagraph();
+      html.push(`<figure class="editor-image" data-fp-type="image"><img src="${escapeAttribute(image[2] ?? "")}" alt="${escapeAttribute(image[1] ?? "")}" /><figcaption>${escapeHtml(image[1] ?? "")}</figcaption></figure>`);
+      continue;
+    }
+
+    const attachment = line.match(/^\[附件[:：]\s*(.+?)]\((.+)\)$/);
+    if (attachment) {
+      flushParagraph();
+      html.push(`<div class="editor-attachment" data-fp-type="attachment" data-name="${escapeAttribute(attachment[1] ?? "")}" data-href="${escapeAttribute(attachment[2] ?? "")}" contenteditable="false"><span>${escapeHtml(attachment[1] ?? "")}</span><a href="${escapeAttribute(attachment[2] ?? "")}" download="${escapeAttribute(attachment[1] ?? "")}">下载 / 查看</a></div>`);
+      continue;
+    }
+
+    const heading = line.match(/^(#{1,6})\s+(.+)$/);
+    if (heading) {
+      flushParagraph();
+      const level = heading[1]?.length ?? 1;
+      html.push(`<h${level}>${formatInlineMarkdown(escapeHtml(heading[2] ?? ""))}</h${level}>`);
+      continue;
+    }
+
+    paragraph.push(escapeHtml(line));
+  }
+
+  if (codeLines) {
+    html.push(`<pre data-lang="${escapeAttribute(codeLang)}"><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+  }
+  flushParagraph();
+
+  return html.join("") || "<p><br></p>";
+}
+
+function editorHtmlToMarkdown(editor: HTMLElement): string {
+  const blocks: string[] = [];
+
+  for (const node of [...editor.childNodes]) {
+    const markdown = nodeToMarkdown(node);
+    if (markdown.trim()) {
+      blocks.push(markdown);
+    }
+  }
+
+  return blocks.join("\n\n");
+}
+
+function nodeToMarkdown(node: Node): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent?.trim() ?? "";
+  }
+
+  if (!(node instanceof HTMLElement)) {
+    return "";
+  }
+
+  if (node.matches("figure.editor-image")) {
+    const img = node.querySelector("img");
+    if (!img) return "";
+    return `![${escapeMarkdown(img.alt || node.querySelector("figcaption")?.textContent?.trim() || "图片")}](${img.src})`;
+  }
+
+  if (node.matches(".editor-attachment")) {
+    const name = node.dataset.name || node.querySelector("span")?.textContent?.trim() || "附件";
+    const href = node.dataset.href || node.querySelector("a")?.getAttribute("href") || "#";
+    return `[附件: ${escapeMarkdown(name)}](${href})`;
+  }
+
+  if (node.tagName === "IMG") {
+    const img = node as HTMLImageElement;
+    return `![${escapeMarkdown(img.alt || "图片")}](${img.src})`;
+  }
+
+  if (/^H[1-6]$/.test(node.tagName)) {
+    const level = Number(node.tagName.slice(1));
+    return `${"#".repeat(level)} ${node.textContent?.trim() ?? ""}`;
+  }
+
+  if (node.tagName === "PRE") {
+    const lang = node.dataset.lang ?? "";
+    return `\`\`\`${lang}\n${node.textContent?.replace(/\n$/, "") ?? ""}\n\`\`\``;
+  }
+
+  if (node.tagName === "UL" || node.tagName === "OL") {
+    return [...node.querySelectorAll(":scope > li")]
+      .map((li, index) => `${node.tagName === "OL" ? `${index + 1}.` : "-"} ${li.textContent?.trim() ?? ""}`)
+      .join("\n");
+  }
+
+  return (node.innerText || node.textContent || "").trim();
+}
+
+function formatInlineMarkdown(value: string): string {
+  return value
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>");
+}
+
+function escapeMarkdown(value: string): string {
+  return value.replaceAll("[", "\\[").replaceAll("]", "\\]").replaceAll("(", "\\(").replaceAll(")", "\\)");
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function escapeAttribute(value: string): string {
+  return escapeHtml(value).replaceAll("\n", "&#10;");
+}
+
+function publicArticleUrl(slug: string): string {
+  if (location.port === "5173") {
+    return `${publicOrigin()}/?post=${encodeURIComponent(slug)}`;
+  }
+
+  return `${publicOrigin()}/p/${slug}`;
 }
 
 function formatDate(value: string): string {

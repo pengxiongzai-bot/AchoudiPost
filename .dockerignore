@@ -1,0 +1,12 @@
+node_modules
+dist
+**/dist
+**/.astro
+**/.vite
+runtime
+storage/local
+coverage
+.git
+.env
+.env.*
+npm-debug.log*

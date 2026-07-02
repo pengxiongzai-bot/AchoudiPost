@@ -1,14 +1,10 @@
 services:
   nginx:
-    image: nginx:stable-alpine
+    build:
+      context: ..
+      dockerfile: deploy/nginx/Dockerfile
     ports:
       - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx:/etc/nginx/conf.d:ro
-      - ../apps/public-reader/dist:/var/www/freedompost/public:ro
-      - ../runtime/local-storage:/var/www/freedompost/uploads:ro
-      - ../certs:/etc/letsencrypt:ro
     depends_on:
       - app
 

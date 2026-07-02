@@ -50,13 +50,43 @@ npm run build
 ## 部署骨架
 
 1. 复制 `.env.example` 为 `.env` 并修改密钥、数据库密码和管理员密码。
-2. 构建前台静态产物：`npm run build -w @freedompost/public-reader`。
-3. 启动服务：`docker compose -f deploy/docker-compose.yml up -d --build`。
-4. 配置真实域名和 Let’s Encrypt 证书路径后启用 `deploy/nginx/freedompost.conf`。
+2. 创建数据库表：`npm run db:migrate -w @freedompost/api`。
+3. 可选写入种子文章：`npm run db:seed -w @freedompost/api`。
+4. 构建前台静态产物：`npm run build -w @freedompost/public-reader`。
+5. 启动服务：`docker compose -f deploy/docker-compose.yml up -d --build`。
+6. 配置真实域名和 Let’s Encrypt 证书路径后启用 `deploy/nginx/freedompost.conf`。
+
+## 数据仓储
+
+API 会在存在 `DATABASE_URL` 且 `FREEDOMPOST_REPOSITORY` 不为 `memory` 时使用 PostgreSQL/Drizzle。未设置 `DATABASE_URL` 时会自动使用内存仓储，便于本地快速预览。
+
+## 文件上传
+
+开发环境默认使用本地磁盘：
+
+```text
+STORAGE_DRIVER=local
+LOCAL_STORAGE_ROOT=runtime/local-storage
+PUBLIC_UPLOAD_BASE_URL=/api/uploads
+```
+
+预发/生产使用阿里云 OSS：
+
+```text
+STORAGE_DRIVER=oss
+ALIYUN_OSS_REGION=oss-cn-hangzhou
+ALIYUN_OSS_BUCKET=your-bucket
+ALIYUN_OSS_ACCESS_KEY_ID=...
+ALIYUN_OSS_ACCESS_KEY_SECRET=...
+ALIYUN_OSS_PUBLIC_BASE_URL=https://static.example.com
+ALIYUN_OSS_PREFIX=freedompost/uploads
+```
+
+后台上传图片或附件后，编辑器会插入真实 URL；图片直接显示，附件显示为下载卡片。
 
 ## 下一步开发顺序
 
-1. 将 API 内存仓储替换为 Drizzle + PostgreSQL。
+1. 将管理员登录会话和评论限流落到 PostgreSQL/Redis。
 2. 接入 Tiptap/ProseMirror 编辑器和图片粘贴上传。
 3. 发布管线写入 `runtime/public` 并原子更新搜索索引。
 4. 接入本地磁盘上传和阿里云 OSS 适配器。

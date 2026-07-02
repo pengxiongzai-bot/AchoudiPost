@@ -1,5 +1,6 @@
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
+import multipart from "@fastify/multipart";
 import bcrypt from "bcryptjs";
 import Fastify, { type FastifyInstance } from "fastify";
 import { buildSearchIndex } from "@freedompost/search";
@@ -11,18 +12,26 @@ import {
   sanitizeCommentText,
   sha256
 } from "@freedompost/security";
+import { UploadRejectedError } from "@freedompost/storage";
 import type { Comment } from "@freedompost/shared";
-import { commentsBySlug, listPosts, posts, rerenderPost, toPostListItem, toSearchDocument } from "./seed.js";
+import { createContentRepository, type ContentRepository } from "./repositories/index.js";
+import { createStorageAdapter, getLocalUploadStream } from "./storage.js";
 
 const sessions = new Map<string, { username: string; createdAt: string }>();
-const viewed = new Set<string>();
 const rateBuckets = new Map<string, number[]>();
 
 const adjectives = ["安静的", "自由的", "清醒的", "温和的", "明亮的", "专注的", "透明的", "从容的"];
 const nouns = ["河流", "山影", "晨光", "星火", "纸页", "远帆", "云层", "石径"];
 
-export function buildApp(): FastifyInstance {
+export interface BuildAppOptions {
+  repository?: ContentRepository;
+}
+
+export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
+  const repository = options.repository ?? createContentRepository();
+  const storage = createStorageAdapter();
   const app = Fastify({
+    bodyLimit: Number(process.env.API_BODY_LIMIT_BYTES ?? 100 * 1024 * 1024),
     logger: {
       level: process.env.LOG_LEVEL ?? "info"
     }
@@ -35,6 +44,12 @@ export function buildApp(): FastifyInstance {
   app.register(cookie, {
     secret: process.env.COOKIE_SECRET ?? "freedompost-dev-cookie-secret"
   });
+  app.register(multipart, {
+    limits: {
+      fileSize: Number(process.env.UPLOAD_MAX_BYTES ?? 500 * 1024 * 1024),
+      files: 10
+    }
+  });
 
   app.get("/health", async () => ({
     ok: true,
@@ -43,18 +58,24 @@ export function buildApp(): FastifyInstance {
   }));
 
   app.get("/api/posts", async () => ({
-    items: listPosts().map(toPostListItem)
+    items: await repository.listPostSummaries()
   }));
 
   app.get<{ Params: { slug: string } }>("/api/posts/:slug", async (request, reply) => {
-    const post = listPosts().find((item) => item.slug === request.params.slug);
+    const post = await repository.getPostBySlug(request.params.slug);
     if (!post) {
       return reply.code(404).send(errorBody("POST_NOT_FOUND", "文章不存在"));
     }
 
     return {
       item: {
-        ...toPostListItem(post),
+        slug: post.slug,
+        title: post.title,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        viewCount: post.viewCount,
+        commentCount: post.commentCount,
+        excerpt: post.excerpt,
         contentHtml: post.html,
         markdown: post.markdown,
         attachmentCount: post.attachmentCount
@@ -62,17 +83,24 @@ export function buildApp(): FastifyInstance {
     };
   });
 
-  app.get("/api/search-index", async () => buildSearchIndex(listPosts().map(toSearchDocument)));
+  app.get("/api/search-index", async () => buildSearchIndex(await repository.getSearchDocuments()));
+
+  app.get<{ Params: { "*": string } }>("/api/uploads/*", async (request, reply) => {
+    const file = await getLocalUploadStream(request.params["*"]);
+    if (!file) {
+      return reply.code(404).send(errorBody("UPLOAD_NOT_FOUND", "文件不存在"));
+    }
+
+    reply.header("Content-Type", file.contentType);
+    reply.header("Content-Length", String(file.size));
+    reply.header("X-Content-Type-Options", "nosniff");
+    return reply.send(file.stream);
+  });
 
   app.post<{
     Params: { slug: string };
     Body: { fingerprint?: string; localId?: string };
   }>("/api/posts/:slug/view", async (request, reply) => {
-    const post = listPosts().find((item) => item.slug === request.params.slug);
-    if (!post) {
-      return reply.code(404).send(errorBody("POST_NOT_FOUND", "文章不存在"));
-    }
-
     const date = new Date().toISOString().slice(0, 10);
     const visitorKey = hashVisitorKey({
       ip: request.ip,
@@ -81,23 +109,24 @@ export function buildApp(): FastifyInstance {
       date,
       salt: process.env.VISITOR_HASH_SALT ?? "freedompost-dev"
     });
-    const key = `${post.id}:${date}:${visitorKey}`;
-    const counted = !viewed.has(key);
+    const result = await repository.recordView({
+      postSlug: request.params.slug,
+      viewDate: date,
+      visitorKey,
+      ipHash: sha256(request.ip),
+      fingerprintHash: request.body?.fingerprint ? sha256(request.body.fingerprint) : null,
+      localIdHash: request.body?.localId ? sha256(request.body.localId) : null
+    });
 
-    if (counted) {
-      viewed.add(key);
-      post.viewCount += 1;
-      posts.set(post.id, post);
+    if (!result) {
+      return reply.code(404).send(errorBody("POST_NOT_FOUND", "文章不存在"));
     }
 
-    return {
-      counted,
-      viewCount: post.viewCount
-    };
+    return result;
   });
 
   app.get<{ Params: { slug: string } }>("/api/posts/:slug/comments", async (request) => ({
-    items: commentsBySlug.get(request.params.slug) ?? [],
+    items: await repository.listComments(request.params.slug),
     nextCursor: null
   }));
 
@@ -107,13 +136,13 @@ export function buildApp(): FastifyInstance {
       parentId?: string | null;
       content?: string;
       attachmentIds?: string[];
-      attachments?: Array<{ id: string; name: string; mimeType: string; sizeBytes: number; url: string }>;
+      attachments?: Comment["attachments"];
       fingerprint?: string;
       localId?: string;
       captchaToken?: string | null;
     };
   }>("/api/posts/:slug/comments", async (request, reply) => {
-    const post = listPosts().find((item) => item.slug === request.params.slug);
+    const post = await repository.getPostBySlug(request.params.slug);
     if (!post) {
       return reply.code(404).send(errorBody("POST_NOT_FOUND", "文章不存在"));
     }
@@ -149,30 +178,20 @@ export function buildApp(): FastifyInstance {
       return reply.code(429).send(errorBody("CAPTCHA_REQUIRED", "评论频率异常，需要验证码"));
     }
 
-    const existing = commentsBySlug.get(post.slug) ?? [];
-    const parent = request.body?.parentId
-      ? existing.find((comment) => comment.id === request.body?.parentId)
-      : undefined;
-    const id = crypto.randomUUID();
-    const rootId = parent?.rootId ?? parent?.id ?? null;
-    const depth = parent ? parent.depth + 1 : 0;
-    const siblingCount = existing.filter((comment) => comment.parentId === (parent?.id ?? null)).length;
-    const path = parent ? `${parent.path}.${padPath(siblingCount + 1)}` : padPath(existing.filter((c) => !c.parentId).length + 1);
-    const comment: Comment = {
-      id,
+    const comment = await repository.createComment({
       postSlug: post.slug,
-      parentId: parent?.id ?? null,
-      rootId,
-      depth,
-      path,
+      parentId: request.body?.parentId ?? null,
       username: randomUsername(request.body?.localId ?? request.ip),
       content: sanitizeCommentText(rawContent),
       attachments,
-      createdAt: new Date().toISOString()
-    };
+      fingerprintHash: request.body?.fingerprint ? sha256(request.body.fingerprint) : null,
+      localIdHash: request.body?.localId ? sha256(request.body.localId) : null,
+      ipHash: sha256(request.ip)
+    });
 
-    commentsBySlug.set(post.slug, [...existing, comment]);
-    post.commentCount = commentsBySlug.get(post.slug)?.length ?? post.commentCount;
+    if (!comment) {
+      return reply.code(404).send(errorBody("POST_NOT_FOUND", "文章不存在"));
+    }
 
     return reply.code(201).send(comment);
   });
@@ -228,8 +247,47 @@ export function buildApp(): FastifyInstance {
       return reply.code(401).send(errorBody("UNAUTHENTICATED", "未登录"));
     }
     return {
-      items: listPosts()
+      items: await repository.listPosts()
     };
+  });
+
+  app.post("/api/admin/attachments", async (request, reply) => {
+    if (!getSession(request.cookies.fp_session)) {
+      return reply.code(401).send(errorBody("UNAUTHENTICATED", "未登录"));
+    }
+
+    const file = await request.file();
+    if (!file) {
+      return reply.code(400).send(errorBody("NO_FILE", "请选择要上传的文件"));
+    }
+
+    try {
+      const buffer = await file.toBuffer();
+      const stored = await storage.putObject({
+        buffer,
+        originalFilename: file.filename,
+        mimeType: file.mimetype,
+        namespace: "admin"
+      });
+
+      return {
+        file: {
+          id: stored.sha256,
+          name: stored.originalFilename,
+          mimeType: stored.mimeType,
+          sizeBytes: stored.sizeBytes,
+          url: stored.publicUrl,
+          storageProvider: stored.storageProvider,
+          storageKey: stored.storageKey
+        }
+      };
+    } catch (error) {
+      if (error instanceof UploadRejectedError) {
+        return reply.code(400).send(errorBody("UNSUPPORTED_UPLOAD", "不支持的文件类型"));
+      }
+      request.log.error(error);
+      return reply.code(500).send(errorBody("UPLOAD_FAILED", "文件上传失败"));
+    }
   });
 
   app.post<{
@@ -239,25 +297,11 @@ export function buildApp(): FastifyInstance {
       return reply.code(401).send(errorBody("UNAUTHENTICATED", "未登录"));
     }
 
-    const createdAt = new Date().toISOString();
-    const id = crypto.randomUUID();
-    const slug = makeSlug(request.body?.title ?? "untitled");
-    const post = rerenderPost({
-      id,
-      slug,
+    const post = await repository.createPost({
       title: request.body?.title?.trim() || "未命名文章",
-      markdown: request.body?.markdown ?? "",
-      html: "",
-      searchText: "",
-      excerpt: "",
-      createdAt,
-      updatedAt: createdAt,
-      viewCount: 0,
-      commentCount: 0,
-      attachmentCount: 0
+      markdown: request.body?.markdown ?? ""
     });
 
-    posts.set(id, post);
     return reply.code(201).send(post);
   });
 
@@ -269,19 +313,21 @@ export function buildApp(): FastifyInstance {
       return reply.code(401).send(errorBody("UNAUTHENTICATED", "未登录"));
     }
 
-    const post = posts.get(request.params.id);
-    if (!post) {
+    const existing = await repository.getPostById(request.params.id);
+    if (!existing) {
       return reply.code(404).send(errorBody("POST_NOT_FOUND", "文章不存在"));
     }
 
-    const updated = rerenderPost({
-      ...post,
-      title: request.body?.title?.trim() || post.title,
-      markdown: request.body?.markdown ?? post.markdown,
-      updatedAt: new Date().toISOString()
+    const updated = await repository.updatePost({
+      id: request.params.id,
+      title: request.body?.title?.trim() || existing.title,
+      markdown: request.body?.markdown ?? existing.markdown
     });
 
-    posts.set(post.id, updated);
+    if (!updated) {
+      return reply.code(404).send(errorBody("POST_NOT_FOUND", "文章不存在"));
+    }
+
     return updated;
   });
 
@@ -290,13 +336,11 @@ export function buildApp(): FastifyInstance {
       return reply.code(401).send(errorBody("UNAUTHENTICATED", "未登录"));
     }
 
-    const post = posts.get(request.params.id);
-    if (!post) {
+    const deleted = await repository.deletePost(request.params.id);
+    if (!deleted) {
       return reply.code(404).send(errorBody("POST_NOT_FOUND", "文章不存在"));
     }
 
-    posts.delete(request.params.id);
-    commentsBySlug.delete(post.slug);
     return { ok: true };
   });
 
@@ -335,23 +379,6 @@ function randomUsername(seed: string): string {
   const left = Number.parseInt(hash.slice(0, 4), 16);
   const right = Number.parseInt(hash.slice(4, 8), 16);
   return `${adjectives[left % adjectives.length]}${nouns[right % nouns.length]}`;
-}
-
-function padPath(value: number): string {
-  return String(value).padStart(6, "0");
-}
-
-function makeSlug(title: string): string {
-  const base =
-    title
-      .trim()
-      .toLowerCase()
-      .replace(/[\s_]+/g, "-")
-      .replace(/[^\p{Letter}\p{Number}-]+/gu, "")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "")
-      .slice(0, 24) || "post";
-  return `${base}-${newToken(4).slice(0, 6)}`;
 }
 
 function errorBody(code: string, message: string) {

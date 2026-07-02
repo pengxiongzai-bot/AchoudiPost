@@ -30,6 +30,12 @@ type ArticleMeta = PostListItem & {
   canonicalPath?: string;
 };
 
+type ApiPostDetail = PostListItem & {
+  contentHtml: string;
+  markdown?: string;
+  attachmentCount: number;
+};
+
 type ArticleCacheItem = {
   slug: string;
   html: string;
@@ -89,7 +95,11 @@ const commentList = mustGet<HTMLElement>("commentList");
 const commentUser = mustGet<HTMLElement>("commentUser");
 
 const initial = readInitialPayload();
-let activeSlug = initial?.slug ?? document.body.dataset.activeSlug ?? "";
+const pathSlug = location.pathname.startsWith("/p/")
+  ? decodeURIComponent(location.pathname.split("/p/")[1]?.split("/")[0] ?? "").trim()
+  : null;
+const requestedSlug = new URLSearchParams(location.search).get("post")?.trim() || pathSlug || null;
+let activeSlug = requestedSlug ?? initial?.slug ?? document.body.dataset.activeSlug ?? "";
 let posts: PostListItem[] = [];
 let searchDocs: SearchDocument[] = [];
 let query = "";
@@ -122,13 +132,21 @@ async function init() {
   bindEvents();
 
   try {
-    const [postItems, searchPayload] = await Promise.all([
-      fetchJson<PostListItem[]>("/search/post-list.json"),
-      fetchJson<{ documents: SearchDocument[] }>("/search/search-index.json")
-    ]);
+    const [postItems, searchPayload] = await Promise.all([fetchPostSummaries(), fetchSearchPayload()]);
     posts = postItems;
     searchDocs = searchPayload.documents;
     renderList();
+    if (posts.length > 0) {
+      const nextSlug = posts.some((post) => post.slug === activeSlug)
+        ? activeSlug
+        : requestedSlug && posts.some((post) => post.slug === requestedSlug)
+          ? requestedSlug
+          : posts[0]?.slug;
+      if (nextSlug) {
+        articleCache.delete(nextSlug);
+        await openArticle(nextSlug, { push: location.pathname.startsWith("/p/") && nextSlug !== activeSlug });
+      }
+    }
     prefetchIdleArticles();
   } catch {
     listMeta.textContent = "文章列表暂不可用";
@@ -182,6 +200,10 @@ function bindEvents() {
     if (slug) {
       void openArticle(slug, { push: false, countView: false });
     }
+  });
+
+  window.addEventListener("focus", () => {
+    void refreshPostsFromApi();
   });
 }
 
@@ -281,6 +303,12 @@ async function prefetchArticle(slug: string) {
   const cached = articleCache.get(slug);
   if (cached) return cached;
 
+  const apiItem = await fetchArticleFromApi(slug);
+  if (apiItem) {
+    articleCache.set(slug, apiItem);
+    return apiItem;
+  }
+
   try {
     const [html, meta, toc] = await Promise.all([
       fetchText(`/p/${encodeURIComponent(slug)}/article.fragment.html`),
@@ -299,6 +327,63 @@ async function prefetchArticle(slug: string) {
   } catch {
     showToast("文章暂时无法打开");
     return null;
+  }
+}
+
+async function fetchArticleFromApi(slug: string): Promise<ArticleCacheItem | null> {
+  try {
+    const payload = await fetchJson<{ item: ApiPostDetail }>(`/api/posts/${encodeURIComponent(slug)}`);
+    const item = payload.item;
+    return {
+      slug: item.slug,
+      html: item.contentHtml,
+      toc: extractTocFromHtml(item.contentHtml),
+      meta: {
+        slug: item.slug,
+        title: item.title,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        viewCount: item.viewCount,
+        commentCount: item.commentCount,
+        excerpt: item.excerpt,
+        attachmentCount: item.attachmentCount,
+        canonicalPath: `/p/${item.slug}`
+      },
+      cachedAt: Date.now()
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function fetchPostSummaries(): Promise<PostListItem[]> {
+  try {
+    const payload = await fetchJson<{ items: PostListItem[] }>("/api/posts");
+    return payload.items;
+  } catch {
+    return fetchJson<PostListItem[]>("/search/post-list.json");
+  }
+}
+
+async function fetchSearchPayload(): Promise<{ documents: SearchDocument[] }> {
+  try {
+    return await fetchJson<{ documents: SearchDocument[] }>("/api/search-index");
+  } catch {
+    return fetchJson<{ documents: SearchDocument[] }>("/search/search-index.json");
+  }
+}
+
+async function refreshPostsFromApi() {
+  try {
+    const [postItems, searchPayload] = await Promise.all([
+      fetchJson<{ items: PostListItem[] }>("/api/posts"),
+      fetchJson<{ documents: SearchDocument[] }>("/api/search-index")
+    ]);
+    posts = postItems.items;
+    searchDocs = searchPayload.documents;
+    renderList();
+  } catch {
+    // Static fallback already covers offline API; focus refresh can fail quietly.
   }
 }
 
@@ -365,6 +450,18 @@ function renderToc(toc: TocItem[]) {
   );
 
   headings.forEach((heading) => headingObserver?.observe(heading));
+}
+
+function extractTocFromHtml(html: string): TocItem[] {
+  const template = document.createElement("template");
+  template.innerHTML = html;
+  return [...template.content.querySelectorAll<HTMLHeadingElement>("h1,h2,h3,h4,h5,h6")]
+    .filter((heading) => heading.id && heading.textContent?.trim())
+    .map((heading) => ({
+      id: heading.id,
+      text: heading.textContent?.trim() ?? "",
+      level: Number(heading.tagName.slice(1)) as TocItem["level"]
+    }));
 }
 
 function enhanceCodeBlocks() {

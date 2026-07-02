@@ -1,8 +1,7 @@
-FROM node:24-alpine AS base
+FROM node:24-alpine AS build
 WORKDIR /app
 
-FROM base AS deps
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/package.json
 COPY apps/admin/package.json apps/admin/package.json
 COPY apps/public-reader/package.json apps/public-reader/package.json
@@ -14,17 +13,12 @@ COPY packages/shared/package.json packages/shared/package.json
 COPY packages/storage/package.json packages/storage/package.json
 RUN npm ci
 
-FROM deps AS build
 COPY . .
 RUN npm run build
+RUN mkdir -p /out/admin \
+  && cp -r apps/public-reader/dist/. /out/ \
+  && cp -r apps/admin/dist/. /out/admin/
 
-FROM base AS runtime
-ENV NODE_ENV=production
-COPY --from=build /app/package.json /app/package.json
-COPY --from=build /app/node_modules /app/node_modules
-COPY --from=build /app/apps/api/dist /app/apps/api/dist
-COPY --from=build /app/apps/api/package.json /app/apps/api/package.json
-COPY --from=build /app/packages /app/packages
-COPY --from=build /app/deploy/migrations /app/deploy/migrations
-EXPOSE 3000
-CMD ["npm", "run", "start", "-w", "@freedompost/api"]
+FROM nginx:stable-alpine
+COPY deploy/nginx/freedompost.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /out /var/www/freedompost/public

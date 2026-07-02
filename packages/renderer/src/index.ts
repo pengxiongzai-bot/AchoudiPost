@@ -29,7 +29,7 @@ export function renderMarkdownArticle(input: RenderArticleInput): RenderedArticl
   const toc: TocItem[] = [];
   const usedIds = new Map<string, number>();
   const md = createMarkdownRenderer(toc, usedIds);
-  const html = sanitizeArticleHtml(md.render(input.markdown));
+  const html = renderAttachmentCards(sanitizeArticleHtml(md.render(input.markdown)));
   const searchText = extractSearchText(html);
   const excerpt = makeExcerpt(searchText);
   const meta: ArticleMeta = {
@@ -120,6 +120,14 @@ export function extractSearchText(html: string): string {
 export function makeExcerpt(text: string, maxLength = 160): string {
   if (text.length <= maxLength) return text;
   return `${text.slice(0, maxLength).trim()}...`;
+}
+
+export function renderAttachmentCards(html: string): string {
+  return html.replace(
+    /<p><a href="([^"]+)"(?:\s+target="[^"]*")?(?:\s+rel="[^"]*")?>(?:附件:|附件：)\s*([^<]+)<\/a><\/p>/g,
+    (_match, href: string, filename: string) =>
+      `<div class="attachment-card"><span>${escapeHtml(filename)}</span><a href="${href}" download>下载 / 查看</a></div>`
+  );
 }
 
 export function slugify(value: string): string {

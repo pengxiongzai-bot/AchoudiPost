@@ -481,6 +481,23 @@ mark {
   border-radius: 8px;
 }
 
+.attachment-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 1em 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-soft);
+  font-size: 14px;
+}
+
+.attachment-card a {
+  flex: 0 0 auto;
+}
+
 .article-body code:not(.code-block code) {
   padding: 2px 5px;
   border-radius: 5px;

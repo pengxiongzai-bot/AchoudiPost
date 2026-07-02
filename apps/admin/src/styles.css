@@ -22,7 +22,8 @@ body {
 
 button,
 input,
-textarea {
+textarea,
+[contenteditable] {
   font: inherit;
 }
 
@@ -240,11 +241,102 @@ button:hover {
   background: #196449;
 }
 
-.markdown-editor {
+.rich-editor {
   min-height: calc(100vh - 190px);
   padding: 14px;
-  resize: vertical;
+  overflow: auto;
+  border: 1px solid #cbd5c8;
+  border-radius: 8px;
+  background: #fff;
   line-height: 1.7;
+  outline: none;
+}
+
+.rich-editor:focus {
+  border-color: #1f7a5b;
+  box-shadow: 0 0 0 3px rgba(31, 122, 91, 0.12);
+}
+
+.rich-editor p {
+  margin: 0 0 14px;
+}
+
+.rich-editor h1,
+.rich-editor h2,
+.rich-editor h3,
+.rich-editor h4,
+.rich-editor h5,
+.rich-editor h6 {
+  margin: 22px 0 10px;
+  line-height: 1.35;
+}
+
+.rich-editor h1 {
+  font-size: 30px;
+}
+
+.rich-editor h2 {
+  font-size: 24px;
+}
+
+.rich-editor h3 {
+  font-size: 20px;
+}
+
+.rich-editor pre {
+  margin: 14px 0;
+  padding: 12px 14px;
+  overflow: auto;
+  border-radius: 8px;
+  background: #171b22;
+  color: #e7edf3;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.editor-image {
+  margin: 16px 0;
+}
+
+.editor-image img {
+  display: block;
+  max-width: 100%;
+  max-height: 520px;
+  border: 1px solid #dde4dc;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.editor-image figcaption {
+  margin-top: 6px;
+  color: #667085;
+  font-size: 12px;
+}
+
+.editor-attachment {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 14px 0;
+  padding: 12px 14px;
+  border: 1px solid #cbd5c8;
+  border-radius: 8px;
+  background: #f6f7f4;
+}
+
+.editor-attachment span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.editor-attachment a {
+  flex: 0 0 auto;
+  color: #1f7a5b;
+  text-decoration: none;
 }
 
 .empty-state {
@@ -263,4 +355,8 @@ button:hover {
   background: #20242a;
   color: #fff;
   font-size: 14px;
+}
+
+.hidden-input {
+  display: none;
 }

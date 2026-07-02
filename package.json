@@ -28,6 +28,7 @@
     "check": "npm run typecheck && npm run test && npm run build"
   },
   "devDependencies": {
+    "@types/ali-oss": "^6.23.3",
     "@types/node": "latest",
     "tsx": "latest",
     "typescript": "latest",
