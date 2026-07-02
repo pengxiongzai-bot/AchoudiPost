@@ -144,23 +144,9 @@ jobs:
             fi
             if ! command -v docker >/dev/null 2>&1; then
               if command -v apt-get >/dev/null 2>&1; then
-                . /etc/os-release
-                codename="${VERSION_CODENAME:-}"
-                if [ -z "$codename" ] && command -v lsb_release >/dev/null 2>&1; then
-                  codename="$(lsb_release -cs)"
-                fi
-                if [ -z "$codename" ]; then
-                  echo "VERSION_CODENAME is required to configure Docker apt repository"
-                  exit 1
-                fi
                 apt-get update
-                apt-get install -y ca-certificates curl gnupg
-                install -m 0755 -d /etc/apt/keyrings
-                curl --retry 5 --retry-delay 5 -fsSL "https://mirrors.aliyun.com/docker-ce/linux/${ID}/gpg" -o /etc/apt/keyrings/docker.asc
-                chmod a+r /etc/apt/keyrings/docker.asc
-                echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://mirrors.aliyun.com/docker-ce/linux/${ID} ${codename} stable" > /etc/apt/sources.list.d/docker.list
-                apt-get update
-                apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+                DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates curl docker.io
+                DEBIAN_FRONTEND=noninteractive apt-get install -y docker-compose-v2 || DEBIAN_FRONTEND=noninteractive apt-get install -y docker-compose
               elif command -v dnf >/dev/null 2>&1; then
                 dnf install -y dnf-plugins-core || dnf install -y yum-utils
                 dnf config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
@@ -179,11 +165,21 @@ jobs:
             elif command -v service >/dev/null 2>&1; then
               service docker start
             fi
+            compose() {
+              if docker compose version >/dev/null 2>&1; then
+                docker compose "$@"
+              elif command -v docker-compose >/dev/null 2>&1; then
+                docker-compose "$@"
+              else
+                echo "Docker Compose is required"
+                exit 1
+              fi
+            }
             docker version
-            docker compose version
-            docker compose -f deploy/docker-compose.yml up -d postgres redis
-            docker compose -f deploy/docker-compose.yml build app nginx
-            docker compose -f deploy/docker-compose.yml run --rm app npm run db:migrate:prod
-            docker compose -f deploy/docker-compose.yml up -d --build
+            compose version
+            compose -f deploy/docker-compose.yml up -d postgres redis
+            compose -f deploy/docker-compose.yml build app nginx
+            compose -f deploy/docker-compose.yml run --rm app npm run db:migrate:prod
+            compose -f deploy/docker-compose.yml up -d --build
             curl -fsS http://127.0.0.1:3000/health
             curl -fsS http://127.0.0.1/ >/dev/null
