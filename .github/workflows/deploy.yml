@@ -8,8 +8,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      HAS_DEPLOY_TARGET: ${{ secrets.DEPLOY_HOST != '' && secrets.DEPLOY_USER != '' && secrets.DEPLOY_PASSWORD != '' && secrets.DEPLOY_PATH != '' }}
 
     steps:
       - name: Checkout
@@ -46,22 +44,19 @@ jobs:
             ./ /tmp/freedompost-deploy/
           tar -czf freedompost-deploy.tar.gz -C /tmp/freedompost-deploy .
 
-      - name: Stop when deploy target is not configured
-        if: env.HAS_DEPLOY_TARGET != 'true'
-        run: |
-          echo "::error::Set DEPLOY_HOST, DEPLOY_USER, DEPLOY_PASSWORD, and DEPLOY_PATH in GitHub repository secrets."
-          exit 1
-
       - name: Verify deploy secrets
-        if: env.HAS_DEPLOY_TARGET == 'true'
         env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PASSWORD: ${{ secrets.DEPLOY_PASSWORD }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
           COOKIE_SECRET: ${{ secrets.COOKIE_SECRET }}
           VISITOR_HASH_SALT: ${{ secrets.VISITOR_HASH_SALT }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
           missing=0
-          for name in COOKIE_SECRET VISITOR_HASH_SALT ADMIN_PASSWORD POSTGRES_PASSWORD; do
+          for name in DEPLOY_HOST DEPLOY_USER DEPLOY_PASSWORD DEPLOY_PATH COOKIE_SECRET VISITOR_HASH_SALT ADMIN_PASSWORD POSTGRES_PASSWORD; do
             if [ -z "${!name}" ]; then
               echo "::error::Missing GitHub secret: $name"
               missing=1
@@ -70,7 +65,6 @@ jobs:
           exit "$missing"
 
       - name: Copy bundle to server
-        if: env.HAS_DEPLOY_TARGET == 'true'
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -81,7 +75,6 @@ jobs:
           overwrite: true
 
       - name: Deploy over SSH
-        if: env.HAS_DEPLOY_TARGET == 'true'
         uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.DEPLOY_HOST }}
