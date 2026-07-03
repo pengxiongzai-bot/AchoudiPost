@@ -2,11 +2,17 @@ services:
   nginx:
     build:
       context: ..
-      dockerfile: deploy/nginx/Dockerfile
+      dockerfile: deploy/caddy/Dockerfile
+    env_file:
+      - ../.env
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
       - app
+    volumes:
+      - caddydata:/data
+      - caddyconfig:/config
 
   app:
     build:
@@ -38,5 +44,7 @@ services:
       - redisdata:/data
 
 volumes:
+  caddydata:
+  caddyconfig:
   pgdata:
   redisdata:

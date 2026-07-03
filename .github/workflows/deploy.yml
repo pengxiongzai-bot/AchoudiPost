@@ -66,9 +66,10 @@ jobs:
           VISITOR_HASH_SALT: ${{ secrets.VISITOR_HASH_SALT }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          PREVIEW_DOMAIN: ${{ secrets.PREVIEW_DOMAIN }}
         run: |
           missing=0
-          for name in DEPLOY_HOST DEPLOY_USER DEPLOY_PASSWORD DEPLOY_PATH COOKIE_SECRET VISITOR_HASH_SALT ADMIN_PASSWORD POSTGRES_PASSWORD; do
+          for name in DEPLOY_HOST DEPLOY_USER DEPLOY_PASSWORD DEPLOY_PATH COOKIE_SECRET VISITOR_HASH_SALT ADMIN_PASSWORD POSTGRES_PASSWORD PREVIEW_DOMAIN; do
             if [ -z "${!name}" ]; then
               echo "::error::Missing GitHub secret: $name"
               missing=1
@@ -94,11 +95,12 @@ jobs:
           VISITOR_HASH_SALT: ${{ secrets.VISITOR_HASH_SALT }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          PREVIEW_DOMAIN: ${{ secrets.PREVIEW_DOMAIN }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           password: ${{ secrets.DEPLOY_PASSWORD }}
-          envs: DEPLOY_PATH,COOKIE_SECRET,VISITOR_HASH_SALT,ADMIN_PASSWORD,POSTGRES_PASSWORD
+          envs: DEPLOY_PATH,COOKIE_SECRET,VISITOR_HASH_SALT,ADMIN_PASSWORD,POSTGRES_PASSWORD,PREVIEW_DOMAIN
           command_timeout: 30m
           script: |
             set -eu
@@ -112,6 +114,7 @@ jobs:
                 printf '%s\n' "PORT=3000"
                 printf '%s\n' "HOST=0.0.0.0"
                 printf '%s\n' "LOG_LEVEL=info"
+                printf 'PREVIEW_DOMAIN=%s\n' "$PREVIEW_DOMAIN"
                 printf '%s\n' "API_BODY_LIMIT_BYTES=104857600"
                 printf '%s\n' "UPLOAD_MAX_BYTES=524288000"
                 printf 'COOKIE_SECRET=%s\n' "$COOKIE_SECRET"
@@ -129,6 +132,24 @@ jobs:
               } > .env
               chmod 600 .env
             fi
+            env_tmp="$(mktemp)"
+            awk -v key="PREVIEW_DOMAIN" -v value="$PREVIEW_DOMAIN" '
+              BEGIN { found = 0 }
+              $0 ~ "^" key "=" {
+                print key "=" value
+                found = 1
+                next
+              }
+              { print }
+              END {
+                if (!found) {
+                  print key "=" value
+                }
+              }
+            ' .env > "$env_tmp"
+            cat "$env_tmp" > .env
+            rm -f "$env_tmp"
+            chmod 600 .env
             if ! command -v curl >/dev/null 2>&1; then
               if command -v apt-get >/dev/null 2>&1; then
                 apt-get update
@@ -218,8 +239,12 @@ jobs:
             compose -f deploy/docker-compose.yml build app nginx
             compose -f deploy/docker-compose.yml run --rm app npm run db:migrate:prod -w @freedompost/api
             compose -f deploy/docker-compose.yml up -d --build
-            for attempt in $(seq 1 30); do
-              if curl -fsS http://127.0.0.1:3000/health && curl -fsS http://127.0.0.1/ >/dev/null; then
+            for attempt in $(seq 1 60); do
+              if curl -fsS http://127.0.0.1:3000/health \
+                && curl -kfsSL \
+                  --resolve "$PREVIEW_DOMAIN:80:127.0.0.1" \
+                  --resolve "$PREVIEW_DOMAIN:443:127.0.0.1" \
+                  "https://$PREVIEW_DOMAIN/" >/dev/null; then
                 exit 0
               fi
               sleep 2
