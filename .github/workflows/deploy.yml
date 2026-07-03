@@ -203,7 +203,7 @@ jobs:
             done
             compose -f deploy/docker-compose.yml up -d postgres redis
             compose -f deploy/docker-compose.yml build app nginx
-            compose -f deploy/docker-compose.yml run --rm app npm run db:migrate:prod
+            compose -f deploy/docker-compose.yml run --rm app npm run db:migrate:prod -w @freedompost/api
             compose -f deploy/docker-compose.yml up -d --build
             curl -fsS http://127.0.0.1:3000/health
             curl -fsS http://127.0.0.1/ >/dev/null
