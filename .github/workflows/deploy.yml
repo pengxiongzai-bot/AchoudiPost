@@ -205,5 +205,12 @@ jobs:
             compose -f deploy/docker-compose.yml build app nginx
             compose -f deploy/docker-compose.yml run --rm app npm run db:migrate:prod -w @freedompost/api
             compose -f deploy/docker-compose.yml up -d --build
-            curl -fsS http://127.0.0.1:3000/health
-            curl -fsS http://127.0.0.1/ >/dev/null
+            for attempt in $(seq 1 30); do
+              if curl -fsS http://127.0.0.1:3000/health && curl -fsS http://127.0.0.1/ >/dev/null; then
+                exit 0
+              fi
+              sleep 2
+            done
+            compose -f deploy/docker-compose.yml ps
+            compose -f deploy/docker-compose.yml logs --tail=120 app nginx
+            exit 1
