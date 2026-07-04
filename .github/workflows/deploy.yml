@@ -212,8 +212,10 @@ jobs:
               set_env_if_present "ALIYUN_OSS_PREFIX" "${ALIYUN_OSS_PREFIX:-}"
             fi
             chmod 600 .env
-            if [ "$(awk '/MemTotal/ { print $2 }' /proc/meminfo)" -lt 1800000 ] && ! swapon --show=NAME --noheadings | grep -q '^/swapfile$'; then
-              $SUDO fallocate -l 2G /swapfile || $SUDO dd if=/dev/zero of=/swapfile bs=1M count=2048
+            if [ "$(awk '/MemTotal/ { print $2 }' /proc/meminfo)" -lt 1800000 ] && ! grep -q '^/swapfile ' /proc/swaps; then
+              if [ ! -f /swapfile ]; then
+                $SUDO fallocate -l 2G /swapfile || $SUDO dd if=/dev/zero of=/swapfile bs=1M count=2048
+              fi
               $SUDO chmod 600 /swapfile
               $SUDO mkswap /swapfile
               $SUDO swapon /swapfile
