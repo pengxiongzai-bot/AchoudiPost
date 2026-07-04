@@ -37,6 +37,7 @@ const initialPayload = JSON.stringify({
   },
   toc: article.toc
 });
+const canonicalUrl = new URL(`/p/${encodeURIComponent(article.slug)}`, Astro.site ?? "https://example.com").toString();
 ---
 
 <!doctype html>
@@ -46,11 +47,11 @@ const initialPayload = JSON.stringify({
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{article.title}</title>
     <meta name="description" content={article.excerpt} />
-    <link rel="canonical" href={`/p/${article.slug}`} />
+    <link rel="canonical" href={canonicalUrl} />
     <meta property="og:title" content={article.title} />
     <meta property="og:description" content={article.excerpt} />
     <meta property="og:type" content="article" />
-    <meta property="og:url" content={`/p/${article.slug}`} />
+    <meta property="og:url" content={canonicalUrl} />
   </head>
   <body data-active-slug={article.slug}>
     <div id="app" class="app-shell">

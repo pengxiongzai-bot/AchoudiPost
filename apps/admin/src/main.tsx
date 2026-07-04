@@ -423,11 +423,26 @@ async function uploadFile(file: File): Promise<UploadedFile> {
 }
 
 function publicOrigin(): string {
+  const configuredOrigin = normalizeOrigin(import.meta.env.VITE_PUBLIC_SITE_URL);
+  if (configuredOrigin) {
+    return configuredOrigin;
+  }
+
   if (location.port === "5173") {
     return `${location.protocol}//${location.hostname}:4321`;
   }
 
   return location.origin;
+}
+
+function normalizeOrigin(value: string | undefined): string | null {
+  if (!value) return null;
+
+  try {
+    return new URL(value).origin;
+  } catch {
+    return null;
+  }
 }
 
 function markdownToEditorHtml(markdown: string): string {

@@ -1,8 +1,10 @@
 import { defineConfig } from "astro/config";
 
+const site = (process.env.PUBLIC_SITE_URL ?? process.env.SITE_URL ?? "https://example.com").replace(/\/$/, "");
+
 export default defineConfig({
   output: "static",
-  site: "https://example.com",
+  site,
   vite: {
     server: {
       proxy: {

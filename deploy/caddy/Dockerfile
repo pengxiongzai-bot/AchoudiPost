@@ -20,6 +20,10 @@ RUN npm config set registry "$NPM_REGISTRY" \
   && npm ci --no-audit --no-fund
 
 COPY . .
+ARG PUBLIC_SITE_URL=https://example.com
+ARG VITE_PUBLIC_SITE_URL=https://example.com
+ENV PUBLIC_SITE_URL=$PUBLIC_SITE_URL
+ENV VITE_PUBLIC_SITE_URL=$VITE_PUBLIC_SITE_URL
 RUN npm run build
 RUN mkdir -p /out/admin \
   && cp -r apps/public-reader/dist/. /out/ \

@@ -21,6 +21,10 @@ RUN npm config set registry "$NPM_REGISTRY" \
   && npm ci --no-audit --no-fund
 
 FROM deps AS build
+ARG PUBLIC_SITE_URL=https://example.com
+ARG VITE_PUBLIC_SITE_URL=https://example.com
+ENV PUBLIC_SITE_URL=$PUBLIC_SITE_URL
+ENV VITE_PUBLIC_SITE_URL=$VITE_PUBLIC_SITE_URL
 COPY . .
 RUN npm run build
 

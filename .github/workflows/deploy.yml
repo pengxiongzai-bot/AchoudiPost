@@ -152,7 +152,9 @@ jobs:
                 printf '%s\n' "LOG_LEVEL=info"
                 printf 'PREVIEW_DOMAIN=%s\n' "$PREVIEW_DOMAIN"
                 printf 'ORIGIN_TEST_HOST=%s\n' "$DEPLOY_HOST"
-                printf '%s\n' "COOKIE_SECURE=false"
+                printf 'PUBLIC_SITE_URL=https://%s\n' "$PREVIEW_DOMAIN"
+                printf 'VITE_PUBLIC_SITE_URL=https://%s\n' "$PREVIEW_DOMAIN"
+                printf '%s\n' "COOKIE_SECURE=true"
                 printf '%s\n' "API_BODY_LIMIT_BYTES=104857600"
                 printf '%s\n' "UPLOAD_MAX_BYTES=524288000"
                 printf 'COOKIE_SECRET=%s\n' "$COOKIE_SECRET"
@@ -200,7 +202,9 @@ jobs:
             }
             set_env "PREVIEW_DOMAIN" "$PREVIEW_DOMAIN"
             set_env "ORIGIN_TEST_HOST" "$DEPLOY_HOST"
-            set_env "COOKIE_SECURE" "false"
+            set_env "PUBLIC_SITE_URL" "https://$PREVIEW_DOMAIN"
+            set_env "VITE_PUBLIC_SITE_URL" "https://$PREVIEW_DOMAIN"
+            set_env "COOKIE_SECURE" "true"
             set_env "STORAGE_DRIVER" "$STORAGE_DRIVER"
             if [ "$STORAGE_DRIVER" = "oss" ]; then
               set_env "ALIYUN_OSS_REGION" "$ALIYUN_OSS_REGION"

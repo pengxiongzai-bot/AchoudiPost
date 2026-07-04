@@ -68,6 +68,7 @@ const storageKeys = {
   comments: "fp_comments_v1",
   rate: "fp_comment_rate_v1"
 };
+const configuredPublicOrigin = normalizeOrigin(import.meta.env.PUBLIC_SITE_URL);
 
 const app = mustGet<HTMLElement>("app");
 const postList = mustGet<HTMLElement>("postList");
@@ -176,7 +177,7 @@ function bindEvents() {
   });
 
   shareBtn.addEventListener("click", async () => {
-    const url = `${location.origin}/p/${activeSlug}`;
+    const url = publicArticleUrl(activeSlug);
     await navigator.clipboard.writeText(url).catch(() => undefined);
     showToast("文章链接已复制");
   });
@@ -755,6 +756,20 @@ function highlight(value: string, term: string): string {
 
 function normalize(value: string): string {
   return value.trim().toLowerCase();
+}
+
+function publicArticleUrl(slug: string): string {
+  return `${configuredPublicOrigin ?? location.origin}/p/${encodeURIComponent(slug)}`;
+}
+
+function normalizeOrigin(value: string | undefined): string | null {
+  if (!value) return null;
+
+  try {
+    return new URL(value).origin;
+  } catch {
+    return null;
+  }
 }
 
 function escapeHtml(value: string): string {

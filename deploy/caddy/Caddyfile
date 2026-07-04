@@ -57,9 +57,9 @@
 
 https://{$ORIGIN_TEST_HOST} {
 	tls internal
-	import freedompost_site
+	redir https://{$PREVIEW_DOMAIN}{uri} permanent
 }
 
 http://{$ORIGIN_TEST_HOST} {
-	import freedompost_site
+	redir https://{$PREVIEW_DOMAIN}{uri} permanent
 }
