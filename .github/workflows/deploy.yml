@@ -1,6 +1,7 @@
 name: Deploy
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -109,6 +110,7 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           PREVIEW_DOMAIN: ${{ secrets.PREVIEW_DOMAIN }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           STORAGE_DRIVER: ${{ secrets.STORAGE_DRIVER }}
           ALIYUN_OSS_REGION: ${{ secrets.ALIYUN_OSS_REGION }}
           ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
@@ -121,7 +123,7 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           password: ${{ secrets.DEPLOY_PASSWORD }}
-          envs: DEPLOY_PATH,COOKIE_SECRET,VISITOR_HASH_SALT,ADMIN_PASSWORD,POSTGRES_PASSWORD,PREVIEW_DOMAIN,STORAGE_DRIVER,ALIYUN_OSS_REGION,ALIYUN_OSS_BUCKET,ALIYUN_OSS_ENDPOINT,ALIYUN_OSS_PUBLIC_BASE_URL,ALIYUN_OSS_PREFIX,ALIYUN_OSS_ACCESS_KEY_ID,ALIYUN_OSS_ACCESS_KEY_SECRET
+          envs: DEPLOY_PATH,COOKIE_SECRET,VISITOR_HASH_SALT,ADMIN_PASSWORD,POSTGRES_PASSWORD,PREVIEW_DOMAIN,DEPLOY_HOST,STORAGE_DRIVER,ALIYUN_OSS_REGION,ALIYUN_OSS_BUCKET,ALIYUN_OSS_ENDPOINT,ALIYUN_OSS_PUBLIC_BASE_URL,ALIYUN_OSS_PREFIX,ALIYUN_OSS_ACCESS_KEY_ID,ALIYUN_OSS_ACCESS_KEY_SECRET
           command_timeout: 30m
           script: |
             set -eu
@@ -136,6 +138,7 @@ jobs:
                 printf '%s\n' "HOST=0.0.0.0"
                 printf '%s\n' "LOG_LEVEL=info"
                 printf 'PREVIEW_DOMAIN=%s\n' "$PREVIEW_DOMAIN"
+                printf 'ORIGIN_TEST_HOST=%s\n' "$DEPLOY_HOST"
                 printf '%s\n' "API_BODY_LIMIT_BYTES=104857600"
                 printf '%s\n' "UPLOAD_MAX_BYTES=524288000"
                 printf 'COOKIE_SECRET=%s\n' "$COOKIE_SECRET"
@@ -182,6 +185,7 @@ jobs:
               fi
             }
             set_env "PREVIEW_DOMAIN" "$PREVIEW_DOMAIN"
+            set_env "ORIGIN_TEST_HOST" "$DEPLOY_HOST"
             set_env "STORAGE_DRIVER" "$STORAGE_DRIVER"
             if [ "$STORAGE_DRIVER" = "oss" ]; then
               set_env "ALIYUN_OSS_REGION" "$ALIYUN_OSS_REGION"

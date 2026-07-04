@@ -1,4 +1,4 @@
-{$PREVIEW_DOMAIN} {
+(freedompost_site) {
 	root * /var/www/freedompost/public
 	encode gzip
 
@@ -49,4 +49,17 @@
 		try_files {path} {path}/ /index.html
 		file_server
 	}
+}
+
+{$PREVIEW_DOMAIN} {
+	import freedompost_site
+}
+
+https://{$ORIGIN_TEST_HOST} {
+	tls internal
+	import freedompost_site
+}
+
+http://{$ORIGIN_TEST_HOST} {
+	import freedompost_site
 }
