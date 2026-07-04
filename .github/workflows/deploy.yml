@@ -323,10 +323,7 @@ jobs:
             compose --env-file .env -f deploy/docker-compose.yml up -d --build --force-recreate app nginx
             for attempt in $(seq 1 60); do
               if curl -fsS http://127.0.0.1:3000/health \
-                && curl -kfsSL \
-                  --resolve "$PREVIEW_DOMAIN:80:127.0.0.1" \
-                  --resolve "$PREVIEW_DOMAIN:443:127.0.0.1" \
-                  "https://$PREVIEW_DOMAIN/" >/dev/null; then
+                && curl -fsS -H "Host: $DEPLOY_HOST" http://127.0.0.1/ >/dev/null; then
                 exit 0
               fi
               sleep 2
