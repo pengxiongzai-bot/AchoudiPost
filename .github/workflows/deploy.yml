@@ -67,14 +67,27 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           PREVIEW_DOMAIN: ${{ secrets.PREVIEW_DOMAIN }}
+          STORAGE_DRIVER: ${{ secrets.STORAGE_DRIVER }}
+          ALIYUN_OSS_REGION: ${{ secrets.ALIYUN_OSS_REGION }}
+          ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+          ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+          ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
         run: |
           missing=0
-          for name in DEPLOY_HOST DEPLOY_USER DEPLOY_PASSWORD DEPLOY_PATH COOKIE_SECRET VISITOR_HASH_SALT ADMIN_PASSWORD POSTGRES_PASSWORD PREVIEW_DOMAIN; do
+          for name in DEPLOY_HOST DEPLOY_USER DEPLOY_PASSWORD DEPLOY_PATH COOKIE_SECRET VISITOR_HASH_SALT ADMIN_PASSWORD POSTGRES_PASSWORD PREVIEW_DOMAIN STORAGE_DRIVER; do
             if [ -z "${!name}" ]; then
               echo "::error::Missing GitHub secret: $name"
               missing=1
             fi
           done
+          if [ "$STORAGE_DRIVER" = "oss" ]; then
+            for name in ALIYUN_OSS_REGION ALIYUN_OSS_BUCKET ALIYUN_OSS_ACCESS_KEY_ID ALIYUN_OSS_ACCESS_KEY_SECRET; do
+              if [ -z "${!name}" ]; then
+                echo "::error::Missing GitHub secret: $name"
+                missing=1
+              fi
+            done
+          fi
           exit "$missing"
 
       - name: Copy bundle to server
@@ -96,11 +109,19 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           PREVIEW_DOMAIN: ${{ secrets.PREVIEW_DOMAIN }}
+          STORAGE_DRIVER: ${{ secrets.STORAGE_DRIVER }}
+          ALIYUN_OSS_REGION: ${{ secrets.ALIYUN_OSS_REGION }}
+          ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+          ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+          ALIYUN_OSS_PUBLIC_BASE_URL: ${{ secrets.ALIYUN_OSS_PUBLIC_BASE_URL }}
+          ALIYUN_OSS_PREFIX: ${{ secrets.ALIYUN_OSS_PREFIX }}
+          ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+          ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           password: ${{ secrets.DEPLOY_PASSWORD }}
-          envs: DEPLOY_PATH,COOKIE_SECRET,VISITOR_HASH_SALT,ADMIN_PASSWORD,POSTGRES_PASSWORD,PREVIEW_DOMAIN
+          envs: DEPLOY_PATH,COOKIE_SECRET,VISITOR_HASH_SALT,ADMIN_PASSWORD,POSTGRES_PASSWORD,PREVIEW_DOMAIN,STORAGE_DRIVER,ALIYUN_OSS_REGION,ALIYUN_OSS_BUCKET,ALIYUN_OSS_ENDPOINT,ALIYUN_OSS_PUBLIC_BASE_URL,ALIYUN_OSS_PREFIX,ALIYUN_OSS_ACCESS_KEY_ID,ALIYUN_OSS_ACCESS_KEY_SECRET
           command_timeout: 30m
           script: |
             set -eu
@@ -126,29 +147,51 @@ jobs:
                 printf 'POSTGRES_PASSWORD=%s\n' "$POSTGRES_PASSWORD"
                 printf 'DATABASE_URL=postgres://freedompost:%s@postgres:5432/freedompost\n' "$POSTGRES_PASSWORD"
                 printf '%s\n' "FREEDOMPOST_REPOSITORY=postgres"
-                printf '%s\n' "STORAGE_DRIVER=local"
+                printf 'STORAGE_DRIVER=%s\n' "$STORAGE_DRIVER"
                 printf '%s\n' "LOCAL_STORAGE_ROOT=runtime/local-storage"
                 printf '%s\n' "PUBLIC_UPLOAD_BASE_URL=/api/uploads"
               } > .env
               chmod 600 .env
             fi
-            env_tmp="$(mktemp)"
-            awk -v key="PREVIEW_DOMAIN" -v value="$PREVIEW_DOMAIN" '
-              BEGIN { found = 0 }
-              $0 ~ "^" key "=" {
-                print key "=" value
-                found = 1
-                next
-              }
-              { print }
-              END {
-                if (!found) {
+            set_env() {
+              key="$1"
+              value="$2"
+              env_tmp="$(mktemp)"
+              awk -v key="$key" -v value="$value" '
+                BEGIN { found = 0 }
+                $0 ~ "^" key "=" {
                   print key "=" value
+                  found = 1
+                  next
                 }
-              }
-            ' .env > "$env_tmp"
-            cat "$env_tmp" > .env
-            rm -f "$env_tmp"
+                { print }
+                END {
+                  if (!found) {
+                    print key "=" value
+                  }
+                }
+              ' .env > "$env_tmp"
+              cat "$env_tmp" > .env
+              rm -f "$env_tmp"
+            }
+            set_env_if_present() {
+              key="$1"
+              value="${2:-}"
+              if [ -n "$value" ]; then
+                set_env "$key" "$value"
+              fi
+            }
+            set_env "PREVIEW_DOMAIN" "$PREVIEW_DOMAIN"
+            set_env "STORAGE_DRIVER" "$STORAGE_DRIVER"
+            if [ "$STORAGE_DRIVER" = "oss" ]; then
+              set_env "ALIYUN_OSS_REGION" "$ALIYUN_OSS_REGION"
+              set_env "ALIYUN_OSS_BUCKET" "$ALIYUN_OSS_BUCKET"
+              set_env "ALIYUN_OSS_ACCESS_KEY_ID" "$ALIYUN_OSS_ACCESS_KEY_ID"
+              set_env "ALIYUN_OSS_ACCESS_KEY_SECRET" "$ALIYUN_OSS_ACCESS_KEY_SECRET"
+              set_env_if_present "ALIYUN_OSS_ENDPOINT" "${ALIYUN_OSS_ENDPOINT:-}"
+              set_env_if_present "ALIYUN_OSS_PUBLIC_BASE_URL" "${ALIYUN_OSS_PUBLIC_BASE_URL:-}"
+              set_env_if_present "ALIYUN_OSS_PREFIX" "${ALIYUN_OSS_PREFIX:-}"
+            fi
             chmod 600 .env
             if ! command -v curl >/dev/null 2>&1; then
               if command -v apt-get >/dev/null 2>&1; then
@@ -238,7 +281,7 @@ jobs:
             compose -f deploy/docker-compose.yml up -d postgres redis
             compose -f deploy/docker-compose.yml build app nginx
             compose -f deploy/docker-compose.yml run --rm app npm run db:migrate:prod -w @freedompost/api
-            compose -f deploy/docker-compose.yml up -d --build
+            compose -f deploy/docker-compose.yml up -d --build --force-recreate app nginx
             for attempt in $(seq 1 60); do
               if curl -fsS http://127.0.0.1:3000/health \
                 && curl -kfsSL \
