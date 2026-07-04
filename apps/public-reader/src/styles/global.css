@@ -402,6 +402,13 @@ mark {
 }
 
 .article-body {
+  font-family:
+    "Noto Serif SC",
+    "Source Han Serif SC",
+    "Songti SC",
+    STSong,
+    SimSun,
+    serif;
   font-size: 16px;
 }
 
@@ -434,6 +441,46 @@ mark {
 
 .article-body p {
   margin: 1em 0;
+}
+
+.article-body .fp-size-sm {
+  font-size: 0.88em;
+}
+
+.article-body .fp-size-md {
+  font-size: 1em;
+}
+
+.article-body .fp-size-lg {
+  font-size: 1.18em;
+}
+
+.article-body .fp-size-xl {
+  font-size: 1.36em;
+}
+
+.article-body .fp-color-ink {
+  color: var(--text);
+}
+
+.article-body .fp-color-red {
+  color: #b42318;
+}
+
+.article-body .fp-color-green {
+  color: var(--accent);
+}
+
+.article-body .fp-color-blue {
+  color: #1d5fd0;
+}
+
+.article-body .fp-color-purple {
+  color: #7442c8;
+}
+
+.article-body .fp-color-gold {
+  color: #9a6700;
 }
 
 .article-body a {

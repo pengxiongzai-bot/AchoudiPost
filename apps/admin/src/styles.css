@@ -203,7 +203,60 @@ input {
 }
 
 .toolbar {
-  margin-bottom: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin: 0 0 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #dde4dc;
+  background: #f6f7f4;
+}
+
+.toolbar-field {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #20242a;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.toolbar select {
+  height: 32px;
+  min-width: 82px;
+  padding: 0 28px 0 8px;
+  border: 1px solid #cbd5c8;
+  border-radius: 8px;
+  background: #fff;
+  color: #20242a;
+  outline: none;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 22px;
+  background: #d8ded5;
+}
+
+.color-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.swatch-button {
+  width: 32px;
+  min-height: 32px;
+  padding: 0;
+}
+
+.swatch-button span {
+  width: 15px;
+  height: 15px;
+  border: 1px solid rgba(32, 36, 42, 0.18);
+  border-radius: 50%;
+  background: currentColor;
 }
 
 button,
@@ -248,6 +301,14 @@ button:hover {
   border: 1px solid #cbd5c8;
   border-radius: 8px;
   background: #fff;
+  font-family:
+    "Noto Serif SC",
+    "Source Han Serif SC",
+    "Songti SC",
+    STSong,
+    SimSun,
+    serif;
+  font-size: 17px;
   line-height: 1.7;
   outline: none;
 }
@@ -364,4 +425,44 @@ button:hover {
 
 .hidden-input {
   display: none;
+}
+
+.fp-size-sm {
+  font-size: 0.88em;
+}
+
+.fp-size-md {
+  font-size: 1em;
+}
+
+.fp-size-lg {
+  font-size: 1.18em;
+}
+
+.fp-size-xl {
+  font-size: 1.36em;
+}
+
+.fp-color-ink {
+  color: #20242a;
+}
+
+.fp-color-red {
+  color: #b42318;
+}
+
+.fp-color-green {
+  color: #1f7a5b;
+}
+
+.fp-color-blue {
+  color: #1d5fd0;
+}
+
+.fp-color-purple {
+  color: #7442c8;
+}
+
+.fp-color-gold {
+  color: #9a6700;
 }

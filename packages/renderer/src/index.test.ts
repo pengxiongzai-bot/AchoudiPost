@@ -29,4 +29,20 @@ describe("renderMarkdownArticle", () => {
     expect(result.html).toContain('href="https://pic.example.com/a.png"');
     expect(result.html).toContain('src="https://pic.example.com/a.png"');
   });
+
+  it("keeps editor inline formatting while stripping unsafe attributes", () => {
+    const result = renderMarkdownArticle({
+      slug: "formatting",
+      title: "Formatting",
+      markdown:
+        '<span class="fp-color-red fp-size-lg bad-class" onclick="alert(1)">Red text</span> and <u>underlined</u>',
+      createdAt: "2026-07-02T00:00:00.000Z",
+      updatedAt: "2026-07-02T00:00:00.000Z"
+    });
+
+    expect(result.html).toContain('<span class="fp-color-red fp-size-lg">Red text</span>');
+    expect(result.html).toContain("<u>underlined</u>");
+    expect(result.html).not.toContain("onclick");
+    expect(result.html).not.toContain("bad-class");
+  });
 });

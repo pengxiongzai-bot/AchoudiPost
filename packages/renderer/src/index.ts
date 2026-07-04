@@ -58,7 +58,7 @@ export function renderMarkdownArticle(input: RenderArticleInput): RenderedArticl
 
 export function createMarkdownRenderer(toc: TocItem[], usedIds: Map<string, number>): MarkdownIt {
   const md = new MarkdownIt({
-    html: false,
+    html: true,
     linkify: true,
     typographer: true
   })

@@ -70,6 +70,38 @@ export const allowedExecutableUploadMimeTypes = new Set([
   "application/vnd.microsoft.portable-executable"
 ]);
 
+const articleAllowedClasses = [
+  "article-image-link",
+  "attachment-card",
+  "code-actions",
+  "code-block",
+  "code-head",
+  "code-line",
+  "contains-task-list",
+  "copy-code",
+  "fold-code",
+  "footnote-backref",
+  "footnote-item",
+  "footnotes",
+  "footnotes-list",
+  "footnotes-sep",
+  "fp-color-blue",
+  "fp-color-gold",
+  "fp-color-green",
+  "fp-color-ink",
+  "fp-color-purple",
+  "fp-color-red",
+  "fp-size-lg",
+  "fp-size-md",
+  "fp-size-sm",
+  "fp-size-xl",
+  "line-no",
+  "task-list-item",
+  "task-list-item-checkbox"
+];
+
+const articleAllowedClassPatterns = [/^language-[a-z0-9_-]+$/i];
+
 export function sha256(value: string | Buffer): string {
   return createHash("sha256").update(value).digest("hex");
 }
@@ -158,6 +190,7 @@ export function sanitizeArticleHtml(html: string): string {
       "th",
       "thead",
       "tr",
+      "u",
       "ul"
     ],
     allowedAttributes: {
@@ -169,6 +202,9 @@ export function sanitizeArticleHtml(html: string): string {
       pre: ["class"],
       th: ["align"],
       td: ["align"]
+    },
+    allowedClasses: {
+      "*": [...articleAllowedClasses, ...articleAllowedClassPatterns]
     },
     allowedSchemes: ["http", "https", "mailto", "tel", "data"],
     transformTags: {

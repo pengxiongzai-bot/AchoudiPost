@@ -1,13 +1,19 @@
 import { type ClipboardEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
+  Bold,
+  Code2,
   Copy,
+  Italic,
+  Link2,
   LogOut,
-  Pencil,
   Plus,
   RefreshCw,
   Save,
+  Strikethrough,
   Trash2,
+  Type,
+  Underline,
   Upload
 } from "lucide-react";
 import "./styles.css";
@@ -39,6 +45,29 @@ type UploadedFile = {
   storageKey: string;
 };
 
+const headingOptions = [
+  { label: "正文", value: "p" },
+  { label: "标题 1", value: "h1" },
+  { label: "标题 2", value: "h2" },
+  { label: "标题 3", value: "h3" }
+] as const;
+
+const sizeOptions = [
+  { label: "小字", className: "fp-size-sm" },
+  { label: "正文", className: "fp-size-md" },
+  { label: "大字", className: "fp-size-lg" },
+  { label: "强调", className: "fp-size-xl" }
+] as const;
+
+const colorOptions = [
+  { label: "墨色", className: "fp-color-ink" },
+  { label: "红色", className: "fp-color-red" },
+  { label: "绿色", className: "fp-color-green" },
+  { label: "蓝色", className: "fp-color-blue" },
+  { label: "紫色", className: "fp-color-purple" },
+  { label: "金色", className: "fp-color-gold" }
+] as const;
+
 function App() {
   const [isAuthed, setAuthed] = useState(false);
   const [username, setUsername] = useState("admin");
@@ -48,6 +77,7 @@ function App() {
   const [toast, setToast] = useState<Toast | null>(null);
   const editorRef = useRef<HTMLDivElement | null>(null);
   const attachmentInputRef = useRef<HTMLInputElement | null>(null);
+  const savedRangeRef = useRef<Range | null>(null);
   const activePost = useMemo(() => posts.find((post) => post.id === activeId) ?? posts[0], [posts, activeId]);
 
   useEffect(() => {
@@ -58,6 +88,18 @@ function App() {
     if (!activePost || !editorRef.current) return;
     editorRef.current.innerHTML = markdownToEditorHtml(activePost.markdown);
   }, [activePost?.id]);
+
+  useEffect(() => {
+    const rememberEditorSelection = () => {
+      const editor = editorRef.current;
+      const selection = window.getSelection();
+      if (!editor || !selection?.rangeCount || !editor.contains(selection.anchorNode)) return;
+      savedRangeRef.current = selection.getRangeAt(0).cloneRange();
+    };
+
+    document.addEventListener("selectionchange", rememberEditorSelection);
+    return () => document.removeEventListener("selectionchange", rememberEditorSelection);
+  }, []);
 
   async function fetchSession() {
     const response = await fetch("/api/admin/session", { credentials: "include" });
@@ -249,6 +291,80 @@ function App() {
     syncEditorMarkdown();
   }
 
+  function restoreEditorSelection() {
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    editor.focus();
+    const range = savedRangeRef.current;
+    const selection = window.getSelection();
+    if (!range || !selection || !editor.contains(range.commonAncestorContainer)) return;
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+
+  function runEditorCommand(command: string, value?: string) {
+    if (!activePost) return;
+    restoreEditorSelection();
+    document.execCommand(command, false, value);
+    syncEditorMarkdown();
+  }
+
+  function applyBlockFormat(tagName: string) {
+    runEditorCommand("formatBlock", tagName);
+  }
+
+  function applyInlineClass(className: string) {
+    if (!activePost) return;
+    restoreEditorSelection();
+
+    const editor = editorRef.current;
+    const selection = window.getSelection();
+    if (!editor || !selection?.rangeCount || !editor.contains(selection.anchorNode) || selection.isCollapsed) {
+      showToast("请先选中文本");
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    const span = document.createElement("span");
+    span.className = className;
+
+    try {
+      range.surroundContents(span);
+    } catch {
+      span.append(range.extractContents());
+      range.insertNode(span);
+    }
+
+    const nextRange = document.createRange();
+    nextRange.selectNodeContents(span);
+    selection.removeAllRanges();
+    selection.addRange(nextRange);
+    savedRangeRef.current = nextRange.cloneRange();
+    syncEditorMarkdown();
+  }
+
+  function createLinkAtSelection() {
+    const href = prompt("输入链接地址");
+    if (!href) return;
+
+    try {
+      const url = new URL(href, location.origin);
+      if (url.protocol !== "http:" && url.protocol !== "https:") {
+        showToast("只支持 http/https 链接");
+        return;
+      }
+      runEditorCommand("createLink", url.toString());
+    } catch {
+      showToast("链接地址无效");
+    }
+  }
+
+  function insertCodeBlock() {
+    insertHtmlAtCaret('<pre data-lang="ts"><code>// code</code></pre><p><br></p>');
+  }
+
   function closestEditableBlock(node: Node | null, editor: HTMLElement): HTMLElement | null {
     const start = node instanceof HTMLElement ? node : node?.parentElement;
     const block = start?.closest("p,h1,h2,h3,h4,h5,h6,li,blockquote,pre");
@@ -347,20 +463,6 @@ function App() {
                   <Copy size={15} />
                   复制
                 </button>
-                <button type="button" onClick={() => attachmentInputRef.current?.click()}>
-                  <Upload size={15} />
-                  附件
-                </button>
-                <input
-                  ref={attachmentInputRef}
-                  className="hidden-input"
-                  type="file"
-                  multiple
-                  onChange={(event) => {
-                    void handleAttachmentFiles(event.target.files);
-                    event.target.value = "";
-                  }}
-                />
                 <button type="button" onClick={deletePost}>
                   <Trash2 size={15} />
                   删除
@@ -376,23 +478,135 @@ function App() {
                 <span>标题</span>
                 <input value={activePost.title} onChange={(event) => patchActivePost({ title: event.target.value })} />
               </label>
-              <div className="toolbar">
-                <button type="button" onClick={() => insertHtmlAtCaret("<h2>新段落</h2><p><br></p>")}>
-                  <Pencil size={15} />
-                  段落
-                </button>
+              <div className="toolbar" aria-label="编辑工具栏">
+                <label className="toolbar-field">
+                  <Type size={15} aria-hidden="true" />
+                  <select
+                    aria-label="标题级别"
+                    defaultValue="p"
+                    onChange={(event) => {
+                      applyBlockFormat(event.target.value);
+                      event.target.value = "p";
+                    }}
+                  >
+                    {headingOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <span className="toolbar-divider" />
                 <button
+                  className="icon-button"
                   type="button"
-                  onClick={() => insertHtmlAtCaret('<pre data-lang="ts"><code>// code</code></pre><p><br></p>')}
+                  title="加粗"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => runEditorCommand("bold")}
                 >
-                  代码块
+                  <Bold size={16} />
                 </button>
                 <button
+                  className="icon-button"
                   type="button"
+                  title="删除线"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => runEditorCommand("strikeThrough")}
+                >
+                  <Strikethrough size={16} />
+                </button>
+                <button
+                  className="icon-button"
+                  type="button"
+                  title="斜体"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => runEditorCommand("italic")}
+                >
+                  <Italic size={16} />
+                </button>
+                <button
+                  className="icon-button"
+                  type="button"
+                  title="下划线"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => runEditorCommand("underline")}
+                >
+                  <Underline size={16} />
+                </button>
+                <button
+                  className="icon-button"
+                  type="button"
+                  title="插入链接"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={createLinkAtSelection}
+                >
+                  <Link2 size={16} />
+                </button>
+                <button
+                  className="icon-button"
+                  type="button"
+                  title="代码块"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={insertCodeBlock}
+                >
+                  <Code2 size={16} />
+                </button>
+                <label className="toolbar-field">
+                  <span>字号</span>
+                  <select
+                    aria-label="字号"
+                    defaultValue=""
+                    onChange={(event) => {
+                      if (event.target.value) {
+                        applyInlineClass(event.target.value);
+                      }
+                      event.target.value = "";
+                    }}
+                  >
+                    <option value="" disabled>
+                      选择
+                    </option>
+                    {sizeOptions.map((option) => (
+                      <option key={option.className} value={option.className}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div className="color-group" role="group" aria-label="字体颜色">
+                  {colorOptions.map((option) => (
+                    <button
+                      key={option.className}
+                      className={`swatch-button ${option.className}`}
+                      type="button"
+                      title={option.label}
+                      aria-label={option.label}
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => applyInlineClass(option.className)}
+                    >
+                      <span />
+                    </button>
+                  ))}
+                </div>
+                <span className="toolbar-divider" />
+                <button
+                  type="button"
+                  onMouseDown={(event) => event.preventDefault()}
                   onClick={() => attachmentInputRef.current?.click()}
                 >
-                  附件卡片
+                  <Upload size={15} />
+                  附件
                 </button>
+                <input
+                  ref={attachmentInputRef}
+                  className="hidden-input"
+                  type="file"
+                  multiple
+                  onChange={(event) => {
+                    void handleAttachmentFiles(event.target.files);
+                    event.target.value = "";
+                  }}
+                />
               </div>
               <div
                 ref={editorRef}
@@ -666,7 +880,7 @@ function nodeToMarkdown(node: Node): string {
 
   if (/^H[1-6]$/.test(node.tagName)) {
     const level = Number(node.tagName.slice(1));
-    return `${"#".repeat(level)} ${node.textContent?.trim() ?? ""}`;
+    return `${"#".repeat(level)} ${inlineChildrenToMarkdown(node).trim()}`;
   }
 
   if (node.tagName === "PRE") {
@@ -675,18 +889,107 @@ function nodeToMarkdown(node: Node): string {
   }
 
   if (node.tagName === "UL" || node.tagName === "OL") {
-    return [...node.querySelectorAll(":scope > li")]
-      .map((li, index) => `${node.tagName === "OL" ? `${index + 1}.` : "-"} ${li.textContent?.trim() ?? ""}`)
+    return [...node.querySelectorAll<HTMLElement>(":scope > li")]
+      .map((li, index) => `${node.tagName === "OL" ? `${index + 1}.` : "-"} ${inlineChildrenToMarkdown(li).trim()}`)
       .join("\n");
   }
 
-  return (node.innerText || node.textContent || "").trim();
+  return inlineChildrenToMarkdown(node).trim();
+}
+
+function inlineChildrenToMarkdown(node: HTMLElement): string {
+  return [...node.childNodes].map(inlineNodeToMarkdown).join("");
+}
+
+function inlineNodeToMarkdown(node: Node): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent ?? "";
+  }
+
+  if (!(node instanceof HTMLElement)) {
+    return "";
+  }
+
+  if (node.tagName === "BR") {
+    return "\n";
+  }
+
+  if (node.tagName === "IMG") {
+    const img = node as HTMLImageElement;
+    return `![${escapeMarkdown(img.alt || "图片")}](${img.src})`;
+  }
+
+  if (node.matches("figure.editor-image,.editor-attachment")) {
+    return nodeToMarkdown(node);
+  }
+
+  const content = inlineChildrenToMarkdown(node);
+
+  if (node.tagName === "A" && node.querySelector("img")) {
+    return content;
+  }
+
+  if (node.tagName === "A") {
+    const href = node.getAttribute("href") ?? "";
+    return href ? `[${content || href}](${href})` : content;
+  }
+
+  if (node.tagName === "STRONG" || node.tagName === "B") {
+    return `**${content}**`;
+  }
+
+  if (node.tagName === "EM" || node.tagName === "I") {
+    return `*${content}*`;
+  }
+
+  if (node.tagName === "DEL" || node.tagName === "S" || node.tagName === "STRIKE") {
+    return `~~${content}~~`;
+  }
+
+  if (node.tagName === "U") {
+    return `<u>${content}</u>`;
+  }
+
+  if (node.tagName === "CODE") {
+    return `\`${node.textContent ?? ""}\``;
+  }
+
+  if (node.tagName === "SPAN") {
+    const className = sanitizeInlineClassList([...node.classList].join(" "));
+    return className ? `<span class="${className}">${content}</span>` : content;
+  }
+
+  return content || (node.textContent ?? "");
 }
 
 function formatInlineMarkdown(value: string): string {
-  return value
+  return restoreSafeInlineHtml(value
+    .replace(/\[([^\]]+)]\((https?:\/\/[^)\s]+|\/[^)\s]+)\)/g, '<a href="$2">$1</a>')
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    .replace(/`([^`]+)`/g, "<code>$1</code>");
+    .replace(/~~(.*?)~~/g, "<del>$1</del>")
+    .replace(/\*(.*?)\*/g, "<em>$1</em>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>"));
+}
+
+function restoreSafeInlineHtml(value: string): string {
+  return value
+    .replace(/&lt;u&gt;([\s\S]*?)&lt;\/u&gt;/g, "<u>$1</u>")
+    .replace(/&lt;span class=&quot;([^&]+)&quot;&gt;([\s\S]*?)&lt;\/span&gt;/g, (_match, className: string, content: string) => {
+      const safeClassName = sanitizeInlineClassList(className);
+      return safeClassName ? `<span class="${safeClassName}">${content}</span>` : content;
+    });
+}
+
+function sanitizeInlineClassList(value: string): string {
+  const allowedClasses = new Set<string>([
+    ...sizeOptions.map((option) => option.className),
+    ...colorOptions.map((option) => option.className)
+  ]);
+  return value
+    .split(/\s+/)
+    .map((className) => className.trim())
+    .filter((className) => allowedClasses.has(className))
+    .join(" ");
 }
 
 function escapeMarkdown(value: string): string {
