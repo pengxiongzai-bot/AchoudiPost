@@ -208,9 +208,24 @@ export function sanitizeArticleHtml(html: string): string {
     },
     allowedSchemes: ["http", "https", "mailto", "tel", "data"],
     transformTags: {
-      a: sanitizeHtml.simpleTransform("a", {
-        rel: "noreferrer noopener"
-      }),
+      a: (tagName, attribs) => {
+        const href = attribs.href ?? "";
+        const nextAttribs: Record<string, string> = {
+          ...attribs,
+          rel: "noreferrer noopener"
+        };
+
+        if (href && !href.startsWith("#")) {
+          nextAttribs.target = "_blank";
+        } else {
+          delete nextAttribs.target;
+        }
+
+        return {
+          tagName,
+          attribs: nextAttribs
+        };
+      },
       img: sanitizeHtml.simpleTransform("img", {
         loading: "lazy"
       })

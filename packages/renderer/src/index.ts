@@ -101,6 +101,19 @@ export function createMarkdownRenderer(toc: TocItem[], usedIds: Map<string, numb
     )}">${numbered}</code></pre></div>`;
   };
 
+  md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
+    const token = tokens[idx];
+    if (!token) return "";
+
+    const href = token.attrGet("href");
+    if (href && !href.startsWith("#")) {
+      token.attrSet("target", "_blank");
+      token.attrSet("rel", "noreferrer noopener");
+    }
+
+    return self.renderToken(tokens, idx, options);
+  };
+
   md.renderer.rules.image = (tokens, idx, options, env, self) => {
     const token = tokens[idx];
     if (!token) return "";
@@ -141,7 +154,7 @@ export function renderAttachmentCards(html: string): string {
   return html.replace(
     /<p><a href="([^"]+)"(?:\s+target="[^"]*")?(?:\s+rel="[^"]*")?>(?:附件:|附件：)\s*([^<]+)<\/a><\/p>/g,
     (_match, href: string, filename: string) =>
-      `<div class="attachment-card"><span>${escapeHtml(filename)}</span><a href="${href}" download>下载 / 查看</a></div>`
+      `<div class="attachment-card"><span>${escapeHtml(filename)}</span><a href="${href}" target="_blank" rel="noreferrer noopener" download>下载 / 查看</a></div>`
   );
 }
 

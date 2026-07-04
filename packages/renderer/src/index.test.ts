@@ -30,6 +30,24 @@ describe("renderMarkdownArticle", () => {
     expect(result.html).toContain('src="https://pic.example.com/a.png"');
   });
 
+  it("opens article links and attachment previews in a new tab", () => {
+    const result = renderMarkdownArticle({
+      slug: "links",
+      title: "Links",
+      markdown:
+        "[Example](https://example.com)\n\n[附件: movie.mp4](https://pic.example.com/movie.mp4)\n\n[Jump](#section)",
+      createdAt: "2026-07-02T00:00:00.000Z",
+      updatedAt: "2026-07-02T00:00:00.000Z"
+    });
+
+    expect(result.html).toContain('<a href="https://example.com" target="_blank" rel="noreferrer noopener">Example</a>');
+    expect(result.html).toContain('class="attachment-card"');
+    expect(result.html).toContain('href="https://pic.example.com/movie.mp4" target="_blank" rel="noreferrer noopener" download');
+
+    const inPageAnchor = result.html.match(/<a href="#section"[^>]*>/)?.[0] ?? "";
+    expect(inPageAnchor).not.toContain('target="_blank"');
+  });
+
   it("keeps editor inline formatting while stripping unsafe attributes", () => {
     const result = renderMarkdownArticle({
       slug: "formatting",
