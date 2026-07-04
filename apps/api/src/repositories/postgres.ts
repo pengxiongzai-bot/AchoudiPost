@@ -247,20 +247,17 @@ export class PostgresContentRepository implements ContentRepository {
 }
 
 function mapPostRow(row: PostRow): StoredPost {
-  return {
+  return renderStoredPost({
     id: row.id,
     slug: row.slug,
     title: row.title,
     markdown: row.contentMarkdown ?? "",
-    html: row.contentHtml,
-    searchText: row.searchText,
-    excerpt: row.excerpt ?? "",
     createdAt: toIso(row.createdAt),
     updatedAt: toIso(row.updatedAt),
     viewCount: row.viewCount,
     commentCount: row.commentCount,
     attachmentCount: row.attachmentCount
-  };
+  });
 }
 
 function mapCommentRow(row: CommentRow, postSlug: string): Comment {
