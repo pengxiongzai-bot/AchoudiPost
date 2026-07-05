@@ -14,6 +14,11 @@ import {
 } from "@freedompost/security";
 import { UploadRejectedError } from "@freedompost/storage";
 import type { Comment } from "@freedompost/shared";
+import {
+  collectPostDeletionCandidateKeys,
+  deleteUnreferencedManagedAssets,
+  diffRemovedManagedStorageKeys
+} from "./asset-cleanup.js";
 import { createContentRepository, type ContentRepository } from "./repositories/index.js";
 import { createStorageAdapter, getLocalUploadStream } from "./storage.js";
 
@@ -375,15 +380,31 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       return reply.code(404).send(errorBody("POST_NOT_FOUND", "文章不存在"));
     }
 
+    const nextMarkdown = request.body?.markdown ?? existing.markdown;
+    const removedAssetKeys = diffRemovedManagedStorageKeys(existing.markdown, nextMarkdown);
     const updated = await repository.updatePost({
       id: request.params.id,
       title: request.body?.title?.trim() || existing.title,
-      markdown: request.body?.markdown ?? existing.markdown
+      markdown: nextMarkdown
     });
 
     if (!updated) {
       return reply.code(404).send(errorBody("POST_NOT_FOUND", "文章不存在"));
     }
+
+    await deleteUnreferencedManagedAssets({
+      candidateKeys: removedAssetKeys,
+      repository,
+      storage
+    })
+      .then((result) => {
+        if (result.failed.length > 0) {
+          request.log.warn({ failed: result.failed }, "Some removed post assets could not be deleted");
+        }
+      })
+      .catch((error) => {
+        request.log.warn({ error }, "Removed post asset cleanup failed");
+      });
 
     return updated;
   });
@@ -393,10 +414,38 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       return reply.code(401).send(errorBody("UNAUTHENTICATED", "未登录"));
     }
 
+    const existing = await repository.getPostById(request.params.id);
+    if (!existing) {
+      return reply.code(404).send(errorBody("POST_NOT_FOUND", "文章不存在"));
+    }
+
+    const comments = await repository.listComments(existing.slug);
+    const deletionCandidateKeys = collectPostDeletionCandidateKeys(existing, comments);
+    const deletionAttachmentIds = comments.flatMap((comment) =>
+      comment.attachments.map((attachment) => attachment.id).filter(Boolean)
+    );
     const deleted = await repository.deletePost(request.params.id);
     if (!deleted) {
       return reply.code(404).send(errorBody("POST_NOT_FOUND", "文章不存在"));
     }
+
+    await deleteUnreferencedManagedAssets({
+      candidateKeys: deletionCandidateKeys,
+      repository,
+      storage
+    })
+      .then((result) => {
+        if (result.failed.length > 0) {
+          request.log.warn({ failed: result.failed }, "Some deleted post assets could not be deleted");
+        }
+      })
+      .catch((error) => {
+        request.log.warn({ error }, "Deleted post asset cleanup failed");
+      });
+
+    await repository.deleteAttachmentsByIds(deletionAttachmentIds).catch((error) => {
+      request.log.warn({ error }, "Deleted post attachment metadata cleanup failed");
+    });
 
     return { ok: true };
   });

@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import OSS from "ali-oss";
 import { fileExtension, isAllowedUpload, sha256 } from "@freedompost/security";
@@ -74,8 +74,19 @@ export class LocalStorageAdapter implements StorageAdapter {
     };
   }
 
-  async deleteObject(_key: string): Promise<void> {
-    // Deletion is implemented when ownership/reference counting is wired to the DB.
+  async deleteObject(key: string): Promise<void> {
+    const root = path.resolve(this.rootDir);
+    const target = path.resolve(root, key);
+
+    if (!target.startsWith(`${root}${path.sep}`)) {
+      throw new Error("Refusing to delete outside local storage root");
+    }
+
+    await unlink(target).catch((error: NodeJS.ErrnoException) => {
+      if (error.code !== "ENOENT") {
+        throw error;
+      }
+    });
   }
 
   getPublicUrl(key: string): string {

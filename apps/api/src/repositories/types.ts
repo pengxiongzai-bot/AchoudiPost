@@ -63,4 +63,5 @@ export interface ContentRepository {
   recordView(input: RecordViewInput): Promise<RecordViewResult | null>;
   listComments(postSlug: string): Promise<Comment[]>;
   createComment(input: CreateCommentInput): Promise<Comment | null>;
+  deleteAttachmentsByIds(ids: string[]): Promise<void>;
 }

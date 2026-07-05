@@ -167,4 +167,8 @@ export class MemoryContentRepository implements ContentRepository {
     this.posts.set(post.id, post);
     return comment;
   }
+
+  async deleteAttachmentsByIds(_ids: string[]): Promise<void> {
+    // Memory comments own attachment metadata directly, so deleting comments removes it.
+  }
 }

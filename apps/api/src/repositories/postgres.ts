@@ -276,6 +276,11 @@ export class PostgresContentRepository implements ContentRepository {
     return mapCommentRow(row, post.slug, attachmentRows);
   }
 
+  async deleteAttachmentsByIds(ids: string[]): Promise<void> {
+    if (ids.length === 0) return;
+    await this.db.delete(attachmentsTable).where(inArray(attachmentsTable.id, ids));
+  }
+
   private async uniqueSlug(title: string): Promise<string> {
     for (let attempt = 0; attempt < 5; attempt += 1) {
       const slug = makeSlug(title);
