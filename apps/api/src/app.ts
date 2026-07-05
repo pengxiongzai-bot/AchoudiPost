@@ -340,7 +340,8 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
           sizeBytes: stored.sizeBytes,
           url: stored.publicUrl,
           storageProvider: stored.storageProvider,
-          storageKey: stored.storageKey
+          storageKey: stored.storageKey,
+          storedFilename: stored.storedFilename
         }
       };
     } catch (error) {

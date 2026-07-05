@@ -14,11 +14,13 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "test": "vitest run src",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1079.0",
     "@freedompost/security": "0.1.0",
-    "ali-oss": "latest"
+    "ali-oss": "latest",
+    "sharp": "^0.35.3"
   }
 }

@@ -42,6 +42,7 @@ type UploadedFile = {
   url: string;
   storageProvider: "local" | "oss" | "r2";
   storageKey: string;
+  storedFilename: string;
 };
 
 const headingOptions = [
