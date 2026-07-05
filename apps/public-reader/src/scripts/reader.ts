@@ -102,9 +102,11 @@ const themeBtn = mustGet<HTMLButtonElement>("themeBtn");
 const toast = mustGet<HTMLElement>("toast");
 const commentForm = mustGet<HTMLFormElement>("commentForm");
 const commentText = mustGet<HTMLTextAreaElement>("commentText");
-const commentFiles = mustGet<HTMLInputElement>("commentFiles");
+const commentPendingFiles = mustGet<HTMLElement>("commentPendingFiles");
+const commentSubmit = mustGet<HTMLButtonElement>("commentSubmit");
 const commentList = mustGet<HTMLElement>("commentList");
 const commentUser = mustGet<HTMLElement>("commentUser");
+const commentDefaultPlaceholder = "写下评论或者粘贴图片或者拖入文件";
 
 const initial = readInitialPayload();
 const pathSlug = location.pathname.startsWith("/p/")
@@ -118,6 +120,9 @@ let query = "";
 let replyParentId: string | null = null;
 let toastTimer = 0;
 let headingObserver: IntersectionObserver | null = null;
+let pendingCommentFiles: File[] = [];
+let commentDragDepth = 0;
+let commentSubmitting = false;
 
 const articleCache = new Map<string, ArticleCacheItem>();
 const commentCache = new Map<string, StoredComment[]>();
@@ -204,6 +209,14 @@ function bindEvents() {
   });
 
   commentForm.addEventListener("submit", submitComment);
+  commentText.addEventListener("input", updateCommentSubmitState);
+  commentText.addEventListener("paste", handleCommentPaste);
+  commentForm.addEventListener("dragenter", handleCommentDragEnter);
+  commentForm.addEventListener("dragover", handleCommentDragOver);
+  commentForm.addEventListener("dragleave", handleCommentDragLeave);
+  commentForm.addEventListener("drop", handleCommentDrop);
+  commentPendingFiles.addEventListener("click", handlePendingFileClick);
+  updateCommentSubmitState();
   initResizer();
 
   window.addEventListener("popstate", () => {
@@ -518,13 +531,131 @@ function enhanceCodeBlocks() {
   });
 }
 
+function handleCommentPaste(event: ClipboardEvent) {
+  const files = filesFromDataTransfer(event.clipboardData);
+  if (files.length === 0) return;
+
+  event.preventDefault();
+  addPendingCommentFiles(files);
+}
+
+function handleCommentDragEnter(event: DragEvent) {
+  if (!hasDraggedFiles(event.dataTransfer)) return;
+
+  event.preventDefault();
+  commentDragDepth += 1;
+  commentForm.classList.add("dragging");
+}
+
+function handleCommentDragOver(event: DragEvent) {
+  if (!hasDraggedFiles(event.dataTransfer)) return;
+
+  event.preventDefault();
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = "copy";
+  }
+  commentForm.classList.add("dragging");
+}
+
+function handleCommentDragLeave(event: DragEvent) {
+  if (!hasDraggedFiles(event.dataTransfer)) return;
+
+  commentDragDepth = Math.max(0, commentDragDepth - 1);
+  if (commentDragDepth === 0) {
+    commentForm.classList.remove("dragging");
+  }
+}
+
+function handleCommentDrop(event: DragEvent) {
+  if (!hasDraggedFiles(event.dataTransfer)) return;
+
+  event.preventDefault();
+  commentDragDepth = 0;
+  commentForm.classList.remove("dragging");
+  addPendingCommentFiles(filesFromDataTransfer(event.dataTransfer));
+}
+
+function handlePendingFileClick(event: MouseEvent) {
+  const target = event.target instanceof Element ? event.target : null;
+  const button = target?.closest<HTMLButtonElement>("button[data-index]");
+  if (!button) return;
+
+  const index = Number(button.dataset.index);
+  if (!Number.isInteger(index)) return;
+
+  pendingCommentFiles.splice(index, 1);
+  renderPendingCommentFiles();
+  updateCommentSubmitState();
+}
+
+function addPendingCommentFiles(files: File[]) {
+  const usableFiles = files.filter((file) => file.size > 0);
+  if (usableFiles.length === 0) return;
+
+  const availableSlots = Math.max(0, 10 - pendingCommentFiles.length);
+  if (availableSlots === 0) {
+    showToast("单次评论最多添加 10 个文件");
+    return;
+  }
+
+  const acceptedFiles = usableFiles.slice(0, availableSlots);
+  pendingCommentFiles = [...pendingCommentFiles, ...acceptedFiles];
+  renderPendingCommentFiles();
+  updateCommentSubmitState();
+
+  if (usableFiles.length > acceptedFiles.length) {
+    showToast("单次评论最多添加 10 个文件");
+  }
+}
+
+function clearPendingCommentFiles() {
+  pendingCommentFiles = [];
+  renderPendingCommentFiles();
+}
+
+function renderPendingCommentFiles() {
+  commentPendingFiles.hidden = pendingCommentFiles.length === 0;
+  commentPendingFiles.innerHTML = pendingCommentFiles
+    .map(
+      (file, index) => `<span class="comment-pending-file">
+        <span>${escapeHtml(file.name || "attachment")}</span>
+        <small>${formatBytes(file.size)}</small>
+        <button type="button" data-index="${index}" aria-label="移除 ${escapeHtml(file.name || "attachment")}">×</button>
+      </span>`
+    )
+    .join("");
+}
+
+function updateCommentSubmitState() {
+  const canSubmit = commentText.value.trim().length > 0 || pendingCommentFiles.length > 0;
+  commentSubmit.disabled = commentSubmitting || !canSubmit;
+}
+
+function filesFromDataTransfer(data: DataTransfer | null): File[] {
+  if (!data) return [];
+
+  const files: File[] = [];
+  for (const item of Array.from(data.items ?? [])) {
+    if (item.kind !== "file") continue;
+    const file = item.getAsFile();
+    if (file) files.push(file);
+  }
+
+  return files.length > 0 ? files : Array.from(data.files ?? []);
+}
+
+function hasDraggedFiles(data: DataTransfer | null): boolean {
+  if (!data) return false;
+  return Array.from(data.types ?? []).includes("Files");
+}
+
 async function submitComment(event: SubmitEvent) {
   event.preventDefault();
   const content = commentText.value.trim();
-  const files = [...(commentFiles.files ?? [])];
+  const files = [...pendingCommentFiles];
 
   if (!content && files.length === 0) {
-    showToast("请填写评论或选择附件");
+    updateCommentSubmitState();
     return;
   }
 
@@ -536,8 +667,8 @@ async function submitComment(event: SubmitEvent) {
 
   if (!checkCommentRate(activeSlug)) return;
 
-  const submitButton = commentForm.querySelector<HTMLButtonElement>('button[type="submit"]');
-  submitButton?.setAttribute("disabled", "true");
+  commentSubmitting = true;
+  updateCommentSubmitState();
 
   try {
     const attachments = await Promise.all(files.map(uploadCommentAttachment));
@@ -546,8 +677,8 @@ async function submitComment(event: SubmitEvent) {
 
     replyParentId = null;
     commentText.value = "";
-    commentText.placeholder = "写下评论";
-    commentFiles.value = "";
+    commentText.placeholder = commentDefaultPlaceholder;
+    clearPendingCommentFiles();
     renderComments();
     renderList();
     updateCommentCounts();
@@ -555,7 +686,8 @@ async function submitComment(event: SubmitEvent) {
   } catch {
     showToast("评论发布失败，请稍后重试");
   } finally {
-    submitButton?.removeAttribute("disabled");
+    commentSubmitting = false;
+    updateCommentSubmitState();
   }
 }
 
@@ -613,7 +745,7 @@ function renderComments() {
   commentList.querySelectorAll<HTMLButtonElement>(".reply-btn").forEach((button) => {
     button.addEventListener("click", () => {
       replyParentId = button.dataset.id ?? null;
-      commentText.placeholder = `回复 ${button.dataset.user ?? ""}`;
+      commentText.placeholder = `回复 ${button.dataset.user ?? ""}，也可以粘贴图片或者拖入文件`;
       commentText.focus();
     });
   });
@@ -845,6 +977,22 @@ function formatDateTime(value: string): string {
     minute: "2-digit",
     hour12: false
   }).format(new Date(value));
+}
+
+function formatBytes(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) return "0 B";
+
+  const units = ["B", "KB", "MB", "GB"];
+  let size = value;
+  let unitIndex = 0;
+
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex += 1;
+  }
+
+  const precision = unitIndex === 0 || size >= 10 ? 0 : 1;
+  return `${size.toFixed(precision)} ${units[unitIndex]}`;
 }
 
 function highlight(value: string, term: string): string {

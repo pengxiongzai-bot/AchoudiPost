@@ -653,6 +653,11 @@ mark {
   background: var(--panel-soft);
 }
 
+.comment-form.dragging {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent-soft), var(--panel-soft) 35%);
+}
+
 .comment-form textarea {
   width: 100%;
   min-height: 92px;
@@ -662,6 +667,65 @@ mark {
   border-radius: 8px;
   outline: none;
   background: var(--panel);
+  color: var(--text);
+}
+
+.comment-form.dragging textarea {
+  border-color: var(--accent);
+}
+
+.comment-pending-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.comment-pending-files[hidden] {
+  display: none;
+}
+
+.comment-pending-file {
+  min-width: 0;
+  max-width: min(320px, 100%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.comment-pending-file span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.comment-pending-file small {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.comment-pending-file button {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  line-height: 1;
+}
+
+.comment-pending-file button:hover {
+  background: var(--accent-soft);
   color: var(--text);
 }
 
@@ -845,6 +909,14 @@ mark {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--accent-ink);
+}
+
+.primary-button:disabled {
+  cursor: not-allowed;
+  border-color: var(--line-strong);
+  background: var(--panel-soft);
+  color: var(--muted);
+  opacity: 0.72;
 }
 
 .file-button {

@@ -133,14 +133,11 @@ const canonicalUrl = new URL(`/p/${encodeURIComponent(article.slug)}`, Astro.sit
               <span id="commentUser" class="muted"></span>
             </div>
             <form id="commentForm" class="comment-form">
-              <textarea id="commentText" maxlength="10000" placeholder="写下评论"></textarea>
+              <textarea id="commentText" maxlength="10000" placeholder="写下评论或者粘贴图片或者拖入文件"></textarea>
+              <div id="commentPendingFiles" class="comment-pending-files" hidden></div>
               <div class="comment-tools">
-                <label class="file-button">
-                  <i data-lucide="paperclip"></i>
-                  <span>附件</span>
-                  <input id="commentFiles" type="file" multiple />
-                </label>
-                <button type="submit" class="primary-button">
+                <span></span>
+                <button id="commentSubmit" type="submit" class="primary-button" disabled>
                   <i data-lucide="send"></i>
                   <span>发布</span>
                 </button>
