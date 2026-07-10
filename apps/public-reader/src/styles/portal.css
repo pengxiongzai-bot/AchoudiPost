@@ -50,6 +50,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+body.portal-page {
+  display: flex;
+  flex-direction: column;
+}
+
 button,
 input {
   font: inherit;
@@ -230,6 +235,10 @@ svg {
   background: var(--portal-panel);
 }
 
+#portalContent {
+  flex: 1 0 auto;
+}
+
 .service-strip-inner {
   width: min(var(--portal-max), calc(100% - 40px));
   min-height: 34px;
@@ -399,7 +408,7 @@ svg {
 }
 
 .reader-route {
-  height: calc(100vh - 102px);
+  height: calc(100vh - 68px);
   min-height: 620px;
   background: var(--portal-bg);
 }
@@ -1271,6 +1280,7 @@ svg {
 }
 
 .portal-footer {
+  margin-top: auto;
   background: #111310;
   color: #dfe4dd;
 }
@@ -1440,7 +1450,7 @@ svg {
   }
 
   .reader-route {
-    height: calc(100vh - 92px);
+    height: calc(100vh - 60px);
     min-height: 520px;
   }
 

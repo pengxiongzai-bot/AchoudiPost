@@ -39,7 +39,7 @@ const navItems = [
     <meta name="theme-color" content="#151714" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   </head>
-  <body data-page={activePage}>
+  <body class="portal-page" data-page={activePage}>
     <header class="site-header">
       <div class="site-header-inner">
         <a class="portal-brand" href="/" data-portal-route aria-label="FreedomPost 首页">
@@ -75,13 +75,6 @@ const navItems = [
         </div>
       </div>
     </header>
-
-    <div class="service-strip" aria-label="站点状态">
-      <div class="service-strip-inner">
-        <span><i data-lucide="radio"></i> FreedomPost 正常运行</span>
-        <span>文章、评论与附件由同一发布链路提供</span>
-      </div>
-    </div>
 
     <main id="portalContent" data-portal-content>
       <slot />
