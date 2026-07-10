@@ -17,6 +17,21 @@ type SearchDocument = {
   excerpt: string;
 };
 
+type StoreProduct = {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  description: string;
+  category: string;
+  priceCents: number;
+  compareAtCents: number | null;
+  currency: string;
+  stock: number;
+  coverUrl: string | null;
+  status: "published";
+};
+
 const themeKey = "fp_theme_v1";
 const root = document.documentElement;
 const navToggle = document.querySelector<HTMLButtonElement>("#navToggle");
@@ -88,6 +103,7 @@ function bindPageInteractions() {
   }
 
   if (postGrid) void hydratePosts();
+  void hydrateMarket();
 }
 
 function bindRouteNavigation() {
@@ -204,6 +220,84 @@ async function hydratePosts() {
   }
 }
 
+async function hydrateMarket() {
+  const grid = document.querySelector<HTMLElement>("#marketProductGrid");
+  const filters = document.querySelector<HTMLElement>("#marketFilters");
+  const count = document.querySelector<HTMLElement>("#marketCount");
+  const empty = document.querySelector<HTMLElement>("#marketEmpty");
+  const dialog = document.querySelector<HTMLDialogElement>("#productDialog");
+  const dialogContent = document.querySelector<HTMLElement>("#productDialogContent");
+  const closeDialog = document.querySelector<HTMLButtonElement>("#productDialogClose");
+  if (!grid || !filters || !count || !empty || !dialog || !dialogContent || !closeDialog) return;
+
+  let products: StoreProduct[] = [];
+  let category = "all";
+
+  const render = () => {
+    const visible = products.filter((product) => category === "all" || product.category === category);
+    grid.innerHTML = visible.map(renderMarketProduct).join("");
+    empty.hidden = visible.length > 0;
+    count.textContent = `${visible.length} 件在售商品`;
+    grid.querySelectorAll<HTMLButtonElement>("[data-product-slug]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const product = products.find((item) => item.slug === button.dataset.productSlug);
+        if (!product) return;
+        dialogContent.innerHTML = renderProductDialog(product);
+        dialog.showModal();
+        createPortalIcons();
+      });
+    });
+    createPortalIcons();
+  };
+
+  filters.querySelectorAll<HTMLButtonElement>("[data-category]").forEach((button) => {
+    button.addEventListener("click", () => {
+      category = button.dataset.category ?? "all";
+      filters.querySelectorAll("button").forEach((item) => item.classList.toggle("active", item === button));
+      render();
+    });
+  });
+
+  closeDialog.addEventListener("click", () => dialog.close());
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+
+  try {
+    const response = await fetch("/api/products", { headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error("products unavailable");
+    products = ((await response.json()) as { items: StoreProduct[] }).items;
+    render();
+  } catch {
+    count.textContent = "商品加载失败";
+    empty.hidden = false;
+  }
+}
+
+function renderMarketProduct(product: StoreProduct) {
+  const availability = product.stock === 0 ? "暂时售罄" : product.stock < 0 ? "不限量" : `库存 ${product.stock}`;
+  const cover = product.coverUrl
+    ? `<img src="${escapeAttribute(product.coverUrl)}" alt="${escapeAttribute(product.title)}" />`
+    : `<span class="market-product-placeholder"><i data-lucide="package"></i></span>`;
+  const compareAt = product.compareAtCents ? `<del>${formatCurrency(product.compareAtCents, product.currency)}</del>` : "";
+  return `<article class="market-product-card">
+    <div class="market-product-cover">${cover}</div>
+    <div class="market-product-body">
+      <span class="market-product-category">${escapeHtml(productCategoryLabel(product.category))}</span>
+      <h2>${escapeHtml(product.title)}</h2>
+      <p>${escapeHtml(product.summary)}</p>
+      <div class="market-product-bottom"><div class="market-product-price"><strong>${formatCurrency(product.priceCents, product.currency)}</strong>${compareAt}</div><span>${availability}</span></div>
+      <button type="button" data-product-slug="${escapeAttribute(product.slug)}">查看详情 <i data-lucide="arrow-up-right"></i></button>
+    </div>
+  </article>`;
+}
+
+function renderProductDialog(product: StoreProduct) {
+  const cover = product.coverUrl ? `<img src="${escapeAttribute(product.coverUrl)}" alt="${escapeAttribute(product.title)}" />` : "";
+  const availability = product.stock === 0 ? "暂时售罄" : product.stock < 0 ? "不限量供应" : `当前库存 ${product.stock}`;
+  return `<div class="product-dialog-cover">${cover}</div><p class="section-kicker">${escapeHtml(productCategoryLabel(product.category))}</p><h2>${escapeHtml(product.title)}</h2><p class="product-dialog-summary">${escapeHtml(product.summary)}</p><div class="product-dialog-price">${formatCurrency(product.priceCents, product.currency)} <span>${availability}</span></div><div class="product-dialog-description">${escapeHtml(product.description).replace(/\n/g, "<br>")}</div><button class="button primary" type="button" disabled>订单功能准备中</button>`;
+}
+
 function renderPosts(rawQuery: string) {
   if (!postGrid || posts.length === 0) return;
   const query = rawQuery.trim().toLocaleLowerCase("zh-CN");
@@ -264,6 +358,14 @@ function formatNumber(value: number) {
   return new Intl.NumberFormat("zh-CN", { notation: value >= 10000 ? "compact" : "standard" }).format(value);
 }
 
+function formatCurrency(cents: number, currency: string) {
+  return new Intl.NumberFormat("zh-CN", { style: "currency", currency: currency || "CNY", minimumFractionDigits: 2 }).format(cents / 100);
+}
+
+function productCategoryLabel(category: string) {
+  return ({ service: "服务", digital: "数字内容", software: "软件工具", other: "其它" } as Record<string, string>)[category] ?? "其它";
+}
+
 function escapeHtml(value: string) {
   return value.replace(/[&<>'"]/g, (character) => ({
     "&": "&amp;",
@@ -272,4 +374,8 @@ function escapeHtml(value: string) {
     "'": "&#39;",
     '"': "&quot;"
   })[character] ?? character);
+}
+
+function escapeAttribute(value: string) {
+  return escapeHtml(value);
 }

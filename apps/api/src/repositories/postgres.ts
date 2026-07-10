@@ -5,7 +5,8 @@ import {
   attachments as attachmentsTable,
   comments as commentsTable,
   postViews as postViewsTable,
-  posts as postsTable
+  posts as postsTable,
+  products as productsTable
 } from "@freedompost/db";
 import type { Comment } from "@freedompost/shared";
 import {
@@ -19,9 +20,11 @@ import type {
   ContentRepository,
   CreateCommentInput,
   CreatePostInput,
+  ProductInput,
   RecordViewInput,
   RecordViewResult,
   StoredPost,
+  StoredProduct,
   UpdatePostInput
 } from "./types.js";
 
@@ -29,6 +32,7 @@ type Db = NodePgDatabase;
 type PostRow = typeof postsTable.$inferSelect;
 type CommentRow = typeof commentsTable.$inferSelect;
 type AttachmentRow = typeof attachmentsTable.$inferSelect;
+type ProductRow = typeof productsTable.$inferSelect;
 
 export class PostgresContentRepository implements ContentRepository {
   private readonly pool: Pool;
@@ -281,6 +285,63 @@ export class PostgresContentRepository implements ContentRepository {
     await this.db.delete(attachmentsTable).where(inArray(attachmentsTable.id, ids));
   }
 
+  async listProducts(options: { publishedOnly?: boolean } = {}): Promise<StoredProduct[]> {
+    const query = this.db.select().from(productsTable);
+    const rows = options.publishedOnly
+      ? await query.where(eq(productsTable.status, "published"))
+      : await query;
+    return rows
+      .sort((left, right) => right.sortOrder - left.sortOrder || right.createdAt.getTime() - left.createdAt.getTime())
+      .map(mapProductRow);
+  }
+
+  async getProductBySlug(slug: string): Promise<StoredProduct | null> {
+    const [row] = await this.db.select().from(productsTable).where(eq(productsTable.slug, slug)).limit(1);
+    return row ? mapProductRow(row) : null;
+  }
+
+  async getProductById(id: string): Promise<StoredProduct | null> {
+    const [row] = await this.db.select().from(productsTable).where(eq(productsTable.id, id)).limit(1);
+    return row ? mapProductRow(row) : null;
+  }
+
+  async createProduct(input: ProductInput): Promise<StoredProduct> {
+    const now = new Date();
+    const [row] = await this.db
+      .insert(productsTable)
+      .values({
+        id: crypto.randomUUID(),
+        slug: await this.uniqueProductSlug(input.title),
+        ...input,
+        title: input.title.trim() || "未命名商品",
+        createdAt: now,
+        updatedAt: now
+      })
+      .returning();
+    if (!row) throw new Error("Failed to insert product");
+    return mapProductRow(row);
+  }
+
+  async updateProduct(id: string, input: ProductInput): Promise<StoredProduct | null> {
+    const existing = await this.getProductById(id);
+    if (!existing) return null;
+    const [row] = await this.db
+      .update(productsTable)
+      .set({
+        ...input,
+        title: input.title.trim() || existing.title,
+        updatedAt: new Date()
+      })
+      .where(eq(productsTable.id, id))
+      .returning();
+    return row ? mapProductRow(row) : null;
+  }
+
+  async deleteProduct(id: string): Promise<boolean> {
+    const deleted = await this.db.delete(productsTable).where(eq(productsTable.id, id)).returning({ id: productsTable.id });
+    return deleted.length > 0;
+  }
+
   private async uniqueSlug(title: string): Promise<string> {
     for (let attempt = 0; attempt < 5; attempt += 1) {
       const slug = makeSlug(title);
@@ -289,6 +350,15 @@ export class PostgresContentRepository implements ContentRepository {
     }
 
     return `${makeSlug(title)}-${crypto.randomUUID().slice(0, 8)}`;
+  }
+
+  private async uniqueProductSlug(title: string): Promise<string> {
+    const base = makeSlug(title || "product");
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const slug = attempt === 0 ? base : `${base}-${attempt + 1}`;
+      if (!(await this.getProductBySlug(slug))) return slug;
+    }
+    return `${base}-${crypto.randomUUID().slice(0, 8)}`;
   }
 }
 
@@ -304,6 +374,26 @@ function mapPostRow(row: PostRow): StoredPost {
     commentCount: row.commentCount,
     attachmentCount: row.attachmentCount
   });
+}
+
+function mapProductRow(row: ProductRow): StoredProduct {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    summary: row.summary,
+    description: row.description,
+    category: row.category,
+    priceCents: row.priceCents,
+    compareAtCents: row.compareAtCents,
+    currency: row.currency,
+    stock: row.stock,
+    coverUrl: row.coverUrl,
+    status: row.status === "published" ? "published" : "draft",
+    sortOrder: row.sortOrder,
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt)
+  };
 }
 
 function mapCommentRow(row: CommentRow, postSlug: string, attachments: AttachmentRow[] = []): Comment {

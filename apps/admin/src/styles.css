@@ -101,6 +101,30 @@ input {
   background: #fff;
 }
 
+.workspace-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  padding: 8px;
+  border-bottom: 1px solid #dde4dc;
+  background: #f6f7f4;
+}
+
+.workspace-tabs button {
+  min-width: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #667085;
+  font-weight: 700;
+}
+
+.workspace-tabs button.active {
+  background: #fff;
+  color: #1f7a5b;
+  box-shadow: 0 1px 2px rgba(32, 36, 42, 0.08);
+}
+
 .rail-head {
   height: 52px;
   display: flex;
@@ -445,6 +469,105 @@ button:hover {
 
 .hidden-input {
   display: none;
+}
+
+.product-editor-pane {
+  background: #f6f7f4;
+}
+
+.product-workspace {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.product-form-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.product-form-grid label,
+.wide-field {
+  min-width: 0;
+}
+
+.product-form-grid select {
+  width: 100%;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid #cbd5c8;
+  border-radius: 8px;
+  background: #fff;
+  color: #20242a;
+}
+
+.product-title-field {
+  grid-column: span 2;
+}
+
+.product-form-grid small {
+  color: #667085;
+  font-size: 11px;
+}
+
+.wide-field textarea {
+  min-height: 240px;
+  padding: 10px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.product-cover-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid #dde4dc;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.product-cover-preview {
+  width: 132px;
+  height: 88px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid #cbd5c8;
+  border-radius: 6px;
+  background: #f6f7f4;
+  color: #667085;
+}
+
+.product-cover-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-cover-row p {
+  margin: 3px 0 10px;
+  color: #667085;
+  font-size: 13px;
+}
+
+.product-toolbar {
+  justify-content: flex-end;
+}
+
+.product-status-note {
+  color: #667085;
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .product-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .fp-size-sm {

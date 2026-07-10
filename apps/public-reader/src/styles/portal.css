@@ -868,6 +868,243 @@ svg {
   background: var(--portal-panel-soft);
 }
 
+.market-console {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.7fr) minmax(0, 1.3fr) auto;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 28px;
+  padding: 16px 0;
+  border-top: 1px solid var(--portal-line);
+  border-bottom: 1px solid var(--portal-line);
+}
+
+.market-console strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 16px;
+}
+
+.market-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.market-filters button {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--portal-line-strong);
+  border-radius: 8px;
+  background: var(--portal-panel);
+  color: var(--portal-muted);
+  font-size: 13px;
+}
+
+.market-filters button.active,
+.market-filters button:hover {
+  border-color: var(--portal-accent);
+  background: var(--portal-accent-soft);
+  color: var(--portal-accent);
+}
+
+.market-count {
+  color: var(--portal-muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.market-product-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.market-product-card {
+  overflow: hidden;
+  border: 1px solid var(--portal-line);
+  border-radius: 8px;
+  background: var(--portal-panel);
+}
+
+.market-product-card:hover {
+  border-color: color-mix(in srgb, var(--portal-accent) 58%, var(--portal-line));
+}
+
+.market-product-cover {
+  height: 168px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-bottom: 1px solid var(--portal-line);
+  background: var(--portal-panel-soft);
+}
+
+.market-product-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.market-product-placeholder {
+  color: var(--portal-muted);
+}
+
+.market-product-placeholder svg {
+  width: 34px;
+  height: 34px;
+}
+
+.market-product-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 248px;
+  padding: 20px;
+}
+
+.market-product-category {
+  color: var(--portal-accent);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.market-product-body h2 {
+  margin: 14px 0 7px;
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", STSong, SimSun, serif;
+  font-size: 21px;
+  line-height: 1.4;
+}
+
+.market-product-body p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: var(--portal-muted);
+  font-size: 14px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.market-product-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.market-product-price strong {
+  color: var(--portal-text);
+  font-size: 19px;
+}
+
+.market-product-price del {
+  display: block;
+  margin-top: 2px;
+  color: var(--portal-muted);
+  font-size: 12px;
+}
+
+.market-product-bottom > span {
+  color: var(--portal-muted);
+  font-size: 12px;
+}
+
+.market-product-body button {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--portal-accent);
+  font-weight: 700;
+  text-align: left;
+}
+
+.market-product-body button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.product-dialog {
+  width: min(680px, calc(100vw - 32px));
+  max-height: min(760px, calc(100vh - 32px));
+  overflow: auto;
+  padding: 30px;
+  border: 1px solid var(--portal-line-strong);
+  border-radius: 8px;
+  background: var(--portal-panel);
+  color: var(--portal-text);
+}
+
+.product-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.62);
+}
+
+.dialog-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+}
+
+.product-dialog-cover {
+  min-height: 10px;
+  margin: -30px -30px 24px;
+}
+
+.product-dialog-cover:empty {
+  display: none;
+}
+
+.product-dialog-cover img {
+  width: 100%;
+  max-height: 300px;
+  display: block;
+  object-fit: cover;
+}
+
+.product-dialog h2 {
+  margin: 8px 0;
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", STSong, SimSun, serif;
+  font-size: 30px;
+}
+
+.product-dialog-summary {
+  color: var(--portal-muted);
+}
+
+.product-dialog-price {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 22px 0;
+  color: var(--portal-accent);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.product-dialog-price span {
+  color: var(--portal-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.product-dialog-description {
+  padding-top: 20px;
+  border-top: 1px solid var(--portal-line);
+  color: var(--portal-muted);
+  line-height: 1.8;
+}
+
+.product-dialog .button {
+  width: 100%;
+  margin-top: 24px;
+}
+
 .market-layout {
   display: grid;
   grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.1fr);
@@ -1263,8 +1500,14 @@ svg {
 
   .post-card-grid,
   .archive-grid,
-  .topic-grid {
+  .topic-grid,
+  .market-product-grid {
     grid-template-columns: 1fr;
+  }
+
+  .market-console {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .post-card.featured {

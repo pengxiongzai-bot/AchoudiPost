@@ -3,9 +3,11 @@ import { createRoot } from "react-dom/client";
 import {
   Bold,
   Code2,
+  ImagePlus,
   Italic,
   Link2,
   LogOut,
+  Package,
   Plus,
   RefreshCw,
   Save,
@@ -45,6 +47,24 @@ type UploadedFile = {
   storedFilename: string;
 };
 
+type AdminProduct = {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  description: string;
+  category: string;
+  priceCents: number;
+  compareAtCents: number | null;
+  currency: string;
+  stock: number;
+  coverUrl: string | null;
+  status: "draft" | "published";
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
 const headingOptions = [
   { label: "正文", value: "p" },
   { label: "标题 1", value: "h1" },
@@ -73,7 +93,9 @@ function App() {
   const [username, setUsername] = useState("admin");
   const [password, setPassword] = useState("");
   const [posts, setPosts] = useState<AdminPost[]>([]);
+  const [products, setProducts] = useState<AdminProduct[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [workspace, setWorkspace] = useState<"posts" | "products">("posts");
   const [toast, setToast] = useState<Toast | null>(null);
   const editorRef = useRef<HTMLDivElement | null>(null);
   const attachmentInputRef = useRef<HTMLInputElement | null>(null);
@@ -105,7 +127,7 @@ function App() {
     const response = await fetch("/api/admin/session", { credentials: "include" });
     if (response.ok) {
       setAuthed(true);
-      await loadPosts();
+      await Promise.all([loadPosts(), loadProducts()]);
     }
   }
 
@@ -125,7 +147,7 @@ function App() {
 
     setAuthed(true);
     setPassword("");
-    await loadPosts();
+    await Promise.all([loadPosts(), loadProducts()]);
     showToast("已登录");
   }
 
@@ -133,6 +155,7 @@ function App() {
     await fetch("/api/admin/logout", { method: "POST", credentials: "include" });
     setAuthed(false);
     setPosts([]);
+    setProducts([]);
   }
 
   async function loadPosts() {
@@ -145,6 +168,18 @@ function App() {
     const body = (await response.json()) as { items: AdminPost[] };
     setPosts(body.items);
     setActiveId((current) => current ?? body.items[0]?.id ?? null);
+  }
+
+  async function loadProducts() {
+    const response = await fetch("/api/admin/products", { credentials: "include" });
+    if (!response.ok) return;
+    const body = (await response.json()) as { items: AdminProduct[] };
+    setProducts(body.items);
+  }
+
+  function openProductWorkspace() {
+    setWorkspace("products");
+    void loadProducts();
   }
 
   async function createPost() {
@@ -408,9 +443,27 @@ function App() {
     );
   }
 
+  if (workspace === "products") {
+    return (
+      <ProductWorkspace
+        products={products}
+        setProducts={setProducts}
+        onOpenPosts={() => setWorkspace("posts")}
+        onRefresh={loadProducts}
+        onLogout={logout}
+        showToast={showToast}
+        toast={toast}
+      />
+    );
+  }
+
   return (
     <main className="admin-shell">
       <aside className="post-rail">
+        <div className="workspace-tabs" role="tablist" aria-label="后台工作区">
+          <button className="active" type="button" role="tab" aria-selected="true">文章</button>
+          <button type="button" role="tab" aria-selected="false" onClick={openProductWorkspace}>商品</button>
+        </div>
         <div className="rail-head">
           <strong>文章管理</strong>
           <button className="icon-button" type="button" onClick={createPost} title="新建文章">
@@ -616,6 +669,164 @@ function App() {
       {toast && <div className="toast">{toast.text}</div>}
     </main>
   );
+}
+
+function ProductWorkspace({
+  products,
+  setProducts,
+  onOpenPosts,
+  onRefresh,
+  onLogout,
+  showToast,
+  toast
+}: {
+  products: AdminProduct[];
+  setProducts: (next: AdminProduct[] | ((items: AdminProduct[]) => AdminProduct[])) => void;
+  onOpenPosts: () => void;
+  onRefresh: () => Promise<void>;
+  onLogout: () => Promise<void>;
+  showToast: (text: string) => void;
+  toast: Toast | null;
+}) {
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const coverInputRef = useRef<HTMLInputElement | null>(null);
+  const activeProduct = useMemo(() => products.find((product) => product.id === activeId) ?? products[0], [products, activeId]);
+
+  useEffect(() => {
+    setActiveId((current) => current ?? products[0]?.id ?? null);
+  }, [products]);
+
+  function patchProduct(patch: Partial<AdminProduct>) {
+    if (!activeProduct) return;
+    setProducts((items) => items.map((item) => (item.id === activeProduct.id ? { ...item, ...patch } : item)));
+  }
+
+  async function createProduct() {
+    const response = await fetch("/api/admin/products", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(defaultProductPayload())
+    });
+    if (!response.ok) return showToast("创建商品失败");
+    const created = (await response.json()) as AdminProduct;
+    setProducts((items) => [created, ...items]);
+    setActiveId(created.id);
+    showToast("商品草稿已创建");
+  }
+
+  async function saveProduct() {
+    if (!activeProduct) return;
+    const response = await fetch(`/api/admin/products/${activeProduct.id}`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(productPayload(activeProduct))
+    });
+    if (!response.ok) return showToast("保存失败，请检查商品信息");
+    const saved = (await response.json()) as AdminProduct;
+    setProducts((items) => items.map((item) => (item.id === saved.id ? saved : item)));
+    showToast(saved.status === "published" ? "商品已发布" : "商品草稿已保存");
+  }
+
+  async function deleteProduct() {
+    if (!activeProduct || !confirm(`确认删除商品《${activeProduct.title}》？`)) return;
+    const response = await fetch(`/api/admin/products/${activeProduct.id}`, { method: "DELETE", credentials: "include" });
+    if (!response.ok) return showToast("删除失败");
+    setProducts((items) => items.filter((item) => item.id !== activeProduct.id));
+    setActiveId(null);
+    showToast("商品已删除");
+  }
+
+  async function uploadCover(files: FileList | null) {
+    const file = files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return showToast("封面只能使用图片文件");
+    try {
+      const uploaded = await uploadFile(file);
+      patchProduct({ coverUrl: uploaded.url });
+      showToast("封面已上传，保存商品后生效");
+    } catch {
+      showToast("封面上传失败");
+    }
+  }
+
+  return (
+    <main className="admin-shell">
+      <aside className="post-rail">
+        <div className="workspace-tabs" role="tablist" aria-label="后台工作区">
+          <button type="button" role="tab" aria-selected="false" onClick={onOpenPosts}>文章</button>
+          <button className="active" type="button" role="tab" aria-selected="true">商品</button>
+        </div>
+        <div className="rail-head">
+          <strong>商品管理</strong>
+          <button className="icon-button" type="button" onClick={createProduct} title="新建商品"><Plus size={17} /></button>
+        </div>
+        <div className="rail-actions">
+          <button type="button" onClick={() => void onRefresh()}><RefreshCw size={15} />刷新</button>
+          <button type="button" onClick={() => void onLogout()}><LogOut size={15} />退出</button>
+        </div>
+        <div className="post-list product-list">
+          {products.map((product) => (
+            <button key={product.id} type="button" className={product.id === activeProduct?.id ? "active" : ""} onClick={() => setActiveId(product.id)}>
+              <span>{product.title}</span>
+              <small>{product.status === "published" ? "已发布" : "草稿"} · {formatMoney(product.priceCents, product.currency)}</small>
+            </button>
+          ))}
+        </div>
+      </aside>
+
+      <section className="editor-pane product-editor-pane">
+        {activeProduct ? (
+          <>
+            <header className="editor-topbar"><div><strong>{activeProduct.title}</strong><span>/market/{activeProduct.slug}</span></div></header>
+            <div className="editor-workspace product-workspace">
+              <div className="product-form-grid">
+                <label className="title-field product-title-field"><span>商品名称</span><input value={activeProduct.title} onChange={(event) => patchProduct({ title: event.target.value })} /></label>
+                <label><span>分类</span><select value={activeProduct.category} onChange={(event) => patchProduct({ category: event.target.value })}><option value="service">服务</option><option value="digital">数字内容</option><option value="software">软件工具</option><option value="other">其它</option></select></label>
+                <label><span>价格</span><input type="number" min="0" step="0.01" value={formatPriceInput(activeProduct.priceCents)} onChange={(event) => patchProduct({ priceCents: priceToCents(event.target.value) })} /></label>
+                <label><span>划线价（可选）</span><input type="number" min="0" step="0.01" value={activeProduct.compareAtCents === null ? "" : formatPriceInput(activeProduct.compareAtCents)} onChange={(event) => patchProduct({ compareAtCents: event.target.value ? priceToCents(event.target.value) : null })} /></label>
+                <label><span>币种</span><select value={activeProduct.currency} onChange={(event) => patchProduct({ currency: event.target.value })}><option value="CNY">CNY</option><option value="USD">USD</option></select></label>
+                <label><span>库存</span><input type="number" min="-1" step="1" value={activeProduct.stock} onChange={(event) => patchProduct({ stock: Number(event.target.value) || 0 })} /><small>-1 表示不限量</small></label>
+                <label><span>排序</span><input type="number" value={activeProduct.sortOrder} onChange={(event) => patchProduct({ sortOrder: Number(event.target.value) || 0 })} /></label>
+                <label><span>发布状态</span><select value={activeProduct.status} onChange={(event) => patchProduct({ status: event.target.value as AdminProduct["status"] })}><option value="draft">草稿</option><option value="published">公开发布</option></select></label>
+              </div>
+              <label className="wide-field"><span>一句话简介</span><input maxLength={500} value={activeProduct.summary} onChange={(event) => patchProduct({ summary: event.target.value })} /></label>
+              <div className="product-cover-row">
+                <div className="product-cover-preview">{activeProduct.coverUrl ? <img src={activeProduct.coverUrl} alt="商品封面" /> : <Package size={30} />}</div>
+                <div><strong>商品封面</strong><p>上传后的图片存入现有 R2 存储。</p><button type="button" onClick={() => coverInputRef.current?.click()}><ImagePlus size={15} />上传封面</button><input ref={coverInputRef} className="hidden-input" type="file" accept="image/*" onChange={(event) => { void uploadCover(event.target.files); event.target.value = ""; }} /></div>
+              </div>
+              <label className="wide-field"><span>商品详情</span><textarea rows={12} maxLength={12000} value={activeProduct.description} onChange={(event) => patchProduct({ description: event.target.value })} /></label>
+            </div>
+            <div className="toolbar product-toolbar"><span className="product-status-note">{activeProduct.status === "published" ? "公开页可见" : "仅后台可见"}</span><span className="toolbar-fill" /><button className="danger-button" type="button" onClick={() => void deleteProduct()}><Trash2 size={15} />删除</button><button className="primary" type="button" onClick={() => void saveProduct()}><Save size={15} />保存</button></div>
+          </>
+        ) : <div className="empty-state">暂无商品，点击左上角加号创建第一个商品。</div>}
+      </section>
+      {toast && <div className="toast">{toast.text}</div>}
+    </main>
+  );
+}
+
+function defaultProductPayload(): Omit<AdminProduct, "id" | "slug" | "createdAt" | "updatedAt"> {
+  return { title: "未命名商品", summary: "请填写商品简介", description: "请填写商品详情", category: "service", priceCents: 0, compareAtCents: null, currency: "CNY", stock: -1, coverUrl: null, status: "draft", sortOrder: 0 };
+}
+
+function productPayload(product: AdminProduct) {
+  const { id: _id, slug: _slug, createdAt: _createdAt, updatedAt: _updatedAt, ...payload } = product;
+  return payload;
+}
+
+function priceToCents(value: string): number {
+  const price = Number(value);
+  return Number.isFinite(price) && price >= 0 ? Math.round(price * 100) : 0;
+}
+
+function formatPriceInput(cents: number): string {
+  return (cents / 100).toFixed(2);
+}
+
+function formatMoney(cents: number, currency: string): string {
+  return new Intl.NumberFormat("zh-CN", { style: "currency", currency: currency || "CNY", minimumFractionDigits: 2 }).format(cents / 100);
 }
 
 async function fileToEditorHtml(file: File): Promise<string> {

@@ -10,9 +10,11 @@ import type {
   ContentRepository,
   CreateCommentInput,
   CreatePostInput,
+  ProductInput,
   RecordViewInput,
   RecordViewResult,
   StoredPost,
+  StoredProduct,
   UpdatePostInput
 } from "./types.js";
 
@@ -37,6 +39,7 @@ export function createSeedPosts(): StoredPost[] {
 
 export class MemoryContentRepository implements ContentRepository {
   private readonly posts = new Map<string, StoredPost>();
+  private readonly products = new Map<string, StoredProduct>();
   private readonly commentsBySlug = new Map<string, Comment[]>();
   private readonly views = new Set<string>();
 
@@ -170,5 +173,59 @@ export class MemoryContentRepository implements ContentRepository {
 
   async deleteAttachmentsByIds(_ids: string[]): Promise<void> {
     // Memory comments own attachment metadata directly, so deleting comments removes it.
+  }
+
+  async listProducts(options: { publishedOnly?: boolean } = {}): Promise<StoredProduct[]> {
+    return [...this.products.values()]
+      .filter((product) => !options.publishedOnly || product.status === "published")
+      .sort((left, right) => right.sortOrder - left.sortOrder || right.createdAt.localeCompare(left.createdAt));
+  }
+
+  async getProductBySlug(slug: string): Promise<StoredProduct | null> {
+    return (await this.listProducts()).find((product) => product.slug === slug) ?? null;
+  }
+
+  async getProductById(id: string): Promise<StoredProduct | null> {
+    return this.products.get(id) ?? null;
+  }
+
+  async createProduct(input: ProductInput): Promise<StoredProduct> {
+    const createdAt = new Date().toISOString();
+    const product: StoredProduct = {
+      id: crypto.randomUUID(),
+      slug: await this.uniqueProductSlug(input.title),
+      ...input,
+      title: input.title.trim() || "未命名商品",
+      createdAt,
+      updatedAt: createdAt
+    };
+    this.products.set(product.id, product);
+    return product;
+  }
+
+  async updateProduct(id: string, input: ProductInput): Promise<StoredProduct | null> {
+    const existing = this.products.get(id);
+    if (!existing) return null;
+    const updated: StoredProduct = {
+      ...existing,
+      ...input,
+      title: input.title.trim() || existing.title,
+      updatedAt: new Date().toISOString()
+    };
+    this.products.set(id, updated);
+    return updated;
+  }
+
+  async deleteProduct(id: string): Promise<boolean> {
+    return this.products.delete(id);
+  }
+
+  private async uniqueProductSlug(title: string): Promise<string> {
+    const base = makeSlug(title || "product");
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const slug = attempt === 0 ? base : `${base}-${attempt + 1}`;
+      if (!(await this.getProductBySlug(slug))) return slug;
+    }
+    return `${base}-${crypto.randomUUID().slice(0, 8)}`;
   }
 }

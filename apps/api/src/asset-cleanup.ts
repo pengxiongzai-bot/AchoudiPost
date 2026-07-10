@@ -119,6 +119,12 @@ async function collectReferencedManagedStorageKeys(repository: ContentRepository
     }
   }
 
+  const products = await repository.listProducts();
+  for (const product of products) {
+    const key = product.coverUrl ? managedStorageKeyFromUrl(product.coverUrl) : null;
+    if (key) keys.add(key);
+  }
+
   return keys;
 }
 

@@ -38,6 +38,31 @@ export const posts = pgTable(
   })
 );
 
+export const products = pgTable(
+  "products",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    slug: varchar("slug", { length: 64 }).notNull().unique(),
+    title: text("title").notNull(),
+    summary: text("summary").notNull().default(""),
+    description: text("description").notNull().default(""),
+    category: varchar("category", { length: 32 }).notNull().default("other"),
+    priceCents: integer("price_cents").notNull().default(0),
+    compareAtCents: integer("compare_at_cents"),
+    currency: varchar("currency", { length: 8 }).notNull().default("CNY"),
+    stock: integer("stock").notNull().default(-1),
+    coverUrl: text("cover_url"),
+    status: varchar("status", { length: 16 }).notNull().default("draft"),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => ({
+    createdAtIdx: index("idx_products_created_at").on(table.createdAt),
+    statusIdx: index("idx_products_status_sort").on(table.status, table.sortOrder)
+  })
+);
+
 export const postArtifacts = pgTable(
   "post_artifacts",
   {

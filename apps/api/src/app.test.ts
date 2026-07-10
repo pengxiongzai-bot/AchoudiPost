@@ -110,6 +110,34 @@ describe("api app", () => {
     }
   });
 
+  it("publishes products through the admin API and hides drafts from the storefront", async () => {
+    const app = buildApp({ repository: new MemoryContentRepository() });
+    const cookie = await adminCookie(app);
+    const draft = await app.inject({
+      method: "POST",
+      url: "/api/admin/products",
+      headers: { cookie },
+      payload: productPayload({ status: "draft", title: "草稿商品" })
+    });
+    const published = await app.inject({
+      method: "POST",
+      url: "/api/admin/products",
+      headers: { cookie },
+      payload: productPayload({ status: "published", title: "公开商品" })
+    });
+    const publicList = await app.inject({ method: "GET", url: "/api/products" });
+    const adminList = await app.inject({ method: "GET", url: "/api/admin/products", headers: { cookie } });
+    const deleted = await app.inject({ method: "DELETE", url: `/api/admin/products/${published.json().id}`, headers: { cookie } });
+    await app.close();
+
+    expect(draft.statusCode).toBe(201);
+    expect(published.statusCode).toBe(201);
+    expect(publicList.json().items).toHaveLength(1);
+    expect(publicList.json().items[0]).toMatchObject({ title: "公开商品", status: "published" });
+    expect(adminList.json().items).toHaveLength(2);
+    expect(deleted.statusCode).toBe(200);
+  });
+
   it("extracts managed OSS asset keys without touching external links", () => {
     const previousBaseUrl = process.env.ALIYUN_OSS_PUBLIC_BASE_URL;
     const previousR2BaseUrl = process.env.R2_PUBLIC_BASE_URL;
@@ -296,6 +324,23 @@ async function adminCookie(app: ReturnType<typeof buildApp>): Promise<string> {
   });
   const cookie = response.headers["set-cookie"];
   return Array.isArray(cookie) ? cookie[0] ?? "" : cookie ?? "";
+}
+
+function productPayload(overrides: Record<string, unknown> = {}) {
+  return {
+    title: "测试商品",
+    summary: "这是一条商品简介",
+    description: "这是完整的商品详情",
+    category: "service",
+    priceCents: 19900,
+    compareAtCents: 29900,
+    currency: "CNY",
+    stock: -1,
+    coverUrl: null,
+    status: "draft",
+    sortOrder: 0,
+    ...overrides
+  };
 }
 
 async function withLocalStorageRoot(run: (root: string) => Promise<void>): Promise<void> {

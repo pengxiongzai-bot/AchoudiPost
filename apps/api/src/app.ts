@@ -17,9 +17,10 @@ import type { Comment } from "@freedompost/shared";
 import {
   collectPostDeletionCandidateKeys,
   deleteUnreferencedManagedAssets,
-  diffRemovedManagedStorageKeys
+  diffRemovedManagedStorageKeys,
+  managedStorageKeyFromUrl
 } from "./asset-cleanup.js";
-import { createContentRepository, type ContentRepository } from "./repositories/index.js";
+import { createContentRepository, type ContentRepository, type ProductInput } from "./repositories/index.js";
 import { createStorageAdapter, getLocalUploadStream } from "./storage.js";
 
 const sessions = new Map<string, { username: string; createdAt: string }>();
@@ -72,6 +73,18 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   app.get("/api/posts", async () => ({
     items: await repository.listPostSummaries()
   }));
+
+  app.get("/api/products", async () => ({
+    items: await repository.listProducts({ publishedOnly: true })
+  }));
+
+  app.get<{ Params: { slug: string } }>("/api/products/:slug", async (request, reply) => {
+    const product = await repository.getProductBySlug(request.params.slug);
+    if (!product || product.status !== "published") {
+      return reply.code(404).send(errorBody("PRODUCT_NOT_FOUND", "商品不存在或尚未发布"));
+    }
+    return { item: product };
+  });
 
   app.get<{ Params: { slug: string } }>("/api/posts/:slug", async (request, reply) => {
     const post = await repository.getPostBySlug(request.params.slug);
@@ -313,6 +326,60 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     };
   });
 
+  app.get("/api/admin/products", async (request, reply) => {
+    if (!getSession(request.cookies.fp_session)) {
+      return reply.code(401).send(errorBody("UNAUTHENTICATED", "未登录"));
+    }
+    return { items: await repository.listProducts() };
+  });
+
+  app.post<{ Body: unknown }>("/api/admin/products", async (request, reply) => {
+    if (!getSession(request.cookies.fp_session)) {
+      return reply.code(401).send(errorBody("UNAUTHENTICATED", "未登录"));
+    }
+    const input = normalizeProductInput(request.body);
+    if (!input) return reply.code(400).send(errorBody("INVALID_PRODUCT", "商品信息不完整或格式不正确"));
+    return reply.code(201).send(await repository.createProduct(input));
+  });
+
+  app.put<{ Params: { id: string }; Body: unknown }>("/api/admin/products/:id", async (request, reply) => {
+    if (!getSession(request.cookies.fp_session)) {
+      return reply.code(401).send(errorBody("UNAUTHENTICATED", "未登录"));
+    }
+    const input = normalizeProductInput(request.body);
+    if (!input) return reply.code(400).send(errorBody("INVALID_PRODUCT", "商品信息不完整或格式不正确"));
+    const existing = await repository.getProductById(request.params.id);
+    if (!existing) return reply.code(404).send(errorBody("PRODUCT_NOT_FOUND", "商品不存在"));
+    const removedCoverKey = existing.coverUrl !== input.coverUrl && existing.coverUrl
+      ? managedStorageKeyFromUrl(existing.coverUrl)
+      : null;
+    const updated = await repository.updateProduct(request.params.id, input);
+    if (!updated) return reply.code(404).send(errorBody("PRODUCT_NOT_FOUND", "商品不存在"));
+    if (removedCoverKey) {
+      await deleteUnreferencedManagedAssets({ candidateKeys: [removedCoverKey], repository, storage }).catch((error) => {
+        request.log.warn({ error }, "Removed product cover cleanup failed");
+      });
+    }
+    return updated;
+  });
+
+  app.delete<{ Params: { id: string } }>("/api/admin/products/:id", async (request, reply) => {
+    if (!getSession(request.cookies.fp_session)) {
+      return reply.code(401).send(errorBody("UNAUTHENTICATED", "未登录"));
+    }
+    const existing = await repository.getProductById(request.params.id);
+    if (!existing) return reply.code(404).send(errorBody("PRODUCT_NOT_FOUND", "商品不存在"));
+    const coverKey = existing.coverUrl ? managedStorageKeyFromUrl(existing.coverUrl) : null;
+    const deleted = await repository.deleteProduct(request.params.id);
+    if (!deleted) return reply.code(404).send(errorBody("PRODUCT_NOT_FOUND", "商品不存在"));
+    if (coverKey) {
+      await deleteUnreferencedManagedAssets({ candidateKeys: [coverKey], repository, storage }).catch((error) => {
+        request.log.warn({ error }, "Deleted product cover cleanup failed");
+      });
+    }
+    return { ok: true };
+  });
+
   app.post("/api/admin/attachments", async (request, reply) => {
     if (!getSession(request.cookies.fp_session)) {
       return reply.code(401).send(errorBody("UNAUTHENTICATED", "未登录"));
@@ -457,6 +524,47 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 function getSession(token: string | undefined) {
   if (!token) return null;
   return sessions.get(sha256(token)) ?? null;
+}
+
+function normalizeProductInput(value: unknown): ProductInput | null {
+  if (!value || typeof value !== "object") return null;
+  const input = value as Record<string, unknown>;
+  const title = readText(input.title, 120);
+  const summary = readText(input.summary, 500);
+  const description = readText(input.description, 12_000);
+  const category = readText(input.category, 32) || "other";
+  const currency = (readText(input.currency, 8) || "CNY").toUpperCase();
+  const coverUrl = readOptionalUrl(input.coverUrl);
+  const status = input.status === "published" ? "published" : input.status === "draft" ? "draft" : null;
+  const priceCents = readInteger(input.priceCents, 0, 100_000_000);
+  const compareAtCents = input.compareAtCents === null || input.compareAtCents === "" ? null : readInteger(input.compareAtCents, 0, 100_000_000);
+  const stock = readInteger(input.stock, -1, 1_000_000);
+  const sortOrder = readInteger(input.sortOrder, -100_000, 100_000);
+
+  if (!title || !summary || !description || !status || priceCents === null || stock === null || sortOrder === null) return null;
+  if (compareAtCents === undefined || (compareAtCents !== null && compareAtCents < priceCents)) return null;
+
+  return { title, summary, description, category, priceCents, compareAtCents, currency, stock, coverUrl, status, sortOrder };
+}
+
+function readText(value: unknown, maxLength: number): string {
+  return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
+}
+
+function readInteger(value: unknown, min: number, max: number): number | null {
+  const numberValue = typeof value === "number" ? value : Number(value);
+  return Number.isInteger(numberValue) && numberValue >= min && numberValue <= max ? numberValue : null;
+}
+
+function readOptionalUrl(value: unknown): string | null {
+  if (value === null || value === undefined || value === "") return null;
+  if (typeof value !== "string" || value.length > 2_000) return null;
+  try {
+    const url = new URL(value, "http://freedompost.local");
+    return url.protocol === "http:" || url.protocol === "https:" ? value : null;
+  } catch {
+    return null;
+  }
 }
 
 function checkCommentRate(input: {
