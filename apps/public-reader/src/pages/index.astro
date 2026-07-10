@@ -23,7 +23,7 @@ const formatDate = (value: string) => new Intl.DateTimeFormat("zh-CN", {
       <h1 id="heroTitle">把想说的话，<br />完整地留下来。</h1>
       <p class="hero-lead">FreedomPost 让写作回到内容本身。没有信息流噪声，没有复杂门槛，文章、资料与讨论都在一处安静展开。</p>
       <div class="hero-actions">
-        <a id="latestArticleLink" class="button primary" href={latest ? `/p/${encodeURIComponent(latest.slug)}` : "/articles/"}>
+        <a id="latestArticleLink" class="button primary" href={latest ? `/articles/?post=${encodeURIComponent(latest.slug)}` : "/articles/"} data-portal-route>
           <i data-lucide="book-open"></i><span>开始阅读</span>
         </a>
         <a class="button secondary" href="/articles/"><i data-lucide="library"></i><span>浏览全部文章</span></a>
@@ -46,7 +46,7 @@ const formatDate = (value: string) => new Intl.DateTimeFormat("zh-CN", {
         {
           initialPosts.map((post, index) => (
             <article class:list={["post-card", { featured: index === 0 }]}>
-              <a href={`/p/${encodeURIComponent(post.slug)}`} aria-label={`阅读 ${post.title}`}>
+              <a href={`/articles/?post=${encodeURIComponent(post.slug)}`} data-portal-route aria-label={`阅读 ${post.title}`}>
                 <div class="post-card-topline"><span>{index === 0 ? "最新文章" : "文章"}</span><time datetime={post.createdAt}>{formatDate(post.createdAt)}</time></div>
                 <h3>{post.title}</h3>
                 <p>{post.excerpt || "打开文章，继续阅读完整内容。"}</p>

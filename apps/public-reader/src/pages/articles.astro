@@ -1,10 +1,12 @@
 ---
-import ReaderShell from "../layouts/ReaderShell.astro";
-import { latestArticle } from "../lib/articles";
+import PortalShell from "../layouts/PortalShell.astro";
 
-if (!latestArticle) {
-  throw new Error("No seed articles configured");
-}
+const post = Astro.url.searchParams.get("post")?.trim();
+const readerSource = post ? `/reader/?post=${encodeURIComponent(post)}` : "/reader/";
 ---
 
-<ReaderShell article={latestArticle} />
+<PortalShell activePage="articles" title="文章" description="使用 FreedomPost 原有阅读工作台浏览全部文章。" hideFooter={true}>
+  <section class="reader-route" aria-label="FreedomPost 文章阅读器">
+    <iframe id="articleReaderFrame" title="FreedomPost 文章阅读器" src={readerSource}></iframe>
+  </section>
+</PortalShell>

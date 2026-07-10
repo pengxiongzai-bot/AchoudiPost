@@ -398,6 +398,25 @@ svg {
   border-bottom: 1px solid var(--portal-line);
 }
 
+.reader-route {
+  height: calc(100vh - 102px);
+  min-height: 620px;
+  background: var(--portal-bg);
+}
+
+.reader-route iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+  background: var(--portal-bg);
+}
+
+.route-loading #portalContent {
+  opacity: 0.62;
+  pointer-events: none;
+}
+
 .latest-section,
 .topic-section,
 .guide-section,
@@ -1181,6 +1200,11 @@ svg {
   .portal-hero,
   .hero-content {
     min-height: 510px;
+  }
+
+  .reader-route {
+    height: calc(100vh - 92px);
+    min-height: 520px;
   }
 
   .hero-media {

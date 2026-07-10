@@ -23,20 +23,21 @@ const navToggle = document.querySelector<HTMLButtonElement>("#navToggle");
 const primaryNav = document.querySelector<HTMLElement>("#primaryNav");
 const themeButton = document.querySelector<HTMLButtonElement>("#portalThemeBtn");
 const servicePulse = document.querySelector<HTMLElement>("#servicePulse");
-const postGrid = document.querySelector<HTMLElement>("#portalPostGrid");
-const searchInput = document.querySelector<HTMLInputElement>("#portalSearchInput");
-const searchMeta = document.querySelector<HTMLElement>("#articleSearchMeta");
-const emptyState = document.querySelector<HTMLElement>("#emptyArticles");
+let postGrid = document.querySelector<HTMLElement>("#portalPostGrid");
+let searchInput = document.querySelector<HTMLInputElement>("#portalSearchInput");
+let searchMeta = document.querySelector<HTMLElement>("#articleSearchMeta");
+let emptyState = document.querySelector<HTMLElement>("#emptyArticles");
+let routeLoading = false;
 
 let posts: PostListItem[] = [];
 let searchDocuments: SearchDocument[] = [];
 
 initTheme();
 bindNavigation();
-bindSearch();
+bindRouteNavigation();
+bindPageInteractions();
 createPortalIcons();
 void checkService();
-void hydratePosts();
 
 function initTheme() {
   const saved = localStorage.getItem(themeKey);
@@ -74,19 +75,92 @@ function bindNavigation() {
   });
 }
 
-function bindSearch() {
-  if (!searchInput) return;
+function bindPageInteractions() {
+  postGrid = document.querySelector<HTMLElement>("#portalPostGrid");
+  searchInput = document.querySelector<HTMLInputElement>("#portalSearchInput");
+  searchMeta = document.querySelector<HTMLElement>("#articleSearchMeta");
+  emptyState = document.querySelector<HTMLElement>("#emptyArticles");
 
-  const requestedQuery = new URLSearchParams(location.search).get("q")?.trim() ?? "";
-  searchInput.value = requestedQuery;
-  searchInput.addEventListener("input", () => renderPosts(searchInput.value));
+  if (searchInput) {
+    const requestedQuery = new URLSearchParams(location.search).get("q")?.trim() ?? "";
+    searchInput.value = requestedQuery;
+    searchInput.addEventListener("input", () => renderPosts(searchInput?.value ?? ""));
+  }
+
+  if (postGrid) void hydratePosts();
+}
+
+function bindRouteNavigation() {
+  document.addEventListener("click", (event) => {
+    const target = event.target as Element | null;
+    const link = target?.closest<HTMLAnchorElement>("a[data-portal-route]");
+    if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const destination = new URL(link.href, location.href);
+    if (destination.origin !== location.origin) return;
+    event.preventDefault();
+    void loadRoute(destination, true);
+  });
 
   document.addEventListener("keydown", (event) => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+      if (!searchInput) return;
       event.preventDefault();
       searchInput.focus();
       searchInput.select();
     }
+  });
+
+  window.addEventListener("popstate", () => {
+    void loadRoute(new URL(location.href), false);
+  });
+}
+
+async function loadRoute(destination: URL, push: boolean) {
+  if (routeLoading || (push && destination.pathname === location.pathname && destination.search === location.search)) return;
+  const content = document.querySelector<HTMLElement>("#portalContent");
+  if (!content) return;
+
+  routeLoading = true;
+  document.body.classList.add("route-loading");
+  try {
+    const response = await fetch(destination.href, { headers: { "X-FreedomPost-Route": "1" } });
+    if (!response.ok) throw new Error(`Route request failed: ${response.status}`);
+    const documentText = await response.text();
+    const nextDocument = new DOMParser().parseFromString(documentText, "text/html");
+    const nextContent = nextDocument.querySelector<HTMLElement>("#portalContent");
+    const footer = document.querySelector<HTMLElement>("#portalFooter");
+    const nextFooter = nextDocument.querySelector<HTMLElement>("#portalFooter");
+    if (!nextContent) throw new Error("Route content is missing");
+
+    content.innerHTML = nextContent.innerHTML;
+    if (footer && nextFooter) {
+      footer.innerHTML = nextFooter.innerHTML;
+      footer.hidden = nextFooter.hidden;
+    }
+    document.title = nextDocument.title;
+    document.body.dataset.page = nextDocument.body.dataset.page ?? "";
+    if (push) history.pushState({}, "", `${destination.pathname}${destination.search}${destination.hash}`);
+    updateActiveNavigation(destination.pathname);
+    primaryNav?.classList.remove("open");
+    navToggle?.setAttribute("aria-expanded", "false");
+    window.scrollTo(0, 0);
+    bindPageInteractions();
+    createPortalIcons();
+  } catch {
+    location.assign(destination.href);
+  } finally {
+    routeLoading = false;
+    document.body.classList.remove("route-loading");
+  }
+}
+
+function updateActiveNavigation(pathname: string) {
+  document.querySelectorAll<HTMLAnchorElement>(".nav-link").forEach((link) => {
+    const linkPath = new URL(link.href, location.href).pathname;
+    const active = linkPath === pathname;
+    link.classList.toggle("active", active);
+    if (active) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
   });
 }
 
@@ -156,7 +230,7 @@ function renderPosts(rawQuery: string) {
 function renderPostCard(post: PostListItem, index: number, home: boolean) {
   const featured = home && index === 0 ? " featured" : "";
   return `<article class="post-card${featured}">
-    <a href="/p/${encodeURIComponent(post.slug)}" aria-label="阅读 ${escapeHtml(post.title)}">
+    <a href="/articles/?post=${encodeURIComponent(post.slug)}" data-portal-route aria-label="阅读 ${escapeHtml(post.title)}">
       <div class="post-card-topline"><span>${featured ? "最新文章" : "文章"}</span><time datetime="${escapeHtml(post.createdAt)}">${formatDate(post.createdAt)}</time></div>
       <h${home ? "3" : "2"}>${escapeHtml(post.title)}</h${home ? "3" : "2"}>
       <p>${escapeHtml(post.excerpt || "打开文章，继续阅读完整内容。")}</p>
@@ -173,7 +247,7 @@ function updateHomeStats() {
   if (postCount) postCount.textContent = String(posts.length);
   if (viewCount) viewCount.textContent = formatNumber(posts.reduce((sum, post) => sum + post.viewCount, 0));
   if (commentCount) commentCount.textContent = formatNumber(posts.reduce((sum, post) => sum + post.commentCount, 0));
-  if (latestLink && posts[0]) latestLink.href = `/p/${encodeURIComponent(posts[0].slug)}`;
+  if (latestLink && posts[0]) latestLink.href = `/articles/?post=${encodeURIComponent(posts[0].slug)}`;
 }
 
 function createPortalIcons() {

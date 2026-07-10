@@ -2,12 +2,13 @@
 import "../styles/portal.css";
 
 interface Props {
-  activePage: "home" | "topics" | "market" | "guide" | "about";
+  activePage: "home" | "articles" | "topics" | "market" | "guide" | "about";
   title: string;
   description: string;
+  hideFooter?: boolean;
 }
 
-const { activePage, title, description } = Astro.props;
+const { activePage, title, description, hideFooter = false } = Astro.props;
 const siteName = "FreedomPost";
 const pageTitle = activePage === "home" ? siteName : `${title} - ${siteName}`;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://example.com").toString();
@@ -41,7 +42,7 @@ const navItems = [
   <body data-page={activePage}>
     <header class="site-header">
       <div class="site-header-inner">
-        <a class="portal-brand" href="/" aria-label="FreedomPost 首页">
+        <a class="portal-brand" href="/" data-portal-route aria-label="FreedomPost 首页">
           <span class="portal-brand-mark">F</span>
           <span class="portal-brand-copy">
             <strong>FreedomPost</strong>
@@ -56,7 +57,7 @@ const navItems = [
         <nav id="primaryNav" class="primary-nav" aria-label="主导航">
           {
             navItems.map((item) => (
-              <a class:list={["nav-link", { active: activePage === item.id }]} href={item.href} aria-current={activePage === item.id ? "page" : undefined}>
+              <a class:list={["nav-link", { active: activePage === item.id }]} href={item.href} data-portal-route aria-current={activePage === item.id ? "page" : undefined}>
                 {item.label}
               </a>
             ))
@@ -82,21 +83,21 @@ const navItems = [
       </div>
     </div>
 
-    <main>
+    <main id="portalContent" data-portal-content>
       <slot />
     </main>
 
-    <footer class="portal-footer">
+    <footer id="portalFooter" class="portal-footer" hidden={hideFooter}>
       <div class="portal-footer-inner">
-        <a class="portal-brand footer-brand" href="/">
+        <a class="portal-brand footer-brand" href="/" data-portal-route>
           <span class="portal-brand-mark">F</span>
           <span class="portal-brand-copy"><strong>FreedomPost</strong><small>让内容先被看见</small></span>
         </a>
         <p>一个专注写作、发布与阅读的独立内容空间。</p>
         <nav aria-label="页脚导航">
-          <a href="/articles/">全部文章</a>
-          <a href="/guide/">使用指南</a>
-          <a href="/about/">关于本站</a>
+          <a href="/articles/" data-portal-route>全部文章</a>
+          <a href="/guide/" data-portal-route>使用指南</a>
+          <a href="/about/" data-portal-route>关于本站</a>
         </nav>
       </div>
     </footer>
