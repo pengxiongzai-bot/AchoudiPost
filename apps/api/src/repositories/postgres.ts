@@ -1,8 +1,11 @@
-import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNull, sql } from "drizzle-orm";
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import {
   attachments as attachmentsTable,
+  affiliateClicks as affiliateClicksTable,
+  affiliateOrders as affiliateOrdersTable,
+  affiliates as affiliatesTable,
   comments as commentsTable,
   postViews as postViewsTable,
   posts as postsTable,
@@ -18,12 +21,18 @@ import {
 } from "./post-utils.js";
 import type {
   ContentRepository,
+  AffiliateCommissionStatus,
+  AffiliateDashboard,
+  AffiliateOrderStatus,
+  AffiliateStatus,
   CreateCommentInput,
   CreatePostInput,
   ProductInput,
   RecordViewInput,
   RecordViewResult,
   StoredPost,
+  StoredAffiliate,
+  StoredAffiliateOrder,
   StoredProduct,
   UpdatePostInput
 } from "./types.js";
@@ -33,6 +42,7 @@ type PostRow = typeof postsTable.$inferSelect;
 type CommentRow = typeof commentsTable.$inferSelect;
 type AttachmentRow = typeof attachmentsTable.$inferSelect;
 type ProductRow = typeof productsTable.$inferSelect;
+type AffiliateRow = typeof affiliatesTable.$inferSelect;
 
 export class PostgresContentRepository implements ContentRepository {
   private readonly pool: Pool;
@@ -342,6 +352,130 @@ export class PostgresContentRepository implements ContentRepository {
     return deleted.length > 0;
   }
 
+  async getAffiliateByWechatId(wechatId: string): Promise<StoredAffiliate | null> {
+    const [row] = await this.db.select().from(affiliatesTable).where(eq(affiliatesTable.wechatId, wechatId)).limit(1);
+    return row ? mapAffiliateRow(row) : null;
+  }
+
+  async createAffiliate(wechatId: string, passwordHash: string): Promise<StoredAffiliate> {
+    const [row] = await this.db.insert(affiliatesTable).values({ wechatId, passwordHash }).returning();
+    if (!row) throw new Error("Failed to create affiliate");
+    return mapAffiliateRow(row);
+  }
+
+  async listAffiliates() {
+    const affiliates = await this.db.select().from(affiliatesTable).orderBy(desc(affiliatesTable.createdAt));
+    return Promise.all(affiliates.map(async (affiliate) => {
+      const [[clicks], [orders]] = await Promise.all([
+        this.db.select({ totalClicks: sql<number>`count(*)::int`, uniqueClicks: sql<number>`coalesce(sum(${affiliateClicksTable.isUnique}), 0)::int` }).from(affiliateClicksTable).where(eq(affiliateClicksTable.affiliateId, affiliate.id)),
+        this.db.select({ orderCount: sql<number>`count(*)::int` }).from(affiliateOrdersTable).where(eq(affiliateOrdersTable.affiliateId, affiliate.id))
+      ]);
+      return { ...publicAffiliate(mapAffiliateRow(affiliate)), totalClicks: clicks?.totalClicks ?? 0, uniqueClicks: clicks?.uniqueClicks ?? 0, orderCount: orders?.orderCount ?? 0 };
+    }));
+  }
+
+  async updateAffiliateStatus(id: string, status: AffiliateStatus): Promise<boolean> {
+    const rows = await this.db.update(affiliatesTable).set({ status, updatedAt: new Date() }).where(eq(affiliatesTable.id, id)).returning({ id: affiliatesTable.id });
+    return rows.length > 0;
+  }
+
+  async updateAffiliatePassword(id: string, passwordHash: string): Promise<boolean> {
+    const rows = await this.db.update(affiliatesTable).set({ passwordHash, updatedAt: new Date() }).where(eq(affiliatesTable.id, id)).returning({ id: affiliatesTable.id });
+    return rows.length > 0;
+  }
+
+  async recordAffiliateClick(wechatId: string, visitorKey: string, path: string) {
+    const affiliate = await this.getAffiliateByWechatId(wechatId);
+    if (!affiliate || affiliate.status !== "active") return { accepted: false, isUnique: false };
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const [recent] = await this.db
+      .select({ id: affiliateClicksTable.id })
+      .from(affiliateClicksTable)
+      .where(and(
+        eq(affiliateClicksTable.affiliateId, affiliate.id),
+        eq(affiliateClicksTable.visitorKey, visitorKey),
+        gt(affiliateClicksTable.clickedAt, cutoff)
+      ))
+      .limit(1);
+    const isUnique = !recent;
+    await this.db.insert(affiliateClicksTable).values({
+      affiliateId: affiliate.id,
+      visitorKey,
+      path,
+      isUnique: isUnique ? 1 : 0
+    });
+    return { accepted: true, isUnique };
+  }
+
+  async getAffiliateDashboard(affiliateId: string): Promise<AffiliateDashboard | null> {
+    const [affiliateRow] = await this.db.select().from(affiliatesTable).where(eq(affiliatesTable.id, affiliateId)).limit(1);
+    if (!affiliateRow) return null;
+    const [clicks] = await this.db
+      .select({
+        totalClicks: sql<number>`count(*)::int`,
+        uniqueClicks: sql<number>`coalesce(sum(${affiliateClicksTable.isUnique}), 0)::int`
+      })
+      .from(affiliateClicksTable)
+      .where(eq(affiliateClicksTable.affiliateId, affiliateId));
+    const orders = await this.listAffiliateOrdersFor(affiliateId);
+    return dashboardFrom(publicAffiliate(mapAffiliateRow(affiliateRow)), clicks ?? { totalClicks: 0, uniqueClicks: 0 }, orders);
+  }
+
+  async createAffiliateOrder(affiliateId: string, product: StoredProduct): Promise<StoredAffiliateOrder> {
+    const [row] = await this.db.insert(affiliateOrdersTable).values({
+      orderCode: await this.uniqueOrderCode(),
+      affiliateId,
+      productId: product.id,
+      productTitle: product.title,
+      priceCents: product.priceCents,
+      commissionCents: product.commissionCents,
+      currency: product.currency
+    }).returning();
+    if (!row) throw new Error("Failed to create affiliate order");
+    const affiliate = await this.db.select({ wechatId: affiliatesTable.wechatId }).from(affiliatesTable).where(eq(affiliatesTable.id, affiliateId)).limit(1);
+    return mapAffiliateOrderRow(row, affiliate[0]?.wechatId ?? "");
+  }
+
+  async listAffiliateOrders(): Promise<StoredAffiliateOrder[]> {
+    return this.listAffiliateOrdersFor();
+  }
+
+  async updateAffiliateOrder(id: string, orderStatus: AffiliateOrderStatus, commissionStatus: AffiliateCommissionStatus): Promise<StoredAffiliateOrder | null> {
+    const now = new Date();
+    const [existing] = await this.db.select().from(affiliateOrdersTable).where(eq(affiliateOrdersTable.id, id)).limit(1);
+    if (!existing) return null;
+    const [row] = await this.db.update(affiliateOrdersTable).set({
+      orderStatus,
+      commissionStatus,
+      updatedAt: now,
+      completedAt: orderStatus === "completed" ? (existing.completedAt ?? now) : null,
+      commissionPaidAt: commissionStatus === "paid" ? (existing.commissionPaidAt ?? now) : null
+    }).where(eq(affiliateOrdersTable.id, id)).returning();
+    if (!row) return null;
+    const affiliate = await this.db.select({ wechatId: affiliatesTable.wechatId }).from(affiliatesTable).where(eq(affiliatesTable.id, row.affiliateId)).limit(1);
+    return mapAffiliateOrderRow(row, affiliate[0]?.wechatId ?? "");
+  }
+
+  private async listAffiliateOrdersFor(affiliateId?: string): Promise<StoredAffiliateOrder[]> {
+    const query = this.db
+      .select({ order: affiliateOrdersTable, wechatId: affiliatesTable.wechatId })
+      .from(affiliateOrdersTable)
+      .innerJoin(affiliatesTable, eq(affiliatesTable.id, affiliateOrdersTable.affiliateId));
+    const rows = affiliateId
+      ? await query.where(eq(affiliateOrdersTable.affiliateId, affiliateId)).orderBy(desc(affiliateOrdersTable.createdAt))
+      : await query.orderBy(desc(affiliateOrdersTable.createdAt));
+    return rows.map(({ order, wechatId }) => mapAffiliateOrderRow(order, wechatId));
+  }
+
+  private async uniqueOrderCode(): Promise<string> {
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const code = `FP${crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase()}`;
+      const [existing] = await this.db.select({ id: affiliateOrdersTable.id }).from(affiliateOrdersTable).where(eq(affiliateOrdersTable.orderCode, code)).limit(1);
+      if (!existing) return code;
+    }
+    throw new Error("Failed to generate unique order code");
+  }
+
   private async uniqueSlug(title: string): Promise<string> {
     for (let attempt = 0; attempt < 5; attempt += 1) {
       const slug = makeSlug(title);
@@ -385,6 +519,7 @@ function mapProductRow(row: ProductRow): StoredProduct {
     description: row.description,
     category: row.category,
     priceCents: row.priceCents,
+    commissionCents: row.commissionCents,
     compareAtCents: row.compareAtCents,
     currency: row.currency,
     stock: row.stock,
@@ -393,6 +528,59 @@ function mapProductRow(row: ProductRow): StoredProduct {
     sortOrder: row.sortOrder,
     createdAt: toIso(row.createdAt),
     updatedAt: toIso(row.updatedAt)
+  };
+}
+
+function mapAffiliateRow(row: AffiliateRow): StoredAffiliate {
+  return {
+    id: row.id,
+    wechatId: row.wechatId,
+    passwordHash: row.passwordHash,
+    status: row.status === "disabled" ? "disabled" : "active",
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt)
+  };
+}
+
+function publicAffiliate(affiliate: StoredAffiliate): Omit<StoredAffiliate, "passwordHash"> {
+  const { passwordHash: _passwordHash, ...publicValue } = affiliate;
+  return publicValue;
+}
+
+function mapAffiliateOrderRow(row: typeof affiliateOrdersTable.$inferSelect, wechatId: string): StoredAffiliateOrder {
+  return {
+    id: row.id,
+    orderCode: row.orderCode,
+    affiliateId: row.affiliateId,
+    affiliateWechatId: wechatId,
+    productId: row.productId,
+    productTitle: row.productTitle,
+    priceCents: row.priceCents,
+    commissionCents: row.commissionCents,
+    currency: row.currency,
+    orderStatus: row.orderStatus as AffiliateOrderStatus,
+    commissionStatus: row.commissionStatus as AffiliateCommissionStatus,
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt),
+    completedAt: row.completedAt ? toIso(row.completedAt) : null,
+    commissionPaidAt: row.commissionPaidAt ? toIso(row.commissionPaidAt) : null
+  };
+}
+
+function dashboardFrom(
+  affiliate: Omit<StoredAffiliate, "passwordHash">,
+  clicks: { totalClicks: number; uniqueClicks: number },
+  orders: StoredAffiliateOrder[]
+): AffiliateDashboard {
+  const completed = orders.filter((order) => order.orderStatus === "completed");
+  return {
+    affiliate,
+    totalClicks: clicks.totalClicks,
+    uniqueClicks: clicks.uniqueClicks,
+    completedOrders: completed.length,
+    pendingCommissionCents: completed.filter((order) => order.commissionStatus === "pending").reduce((sum, order) => sum + order.commissionCents, 0),
+    paidCommissionCents: completed.filter((order) => order.commissionStatus === "paid").reduce((sum, order) => sum + order.commissionCents, 0),
+    orders
   };
 }
 

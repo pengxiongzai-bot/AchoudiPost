@@ -1,0 +1,48 @@
+---
+import PortalShell from "../layouts/PortalShell.astro";
+---
+
+<PortalShell activePage="earn" title="分享赚钱" description="申请 FreedomPost 专属分享链接并查看推广数据。">
+  <section class="portal-section affiliate-section">
+    <div class="portal-container affiliate-layout">
+      <div class="affiliate-intro">
+        <p class="section-kicker">Affiliate</p>
+        <h1>分享赚钱</h1>
+        <p>填写微信号即可申请专属链接。通过你的链接进入并确认成交的订单，会按商品设定记录佣金。</p>
+        <div class="affiliate-rules">
+          <strong>结算规则</strong>
+          <span>首次推荐关系永久有效</span>
+          <span>确认成交后产生待结算佣金</span>
+          <span>当天成交订单当天人工结算</span>
+        </div>
+      </div>
+
+      <div class="affiliate-panel">
+        <form id="affiliateAccessForm" class="affiliate-access-form">
+          <div>
+            <h2>申请或查询</h2>
+            <p>首次申请可不填查询密码，系统会自动生成并仅展示一次。</p>
+          </div>
+          <label><span>微信号</span><input id="affiliateWechatId" name="wechatId" maxlength="32" autocomplete="username" required placeholder="6-32 位字母、数字、下划线或连字符" /></label>
+          <label><span>查询密码</span><input id="affiliatePassword" name="password" type="password" maxlength="64" autocomplete="current-password" placeholder="已有专属链接时填写" /></label>
+          <button class="button primary" type="submit"><i data-lucide="chart-no-axes-column-increasing"></i>查看推广数据</button>
+          <p id="affiliateAccessError" class="form-error" role="alert" hidden></p>
+        </form>
+
+        <section id="affiliateDashboard" class="affiliate-dashboard" hidden aria-live="polite">
+          <div class="affiliate-dashboard-head">
+            <div><p class="section-kicker">Dashboard</p><h2>推广数据</h2></div>
+            <button id="affiliateLogout" class="button secondary" type="button">退出查询</button>
+          </div>
+          <div id="generatedPasswordNotice" class="generated-password" hidden></div>
+          <div class="affiliate-link-block">
+            <label for="affiliateShareUrl">赚钱专属链接</label>
+            <div><input id="affiliateShareUrl" readonly /><button id="copyAffiliateLink" class="button primary" type="button"><i data-lucide="copy"></i>复制分享</button></div>
+          </div>
+          <div id="affiliateStats" class="affiliate-stats"></div>
+          <div class="affiliate-orders-block"><h3>订单与结算记录</h3><div id="affiliateOrders" class="affiliate-order-list"></div></div>
+        </section>
+      </div>
+    </div>
+  </section>
+</PortalShell>

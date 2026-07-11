@@ -55,6 +55,7 @@ type AdminProduct = {
   description: string;
   category: string;
   priceCents: number;
+  commissionCents: number;
   compareAtCents: number | null;
   currency: string;
   stock: number;
@@ -63,6 +64,29 @@ type AdminProduct = {
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
+};
+
+type AdminAffiliate = {
+  id: string;
+  wechatId: string;
+  status: "active" | "disabled";
+  totalClicks: number;
+  uniqueClicks: number;
+  orderCount: number;
+  createdAt: string;
+};
+
+type AdminAffiliateOrder = {
+  id: string;
+  orderCode: string;
+  affiliateWechatId: string;
+  productTitle: string;
+  priceCents: number;
+  commissionCents: number;
+  currency: string;
+  orderStatus: "pending" | "completed" | "canceled";
+  commissionStatus: "not_due" | "pending" | "paid";
+  createdAt: string;
 };
 
 const headingOptions = [
@@ -94,8 +118,10 @@ function App() {
   const [password, setPassword] = useState("");
   const [posts, setPosts] = useState<AdminPost[]>([]);
   const [products, setProducts] = useState<AdminProduct[]>([]);
+  const [affiliates, setAffiliates] = useState<AdminAffiliate[]>([]);
+  const [affiliateOrders, setAffiliateOrders] = useState<AdminAffiliateOrder[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [workspace, setWorkspace] = useState<"posts" | "products">("posts");
+  const [workspace, setWorkspace] = useState<"posts" | "products" | "distribution">("posts");
   const [toast, setToast] = useState<Toast | null>(null);
   const editorRef = useRef<HTMLDivElement | null>(null);
   const attachmentInputRef = useRef<HTMLInputElement | null>(null);
@@ -127,7 +153,7 @@ function App() {
     const response = await fetch("/api/admin/session", { credentials: "include" });
     if (response.ok) {
       setAuthed(true);
-      await Promise.all([loadPosts(), loadProducts()]);
+      await Promise.all([loadPosts(), loadProducts(), loadDistribution()]);
     }
   }
 
@@ -147,7 +173,7 @@ function App() {
 
     setAuthed(true);
     setPassword("");
-    await Promise.all([loadPosts(), loadProducts()]);
+    await Promise.all([loadPosts(), loadProducts(), loadDistribution()]);
     showToast("已登录");
   }
 
@@ -156,6 +182,8 @@ function App() {
     setAuthed(false);
     setPosts([]);
     setProducts([]);
+    setAffiliates([]);
+    setAffiliateOrders([]);
   }
 
   async function loadPosts() {
@@ -175,6 +203,15 @@ function App() {
     if (!response.ok) return;
     const body = (await response.json()) as { items: AdminProduct[] };
     setProducts(body.items);
+  }
+
+  async function loadDistribution() {
+    const [affiliateResponse, orderResponse] = await Promise.all([
+      fetch("/api/admin/affiliates", { credentials: "include" }),
+      fetch("/api/admin/affiliate-orders", { credentials: "include" })
+    ]);
+    if (affiliateResponse.ok) setAffiliates(((await affiliateResponse.json()) as { items: AdminAffiliate[] }).items);
+    if (orderResponse.ok) setAffiliateOrders(((await orderResponse.json()) as { items: AdminAffiliateOrder[] }).items);
   }
 
   function openProductWorkspace() {
@@ -449,6 +486,7 @@ function App() {
         products={products}
         setProducts={setProducts}
         onOpenPosts={() => setWorkspace("posts")}
+        onOpenDistribution={() => { setWorkspace("distribution"); void loadDistribution(); }}
         onRefresh={loadProducts}
         onLogout={logout}
         showToast={showToast}
@@ -457,12 +495,17 @@ function App() {
     );
   }
 
+  if (workspace === "distribution") {
+    return <DistributionWorkspace affiliates={affiliates} orders={affiliateOrders} setAffiliates={setAffiliates} setOrders={setAffiliateOrders} onOpenPosts={() => setWorkspace("posts")} onOpenProducts={openProductWorkspace} onRefresh={loadDistribution} onLogout={logout} showToast={showToast} toast={toast} />;
+  }
+
   return (
     <main className="admin-shell">
       <aside className="post-rail">
         <div className="workspace-tabs" role="tablist" aria-label="后台工作区">
           <button className="active" type="button" role="tab" aria-selected="true">文章</button>
           <button type="button" role="tab" aria-selected="false" onClick={openProductWorkspace}>商品</button>
+          <button type="button" role="tab" aria-selected="false" onClick={() => { setWorkspace("distribution"); void loadDistribution(); }}>分销</button>
         </div>
         <div className="rail-head">
           <strong>文章管理</strong>
@@ -675,6 +718,7 @@ function ProductWorkspace({
   products,
   setProducts,
   onOpenPosts,
+  onOpenDistribution,
   onRefresh,
   onLogout,
   showToast,
@@ -683,6 +727,7 @@ function ProductWorkspace({
   products: AdminProduct[];
   setProducts: (next: AdminProduct[] | ((items: AdminProduct[]) => AdminProduct[])) => void;
   onOpenPosts: () => void;
+  onOpenDistribution: () => void;
   onRefresh: () => Promise<void>;
   onLogout: () => Promise<void>;
   showToast: (text: string) => void;
@@ -757,6 +802,7 @@ function ProductWorkspace({
         <div className="workspace-tabs" role="tablist" aria-label="后台工作区">
           <button type="button" role="tab" aria-selected="false" onClick={onOpenPosts}>文章</button>
           <button className="active" type="button" role="tab" aria-selected="true">商品</button>
+          <button type="button" role="tab" aria-selected="false" onClick={onOpenDistribution}>分销</button>
         </div>
         <div className="rail-head">
           <strong>商品管理</strong>
@@ -785,6 +831,7 @@ function ProductWorkspace({
                 <label className="title-field product-title-field"><span>商品名称</span><input value={activeProduct.title} onChange={(event) => patchProduct({ title: event.target.value })} /></label>
                 <label><span>分类</span><select value={activeProduct.category} onChange={(event) => patchProduct({ category: event.target.value })}><option value="service">服务</option><option value="digital">数字内容</option><option value="software">软件工具</option><option value="other">其它</option></select></label>
                 <label><span>价格</span><input type="number" min="0" step="0.01" value={formatPriceInput(activeProduct.priceCents)} onChange={(event) => patchProduct({ priceCents: priceToCents(event.target.value) })} /></label>
+                <label><span>分销佣金</span><input type="number" min="0" step="0.01" value={formatPriceInput(activeProduct.commissionCents)} onChange={(event) => patchProduct({ commissionCents: priceToCents(event.target.value) })} /><small>每笔确认成交订单的佣金</small></label>
                 <label><span>划线价（可选）</span><input type="number" min="0" step="0.01" value={activeProduct.compareAtCents === null ? "" : formatPriceInput(activeProduct.compareAtCents)} onChange={(event) => patchProduct({ compareAtCents: event.target.value ? priceToCents(event.target.value) : null })} /></label>
                 <label><span>币种</span><select value={activeProduct.currency} onChange={(event) => patchProduct({ currency: event.target.value })}><option value="CNY">CNY</option><option value="USD">USD</option></select></label>
                 <label><span>库存</span><input type="number" min="-1" step="1" value={activeProduct.stock} onChange={(event) => patchProduct({ stock: Number(event.target.value) || 0 })} /><small>-1 表示不限量</small></label>
@@ -808,7 +855,106 @@ function ProductWorkspace({
 }
 
 function defaultProductPayload(): Omit<AdminProduct, "id" | "slug" | "createdAt" | "updatedAt"> {
-  return { title: "未命名商品", summary: "请填写商品简介", description: "请填写商品详情", category: "service", priceCents: 0, compareAtCents: null, currency: "CNY", stock: -1, coverUrl: null, status: "draft", sortOrder: 0 };
+  return { title: "未命名商品", summary: "请填写商品简介", description: "请填写商品详情", category: "service", priceCents: 0, commissionCents: 0, compareAtCents: null, currency: "CNY", stock: -1, coverUrl: null, status: "draft", sortOrder: 0 };
+}
+
+function DistributionWorkspace({
+  affiliates,
+  orders,
+  setAffiliates,
+  setOrders,
+  onOpenPosts,
+  onOpenProducts,
+  onRefresh,
+  onLogout,
+  showToast,
+  toast
+}: {
+  affiliates: AdminAffiliate[];
+  orders: AdminAffiliateOrder[];
+  setAffiliates: (next: AdminAffiliate[] | ((items: AdminAffiliate[]) => AdminAffiliate[])) => void;
+  setOrders: (next: AdminAffiliateOrder[] | ((items: AdminAffiliateOrder[]) => AdminAffiliateOrder[])) => void;
+  onOpenPosts: () => void;
+  onOpenProducts: () => void;
+  onRefresh: () => Promise<void>;
+  onLogout: () => Promise<void>;
+  showToast: (text: string) => void;
+  toast: Toast | null;
+}) {
+  const [activeAffiliateId, setActiveAffiliateId] = useState<string | null>(null);
+  const activeAffiliate = affiliates.find((affiliate) => affiliate.id === activeAffiliateId) ?? null;
+  const visibleOrders = activeAffiliate
+    ? orders.filter((order) => order.affiliateWechatId === activeAffiliate.wechatId)
+    : orders;
+
+  async function updateAffiliateStatus(affiliate: AdminAffiliate) {
+    const status = affiliate.status === "active" ? "disabled" : "active";
+    const response = await fetch(`/api/admin/affiliates/${affiliate.id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ status })
+    });
+    if (!response.ok) return showToast("推广者状态更新失败");
+    setAffiliates((items) => items.map((item) => item.id === affiliate.id ? { ...item, status } : item));
+    showToast(status === "active" ? "推广资格已恢复" : "推广资格已停用");
+  }
+
+  async function resetAffiliatePassword(affiliate: AdminAffiliate) {
+    const response = await fetch(`/api/admin/affiliates/${affiliate.id}/reset-password`, { method: "POST", credentials: "include" });
+    if (!response.ok) return showToast("查询密码重置失败");
+    const { queryPassword } = await response.json() as { queryPassword: string };
+    await navigator.clipboard.writeText(queryPassword);
+    showToast(`新查询密码 ${queryPassword} 已复制`);
+  }
+
+  async function updateOrder(order: AdminAffiliateOrder, patch: Partial<Pick<AdminAffiliateOrder, "orderStatus" | "commissionStatus">>) {
+    const next = { ...order, ...patch };
+    if (next.orderStatus !== "completed") next.commissionStatus = "not_due";
+    if (next.orderStatus === "completed" && next.commissionStatus === "not_due") next.commissionStatus = "pending";
+    const response = await fetch(`/api/admin/affiliate-orders/${order.id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ orderStatus: next.orderStatus, commissionStatus: next.commissionStatus })
+    });
+    if (!response.ok) return showToast("订单状态更新失败");
+    const saved = await response.json() as AdminAffiliateOrder;
+    setOrders((items) => items.map((item) => item.id === saved.id ? saved : item));
+    showToast("订单状态已更新");
+  }
+
+  const completedTotal = orders.filter((order) => order.orderStatus === "completed").reduce((sum, order) => sum + order.priceCents, 0);
+  const pendingCommission = orders.filter((order) => order.commissionStatus === "pending").reduce((sum, order) => sum + order.commissionCents, 0);
+
+  return (
+    <main className="admin-shell distribution-shell">
+      <aside className="post-rail">
+        <div className="workspace-tabs" role="tablist" aria-label="后台工作区">
+          <button type="button" role="tab" aria-selected="false" onClick={onOpenPosts}>文章</button>
+          <button type="button" role="tab" aria-selected="false" onClick={onOpenProducts}>商品</button>
+          <button className="active" type="button" role="tab" aria-selected="true">分销</button>
+        </div>
+        <div className="rail-head"><strong>推广者</strong><span>{affiliates.length} 人</span></div>
+        <div className="rail-actions"><button type="button" onClick={() => void onRefresh()}><RefreshCw size={15} />刷新</button><button type="button" onClick={() => void onLogout()}><LogOut size={15} />退出</button></div>
+        <div className="post-list affiliate-list">
+          <button type="button" className={activeAffiliateId === null ? "active" : ""} onClick={() => setActiveAffiliateId(null)}><span>全部订单</span><small>{orders.length} 个订单</small></button>
+          {affiliates.map((affiliate) => <button key={affiliate.id} type="button" className={affiliate.id === activeAffiliateId ? "active" : ""} onClick={() => setActiveAffiliateId(affiliate.id)}><span>{affiliate.wechatId}</span><small>{affiliate.totalClicks} 点击 · {affiliate.orderCount} 订单</small></button>)}
+        </div>
+      </aside>
+      <section className="editor-pane distribution-pane">
+        <header className="editor-topbar"><div><strong>分销管理</strong><span>订单确认与线下佣金结算</span></div></header>
+        <div className="distribution-workspace">
+          <div className="distribution-summary"><div><span>推广者</span><strong>{affiliates.length}</strong></div><div><span>成交金额</span><strong>{formatMoney(completedTotal, "CNY")}</strong></div><div><span>待支付佣金</span><strong>{formatMoney(pendingCommission, "CNY")}</strong></div><div><span>待联系订单</span><strong>{orders.filter((order) => order.orderStatus === "pending").length}</strong></div></div>
+          {activeAffiliate && <section className="affiliate-admin-detail"><div><span>微信号</span><strong>{activeAffiliate.wechatId}</strong></div><div><span>总点击 / 独立访客</span><strong>{activeAffiliate.totalClicks} / {activeAffiliate.uniqueClicks}</strong></div><div className="affiliate-admin-actions"><button type="button" onClick={() => void resetAffiliatePassword(activeAffiliate)}>重置密码</button><button className={activeAffiliate.status === "active" ? "danger-button" : "primary"} type="button" onClick={() => void updateAffiliateStatus(activeAffiliate)}>{activeAffiliate.status === "active" ? "停用推广资格" : "恢复推广资格"}</button></div></section>}
+          <section className="distribution-orders"><div className="distribution-section-head"><h2>{activeAffiliate ? `${activeAffiliate.wechatId} 的订单` : "全部分销订单"}</h2><span>{visibleOrders.length} 条</span></div>
+            <div className="distribution-table-wrap"><table><thead><tr><th>订单号 / 时间</th><th>推广者</th><th>商品</th><th>价格 / 佣金</th><th>订单状态</th><th>佣金状态</th></tr></thead><tbody>{visibleOrders.map((order) => <tr key={order.id}><td><strong>{order.orderCode}</strong><small>{formatDate(order.createdAt)}</small></td><td>{order.affiliateWechatId}</td><td>{order.productTitle}</td><td><strong>{formatMoney(order.priceCents, order.currency)}</strong><small>佣金 {formatMoney(order.commissionCents, order.currency)}</small></td><td><select value={order.orderStatus} onChange={(event) => void updateOrder(order, { orderStatus: event.target.value as AdminAffiliateOrder["orderStatus"] })}><option value="pending">待联系</option><option value="completed">已成交</option><option value="canceled">已取消</option></select></td><td><select value={order.commissionStatus} disabled={order.orderStatus !== "completed"} onChange={(event) => void updateOrder(order, { commissionStatus: event.target.value as AdminAffiliateOrder["commissionStatus"] })}><option value="not_due">无需结算</option><option value="pending">待支付</option><option value="paid">已支付</option></select></td></tr>)}</tbody></table>{visibleOrders.length === 0 && <p className="empty-table">暂无订单</p>}</div>
+          </section>
+        </div>
+      </section>
+      {toast && <div className="toast">{toast.text}</div>}
+    </main>
+  );
 }
 
 function productPayload(product: AdminProduct) {

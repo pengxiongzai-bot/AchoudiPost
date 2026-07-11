@@ -48,6 +48,7 @@ export const products = pgTable(
     description: text("description").notNull().default(""),
     category: varchar("category", { length: 32 }).notNull().default("other"),
     priceCents: integer("price_cents").notNull().default(0),
+    commissionCents: integer("commission_cents").notNull().default(0),
     compareAtCents: integer("compare_at_cents"),
     currency: varchar("currency", { length: 8 }).notNull().default("CNY"),
     stock: integer("stock").notNull().default(-1),
@@ -60,6 +61,65 @@ export const products = pgTable(
   (table) => ({
     createdAtIdx: index("idx_products_created_at").on(table.createdAt),
     statusIdx: index("idx_products_status_sort").on(table.status, table.sortOrder)
+  })
+);
+
+export const affiliates = pgTable(
+  "affiliates",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    wechatId: varchar("wechat_id", { length: 32 }).notNull().unique(),
+    passwordHash: text("password_hash").notNull(),
+    status: varchar("status", { length: 16 }).notNull().default("active"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => ({
+    statusIdx: index("idx_affiliates_status").on(table.status)
+  })
+);
+
+export const affiliateClicks = pgTable(
+  "affiliate_clicks",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    affiliateId: uuid("affiliate_id")
+      .notNull()
+      .references(() => affiliates.id, { onDelete: "cascade" }),
+    visitorKey: varchar("visitor_key", { length: 128 }).notNull(),
+    path: text("path").notNull().default("/market/"),
+    isUnique: integer("is_unique").notNull().default(0),
+    clickedAt: timestamp("clicked_at", { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => ({
+    affiliateTimeIdx: index("idx_affiliate_clicks_affiliate_time").on(table.affiliateId, table.clickedAt),
+    visitorTimeIdx: index("idx_affiliate_clicks_visitor_time").on(table.affiliateId, table.visitorKey, table.clickedAt)
+  })
+);
+
+export const affiliateOrders = pgTable(
+  "affiliate_orders",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    orderCode: varchar("order_code", { length: 16 }).notNull().unique(),
+    affiliateId: uuid("affiliate_id")
+      .notNull()
+      .references(() => affiliates.id, { onDelete: "restrict" }),
+    productId: uuid("product_id").references(() => products.id, { onDelete: "set null" }),
+    productTitle: text("product_title").notNull(),
+    priceCents: integer("price_cents").notNull(),
+    commissionCents: integer("commission_cents").notNull(),
+    currency: varchar("currency", { length: 8 }).notNull().default("CNY"),
+    orderStatus: varchar("order_status", { length: 16 }).notNull().default("pending"),
+    commissionStatus: varchar("commission_status", { length: 16 }).notNull().default("not_due"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    commissionPaidAt: timestamp("commission_paid_at", { withTimezone: true })
+  },
+  (table) => ({
+    affiliateIdx: index("idx_affiliate_orders_affiliate").on(table.affiliateId, table.createdAt),
+    statusIdx: index("idx_affiliate_orders_status").on(table.orderStatus, table.commissionStatus)
   })
 );
 

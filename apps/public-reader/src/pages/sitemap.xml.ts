@@ -8,6 +8,7 @@ export const GET: APIRoute = ({ site }) => {
     `${origin}/articles/`,
     `${origin}/topics/`,
     `${origin}/market/`,
+    `${origin}/earn/`,
     `${origin}/guide/`,
     `${origin}/about/`,
     ...articles.map((article) => `${origin}/p/${encodeURIComponent(article.slug)}`)

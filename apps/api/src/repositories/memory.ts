@@ -7,6 +7,10 @@ import {
   toSearchDocument
 } from "./post-utils.js";
 import type {
+  AffiliateCommissionStatus,
+  AffiliateDashboard,
+  AffiliateOrderStatus,
+  AffiliateStatus,
   ContentRepository,
   CreateCommentInput,
   CreatePostInput,
@@ -14,6 +18,8 @@ import type {
   RecordViewInput,
   RecordViewResult,
   StoredPost,
+  StoredAffiliate,
+  StoredAffiliateOrder,
   StoredProduct,
   UpdatePostInput
 } from "./types.js";
@@ -40,6 +46,9 @@ export function createSeedPosts(): StoredPost[] {
 export class MemoryContentRepository implements ContentRepository {
   private readonly posts = new Map<string, StoredPost>();
   private readonly products = new Map<string, StoredProduct>();
+  private readonly affiliates = new Map<string, StoredAffiliate>();
+  private readonly affiliateClicks: Array<{ affiliateId: string; visitorKey: string; clickedAt: string; isUnique: boolean }> = [];
+  private readonly affiliateOrders = new Map<string, StoredAffiliateOrder>();
   private readonly commentsBySlug = new Map<string, Comment[]>();
   private readonly views = new Set<string>();
 
@@ -220,6 +229,111 @@ export class MemoryContentRepository implements ContentRepository {
     return this.products.delete(id);
   }
 
+  async getAffiliateByWechatId(wechatId: string): Promise<StoredAffiliate | null> {
+    return [...this.affiliates.values()].find((affiliate) => affiliate.wechatId === wechatId) ?? null;
+  }
+
+  async createAffiliate(wechatId: string, passwordHash: string): Promise<StoredAffiliate> {
+    const now = new Date().toISOString();
+    const affiliate: StoredAffiliate = { id: crypto.randomUUID(), wechatId, passwordHash, status: "active", createdAt: now, updatedAt: now };
+    this.affiliates.set(affiliate.id, affiliate);
+    return affiliate;
+  }
+
+  async listAffiliates() {
+    return [...this.affiliates.values()].map((affiliate) => ({
+      ...publicAffiliate(affiliate),
+      totalClicks: this.affiliateClicks.filter((click) => click.affiliateId === affiliate.id).length,
+      uniqueClicks: this.affiliateClicks.filter((click) => click.affiliateId === affiliate.id && click.isUnique).length,
+      orderCount: [...this.affiliateOrders.values()].filter((order) => order.affiliateId === affiliate.id).length
+    }));
+  }
+
+  async updateAffiliateStatus(id: string, status: AffiliateStatus): Promise<boolean> {
+    const affiliate = this.affiliates.get(id);
+    if (!affiliate) return false;
+    this.affiliates.set(id, { ...affiliate, status, updatedAt: new Date().toISOString() });
+    return true;
+  }
+
+  async updateAffiliatePassword(id: string, passwordHash: string): Promise<boolean> {
+    const affiliate = this.affiliates.get(id);
+    if (!affiliate) return false;
+    this.affiliates.set(id, { ...affiliate, passwordHash, updatedAt: new Date().toISOString() });
+    return true;
+  }
+
+  async recordAffiliateClick(wechatId: string, visitorKey: string, _path: string) {
+    const affiliate = await this.getAffiliateByWechatId(wechatId);
+    if (!affiliate || affiliate.status !== "active") return { accepted: false, isUnique: false };
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    const isUnique = !this.affiliateClicks.some((click) => click.affiliateId === affiliate.id && click.visitorKey === visitorKey && Date.parse(click.clickedAt) > cutoff);
+    this.affiliateClicks.push({ affiliateId: affiliate.id, visitorKey, clickedAt: new Date().toISOString(), isUnique });
+    return { accepted: true, isUnique };
+  }
+
+  async getAffiliateDashboard(affiliateId: string): Promise<AffiliateDashboard | null> {
+    const affiliate = this.affiliates.get(affiliateId);
+    if (!affiliate) return null;
+    const clicks = this.affiliateClicks.filter((click) => click.affiliateId === affiliateId);
+    const orders = [...this.affiliateOrders.values()].filter((order) => order.affiliateId === affiliateId);
+    const completed = orders.filter((order) => order.orderStatus === "completed");
+    return {
+      affiliate: publicAffiliate(affiliate),
+      totalClicks: clicks.length,
+      uniqueClicks: clicks.filter((click) => click.isUnique).length,
+      completedOrders: completed.length,
+      pendingCommissionCents: completed.filter((order) => order.commissionStatus === "pending").reduce((sum, order) => sum + order.commissionCents, 0),
+      paidCommissionCents: completed.filter((order) => order.commissionStatus === "paid").reduce((sum, order) => sum + order.commissionCents, 0),
+      orders
+    };
+  }
+
+  async createAffiliateOrder(affiliateId: string, product: StoredProduct): Promise<StoredAffiliateOrder> {
+    const affiliate = this.affiliates.get(affiliateId);
+    if (!affiliate) throw new Error("Affiliate not found");
+    const now = new Date().toISOString();
+    const order: StoredAffiliateOrder = {
+      id: crypto.randomUUID(),
+      orderCode: `FP${crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase()}`,
+      affiliateId,
+      affiliateWechatId: affiliate.wechatId,
+      productId: product.id,
+      productTitle: product.title,
+      priceCents: product.priceCents,
+      commissionCents: product.commissionCents,
+      currency: product.currency,
+      orderStatus: "pending",
+      commissionStatus: "not_due",
+      createdAt: now,
+      updatedAt: now,
+      completedAt: null,
+      commissionPaidAt: null
+    };
+    this.affiliateOrders.set(order.id, order);
+    return order;
+  }
+
+  async listAffiliateOrders(): Promise<StoredAffiliateOrder[]> {
+    return [...this.affiliateOrders.values()].sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+  }
+
+  async updateAffiliateOrder(id: string, orderStatus: AffiliateOrderStatus, commissionStatus: AffiliateCommissionStatus): Promise<StoredAffiliateOrder | null> {
+    const existing = this.affiliateOrders.get(id);
+    if (!existing) return null;
+    const now = new Date().toISOString();
+    const updated = {
+      ...existing,
+      orderStatus,
+      commissionStatus,
+      updatedAt: now,
+      completedAt: orderStatus === "completed" ? (existing.completedAt ?? now) : null,
+      commissionPaidAt: commissionStatus === "paid" ? (existing.commissionPaidAt ?? now) : null
+    };
+    this.affiliateOrders.set(id, updated);
+    return updated;
+  }
+
   private async uniqueProductSlug(title: string): Promise<string> {
     const base = makeSlug(title || "product");
     for (let attempt = 0; attempt < 5; attempt += 1) {
@@ -228,4 +342,9 @@ export class MemoryContentRepository implements ContentRepository {
     }
     return `${base}-${crypto.randomUUID().slice(0, 8)}`;
   }
+}
+
+function publicAffiliate(affiliate: StoredAffiliate): Omit<StoredAffiliate, "passwordHash"> {
+  const { passwordHash: _passwordHash, ...publicValue } = affiliate;
+  return publicValue;
 }

@@ -2,7 +2,7 @@
 import "../styles/portal.css";
 
 interface Props {
-  activePage: "home" | "articles" | "topics" | "market" | "guide" | "about";
+  activePage: "home" | "articles" | "topics" | "market" | "earn" | "guide" | "about";
   title: string;
   description: string;
   hideFooter?: boolean;
@@ -17,6 +17,7 @@ const navItems = [
   { id: "articles", href: "/articles/", label: "文章" },
   { id: "topics", href: "/topics/", label: "专题" },
   { id: "market", href: "/market/", label: "商城" },
+  { id: "earn", href: "/earn/", label: "分享赚钱", className: "earn-nav-link" },
   { id: "guide", href: "/guide/", label: "使用指南" },
   { id: "about", href: "/about/", label: "关于" }
 ] as const;
@@ -57,7 +58,7 @@ const navItems = [
         <nav id="primaryNav" class="primary-nav" aria-label="主导航">
           {
             navItems.map((item) => (
-              <a class:list={["nav-link", { active: activePage === item.id }]} href={item.href} data-portal-route aria-current={activePage === item.id ? "page" : undefined}>
+              <a class:list={["nav-link", "className" in item ? item.className : undefined, { active: activePage === item.id }]} href={item.href} data-portal-route aria-current={activePage === item.id ? "page" : undefined}>
                 {item.label}
               </a>
             ))

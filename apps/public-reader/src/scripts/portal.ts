@@ -25,6 +25,7 @@ type StoreProduct = {
   description: string;
   category: string;
   priceCents: number;
+  commissionCents: number;
   compareAtCents: number | null;
   currency: string;
   stock: number;
@@ -32,7 +33,31 @@ type StoreProduct = {
   status: "published";
 };
 
+type AffiliateOrder = {
+  id: string;
+  orderCode: string;
+  productTitle: string;
+  priceCents: number;
+  commissionCents: number;
+  currency: string;
+  orderStatus: "pending" | "completed" | "canceled";
+  commissionStatus: "not_due" | "pending" | "paid";
+  createdAt: string;
+};
+
+type AffiliateDashboard = {
+  affiliate: { wechatId: string };
+  totalClicks: number;
+  uniqueClicks: number;
+  completedOrders: number;
+  pendingCommissionCents: number;
+  paidCommissionCents: number;
+  orders: AffiliateOrder[];
+};
+
 const themeKey = "fp_theme_v1";
+const referralKey = "fp_ref_v1";
+const visitorKey = "fp_affiliate_visitor_v1";
 const root = document.documentElement;
 const navToggle = document.querySelector<HTMLButtonElement>("#navToggle");
 const primaryNav = document.querySelector<HTMLElement>("#primaryNav");
@@ -48,6 +73,7 @@ let posts: PostListItem[] = [];
 let searchDocuments: SearchDocument[] = [];
 
 initTheme();
+void captureReferral();
 bindNavigation();
 bindRouteNavigation();
 bindPageInteractions();
@@ -104,6 +130,8 @@ function bindPageInteractions() {
 
   if (postGrid) void hydratePosts();
   void hydrateMarket();
+  void hydrateAffiliateDashboard();
+  propagateReferralLinks();
 }
 
 function bindRouteNavigation() {
@@ -113,6 +141,7 @@ function bindRouteNavigation() {
     if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     const destination = new URL(link.href, location.href);
     if (destination.origin !== location.origin) return;
+    addLockedReferral(destination);
     event.preventDefault();
     void loadRoute(destination, true);
   });
@@ -228,7 +257,10 @@ async function hydrateMarket() {
   const dialog = document.querySelector<HTMLDialogElement>("#productDialog");
   const dialogContent = document.querySelector<HTMLElement>("#productDialogContent");
   const closeDialog = document.querySelector<HTMLButtonElement>("#productDialogClose");
-  if (!grid || !filters || !count || !empty || !dialog || !dialogContent || !closeDialog) return;
+  const orderDialog = document.querySelector<HTMLDialogElement>("#orderDialog");
+  const orderDialogContent = document.querySelector<HTMLElement>("#orderDialogContent");
+  const closeOrderDialog = document.querySelector<HTMLButtonElement>("#orderDialogClose");
+  if (!grid || !filters || !count || !empty || !dialog || !dialogContent || !closeDialog || !orderDialog || !orderDialogContent || !closeOrderDialog) return;
 
   let products: StoreProduct[] = [];
   let category = "all";
@@ -244,6 +276,7 @@ async function hydrateMarket() {
         if (!product) return;
         dialogContent.innerHTML = renderProductDialog(product);
         dialog.showModal();
+        bindProductDialogActions(product, dialog, orderDialog, orderDialogContent);
         createPortalIcons();
       });
     });
@@ -259,8 +292,12 @@ async function hydrateMarket() {
   });
 
   closeDialog.addEventListener("click", () => dialog.close());
+  closeOrderDialog.addEventListener("click", () => orderDialog.close());
   dialog.addEventListener("click", (event) => {
     if (event.target === dialog) dialog.close();
+  });
+  orderDialog.addEventListener("click", (event) => {
+    if (event.target === orderDialog) orderDialog.close();
   });
 
   try {
@@ -268,6 +305,14 @@ async function hydrateMarket() {
     if (!response.ok) throw new Error("products unavailable");
     products = ((await response.json()) as { items: StoreProduct[] }).items;
     render();
+    const requestedProduct = new URLSearchParams(location.search).get("product");
+    const product = products.find((item) => item.slug === requestedProduct);
+    if (product) {
+      dialogContent.innerHTML = renderProductDialog(product);
+      dialog.showModal();
+      bindProductDialogActions(product, dialog, orderDialog, orderDialogContent);
+      createPortalIcons();
+    }
   } catch {
     count.textContent = "商品加载失败";
     empty.hidden = false;
@@ -295,7 +340,144 @@ function renderMarketProduct(product: StoreProduct) {
 function renderProductDialog(product: StoreProduct) {
   const cover = product.coverUrl ? `<img src="${escapeAttribute(product.coverUrl)}" alt="${escapeAttribute(product.title)}" />` : "";
   const availability = product.stock === 0 ? "暂时售罄" : product.stock < 0 ? "不限量供应" : `当前库存 ${product.stock}`;
-  return `<div class="product-dialog-cover">${cover}</div><p class="section-kicker">${escapeHtml(productCategoryLabel(product.category))}</p><h2>${escapeHtml(product.title)}</h2><p class="product-dialog-summary">${escapeHtml(product.summary)}</p><div class="product-dialog-price">${formatCurrency(product.priceCents, product.currency)} <span>${availability}</span></div><div class="product-dialog-description">${escapeHtml(product.description).replace(/\n/g, "<br>")}</div><button class="button primary" type="button" disabled>订单功能准备中</button>`;
+  const commission = product.commissionCents > 0 ? ` · 可得 ${formatCurrency(product.commissionCents, product.currency)}` : "";
+  return `<div class="product-dialog-cover">${cover}</div><p class="section-kicker">${escapeHtml(productCategoryLabel(product.category))}</p><h2>${escapeHtml(product.title)}</h2><p class="product-dialog-summary">${escapeHtml(product.summary)}</p><div class="product-dialog-price">${formatCurrency(product.priceCents, product.currency)} <span>${availability}</span></div><div class="product-dialog-description">${escapeHtml(product.description).replace(/\n/g, "<br>")}</div><div class="product-dialog-actions"><button class="button secondary" type="button" data-share-product>分享此商品赚钱${escapeHtml(commission)}</button><button class="button primary" type="button" data-order-product ${product.stock === 0 ? "disabled" : ""}>立即下单</button></div>`;
+}
+
+function bindProductDialogActions(product: StoreProduct, productDialog: HTMLDialogElement, orderDialog: HTMLDialogElement, content: HTMLElement) {
+  productDialog.querySelector<HTMLButtonElement>("[data-share-product]")?.addEventListener("click", () => {
+    const destination = new URL("/earn/", location.origin);
+    destination.searchParams.set("product", product.slug);
+    addLockedReferral(destination);
+    productDialog.close();
+    void loadRoute(destination, true);
+  });
+  productDialog.querySelector<HTMLButtonElement>("[data-order-product]")?.addEventListener("click", () => {
+    const ref = lockedReferral();
+    content.innerHTML = `<p class="section-kicker">Order</p><h2>提交下单信息</h2><p class="product-dialog-summary">${escapeHtml(product.title)} · ${formatCurrency(product.priceCents, product.currency)}</p><form id="affiliateOrderForm" class="order-form"><label><span>推荐人微信号</span><input name="recommenderWechatId" maxlength="32" required value="${escapeAttribute(ref ?? "")}" ${ref ? "readonly" : ""} placeholder="填写推荐人的微信号" /></label><p>提交后会生成订单号，请添加客服微信或 QQ 完成人工交易。</p><button class="button primary" type="submit">生成订单号</button><p class="form-error" role="alert" hidden></p></form>`;
+    productDialog.close();
+    orderDialog.showModal();
+    content.querySelector<HTMLFormElement>("#affiliateOrderForm")?.addEventListener("submit", (event) => void submitAffiliateOrder(event, product, content));
+  });
+}
+
+async function submitAffiliateOrder(event: SubmitEvent, product: StoreProduct, content: HTMLElement) {
+  event.preventDefault();
+  const form = event.currentTarget as HTMLFormElement;
+  const button = form.querySelector<HTMLButtonElement>("button[type=submit]");
+  const error = form.querySelector<HTMLElement>(".form-error");
+  const recommenderWechatId = String(new FormData(form).get("recommenderWechatId") ?? "").trim();
+  if (button) button.disabled = true;
+  try {
+    const response = await fetch("/api/orders", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ productSlug: product.slug, recommenderWechatId })
+    });
+    const result = await response.json() as { order?: AffiliateOrder; error?: { message?: string } };
+    if (!response.ok || !result.order) throw new Error(result.error?.message || "下单失败");
+    content.innerHTML = renderContactPanel(result.order);
+    createPortalIcons();
+  } catch (reason) {
+    if (error) {
+      error.textContent = reason instanceof Error ? reason.message : "下单失败，请稍后再试";
+      error.hidden = false;
+    }
+    if (button) button.disabled = false;
+  }
+}
+
+function renderContactPanel(order: AffiliateOrder) {
+  return `<p class="section-kicker">Order created</p><h2>订单已登记</h2><div class="order-code"><span>订单号</span><strong>${escapeHtml(order.orderCode)}</strong><small>联系时请发送此订单号</small></div><div class="contact-grid"><figure><img src="/images/contact-wechat.jpg" alt="客服微信二维码" /><figcaption>微信：扫码添加客服</figcaption></figure><figure><img src="/images/contact-qq.jpg" alt="客服 QQ 二维码" /><figcaption>QQ：2682460530</figcaption></figure></div><p class="settlement-note">管理员确认成交后，推广佣金将在当天人工结算。</p>`;
+}
+
+async function hydrateAffiliateDashboard() {
+  const form = document.querySelector<HTMLFormElement>("#affiliateAccessForm");
+  const dashboard = document.querySelector<HTMLElement>("#affiliateDashboard");
+  if (!form || !dashboard) return;
+  form.addEventListener("submit", (event) => void accessAffiliateDashboard(event, form, dashboard));
+  document.querySelector<HTMLButtonElement>("#copyAffiliateLink")?.addEventListener("click", () => void copyAffiliateShareLink());
+  document.querySelector<HTMLButtonElement>("#affiliateLogout")?.addEventListener("click", async () => {
+    await fetch("/api/affiliate/logout", { method: "POST" });
+    dashboard.hidden = true;
+    form.hidden = false;
+  });
+  try {
+    const response = await fetch("/api/affiliate/dashboard", { headers: { Accept: "application/json" } });
+    if (response.ok) renderAffiliateDashboard(await response.json() as { shareUrl: string; dashboard: AffiliateDashboard }, form, dashboard);
+  } catch {
+    // Anonymous visitors stay on the access form.
+  }
+}
+
+async function accessAffiliateDashboard(event: SubmitEvent, form: HTMLFormElement, dashboard: HTMLElement) {
+  event.preventDefault();
+  const data = new FormData(form);
+  const error = document.querySelector<HTMLElement>("#affiliateAccessError");
+  const submit = form.querySelector<HTMLButtonElement>("button[type=submit]");
+  if (error) error.hidden = true;
+  if (submit) submit.disabled = true;
+  try {
+    const response = await fetch("/api/affiliate/access", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ wechatId: data.get("wechatId"), password: data.get("password") })
+    });
+    const result = await response.json() as { shareUrl?: string; dashboard?: AffiliateDashboard; generatedPassword?: string; error?: { message?: string } };
+    if (!response.ok || !result.dashboard || !result.shareUrl) throw new Error(result.error?.message || "查询失败");
+    renderAffiliateDashboard({ shareUrl: productShareUrl(result.shareUrl), dashboard: result.dashboard, generatedPassword: result.generatedPassword }, form, dashboard);
+  } catch (reason) {
+    if (error) {
+      error.textContent = reason instanceof Error ? reason.message : "查询失败，请稍后再试";
+      error.hidden = false;
+    }
+  } finally {
+    if (submit) submit.disabled = false;
+  }
+}
+
+function renderAffiliateDashboard(result: { shareUrl: string; dashboard: AffiliateDashboard; generatedPassword?: string }, form: HTMLFormElement, panel: HTMLElement) {
+  form.hidden = true;
+  panel.hidden = false;
+  const shareInput = document.querySelector<HTMLInputElement>("#affiliateShareUrl");
+  if (shareInput) shareInput.value = productShareUrl(result.shareUrl);
+  const passwordNotice = document.querySelector<HTMLElement>("#generatedPasswordNotice");
+  if (passwordNotice) {
+    passwordNotice.hidden = !result.generatedPassword;
+    passwordNotice.innerHTML = result.generatedPassword ? `<strong>请立即保存查询密码</strong><code>${escapeHtml(result.generatedPassword)}</code><span>密码仅展示这一次，之后查询推广数据需要使用。</span>` : "";
+  }
+  const stats = document.querySelector<HTMLElement>("#affiliateStats");
+  if (stats) stats.innerHTML = [
+    ["总点击", result.dashboard.totalClicks],
+    ["独立访客", result.dashboard.uniqueClicks],
+    ["成交订单", result.dashboard.completedOrders],
+    ["待结算", formatCurrency(result.dashboard.pendingCommissionCents, "CNY")],
+    ["已结算", formatCurrency(result.dashboard.paidCommissionCents, "CNY")]
+  ].map(([label, value]) => `<div><span>${label}</span><strong>${value}</strong></div>`).join("");
+  const orders = document.querySelector<HTMLElement>("#affiliateOrders");
+  if (orders) orders.innerHTML = result.dashboard.orders.length
+    ? result.dashboard.orders.map(renderAffiliateOrder).join("")
+    : `<p class="affiliate-no-orders">暂无订单记录</p>`;
+  createPortalIcons();
+}
+
+function renderAffiliateOrder(order: AffiliateOrder) {
+  return `<article><div><strong>${escapeHtml(order.productTitle)}</strong><span>${escapeHtml(order.orderCode)} · ${formatDate(order.createdAt)}</span></div><div><strong>${formatCurrency(order.priceCents, order.currency)}</strong><span>佣金 ${formatCurrency(order.commissionCents, order.currency)}</span></div><div><span>${orderStatusLabel(order.orderStatus)}</span><b>${commissionStatusLabel(order.commissionStatus)}</b></div></article>`;
+}
+
+async function copyAffiliateShareLink() {
+  const input = document.querySelector<HTMLInputElement>("#affiliateShareUrl");
+  if (!input) return;
+  await navigator.clipboard.writeText(input.value);
+  showPortalToast("专属链接已复制");
+}
+
+function productShareUrl(shareUrl: string) {
+  const product = new URLSearchParams(location.search).get("product");
+  if (!product) return shareUrl;
+  const url = new URL(shareUrl);
+  url.searchParams.set("product", product);
+  return url.toString();
 }
 
 function renderPosts(rawQuery: string) {
@@ -342,6 +524,92 @@ function updateHomeStats() {
   if (viewCount) viewCount.textContent = formatNumber(posts.reduce((sum, post) => sum + post.viewCount, 0));
   if (commentCount) commentCount.textContent = formatNumber(posts.reduce((sum, post) => sum + post.commentCount, 0));
   if (latestLink && posts[0]) latestLink.href = `/articles/?post=${encodeURIComponent(posts[0].slug)}`;
+}
+
+async function captureReferral() {
+  const currentUrl = new URL(location.href);
+  const incoming = normalizeReferral(currentUrl.searchParams.get("ref"));
+  let locked = lockedReferral();
+  const isNewLock = !locked && Boolean(incoming);
+  if (!locked && incoming) {
+    localStorage.setItem(referralKey, incoming);
+    locked = incoming;
+  }
+  if (!locked) return;
+
+  currentUrl.searchParams.set("ref", locked);
+  history.replaceState(history.state, "", `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
+  propagateReferralLinks();
+  if (!incoming || incoming !== locked) return;
+
+  try {
+    const response = await fetch("/api/affiliate/clicks", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ref: locked, localId: affiliateVisitorId(), path: currentUrl.pathname })
+    });
+    if (!response.ok && isNewLock) {
+      localStorage.removeItem(referralKey);
+      currentUrl.searchParams.delete("ref");
+      history.replaceState(history.state, "", `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
+    }
+  } catch {
+    // Keep the first referral locally when the API is temporarily unavailable.
+  }
+}
+
+function lockedReferral(): string | null {
+  return normalizeReferral(localStorage.getItem(referralKey));
+}
+
+function normalizeReferral(value: string | null): string | null {
+  if (!value) return null;
+  const normalized = value.trim();
+  return /^[A-Za-z][A-Za-z0-9_-]{5,31}$/.test(normalized) ? normalized : null;
+}
+
+function affiliateVisitorId(): string {
+  const existing = localStorage.getItem(visitorKey);
+  if (existing) return existing;
+  const created = crypto.randomUUID();
+  localStorage.setItem(visitorKey, created);
+  return created;
+}
+
+function addLockedReferral(url: URL) {
+  const ref = lockedReferral();
+  if (ref) url.searchParams.set("ref", ref);
+}
+
+function propagateReferralLinks() {
+  const ref = lockedReferral();
+  if (!ref) return;
+  document.querySelectorAll<HTMLAnchorElement>("a[data-portal-route]").forEach((link) => {
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    url.searchParams.set("ref", ref);
+    link.href = url.toString();
+  });
+}
+
+function orderStatusLabel(status: AffiliateOrder["orderStatus"]) {
+  return ({ pending: "待联系", completed: "已成交", canceled: "已取消" } as const)[status];
+}
+
+function commissionStatusLabel(status: AffiliateOrder["commissionStatus"]) {
+  return ({ not_due: "无需结算", pending: "待支付", paid: "已支付" } as const)[status];
+}
+
+function showPortalToast(message: string) {
+  const toast = document.querySelector<HTMLElement>("#portalToast");
+  if (!toast) return;
+  toast.textContent = message;
+  toast.style.opacity = "1";
+  toast.style.transform = "translateY(0)";
+  window.setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateY(8px)";
+  }, 1800);
 }
 
 function createPortalIcons() {

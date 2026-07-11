@@ -138,6 +138,72 @@ describe("api app", () => {
     expect(deleted.statusCode).toBe(200);
   });
 
+  it("protects affiliate dashboards and snapshots referred orders", async () => {
+    const app = buildApp({ repository: new MemoryContentRepository() });
+    const admin = await adminCookie(app);
+    const productResponse = await app.inject({
+      method: "POST",
+      url: "/api/admin/products",
+      headers: { cookie: admin },
+      payload: { ...productPayload({ status: "published", title: "Affiliate product" }), commissionCents: 2500 }
+    });
+    const access = await app.inject({
+      method: "POST",
+      url: "/api/affiliate/access",
+      payload: { wechatId: "wechat_test_01" }
+    });
+    const generatedPassword = access.json().generatedPassword as string;
+    const affiliateCookie = access.cookies.find((cookie) => cookie.name === "fp_affiliate_session");
+
+    const click = await app.inject({
+      method: "POST",
+      url: "/api/affiliate/clicks",
+      payload: { ref: "wechat_test_01", localId: "visitor-a", path: "/market/" }
+    });
+    const order = await app.inject({
+      method: "POST",
+      url: "/api/orders",
+      payload: { productSlug: productResponse.json().slug, recommenderWechatId: "wechat_test_01" }
+    });
+    const dashboard = await app.inject({
+      method: "GET",
+      url: "/api/affiliate/dashboard",
+      headers: { cookie: `fp_affiliate_session=${affiliateCookie?.value}` }
+    });
+    const wrongPassword = await app.inject({
+      method: "POST",
+      url: "/api/affiliate/access",
+      payload: { wechatId: "wechat_test_01", password: `${generatedPassword}-wrong` }
+    });
+    await app.close();
+
+    expect(access.statusCode).toBe(200);
+    expect(generatedPassword).toHaveLength(10);
+    expect(click.json()).toMatchObject({ accepted: true, isUnique: true });
+    expect(order.statusCode).toBe(201);
+    expect(order.json().order).toMatchObject({ priceCents: 19900, commissionCents: 2500, orderStatus: "pending", commissionStatus: "not_due" });
+    expect(dashboard.json().dashboard).toMatchObject({ totalClicks: 1, uniqueClicks: 1, completedOrders: 0 });
+    expect(wrongPassword.statusCode).toBe(401);
+  });
+
+  it("moves commission to pending when an admin confirms an order", async () => {
+    const app = buildApp({ repository: new MemoryContentRepository() });
+    const admin = await adminCookie(app);
+    const product = await app.inject({ method: "POST", url: "/api/admin/products", headers: { cookie: admin }, payload: { ...productPayload({ status: "published" }), commissionCents: 600 } });
+    await app.inject({ method: "POST", url: "/api/affiliate/access", payload: { wechatId: "wechat_test_02" } });
+    const created = await app.inject({ method: "POST", url: "/api/orders", payload: { productSlug: product.json().slug, recommenderWechatId: "wechat_test_02" } });
+    const updated = await app.inject({
+      method: "PATCH",
+      url: `/api/admin/affiliate-orders/${created.json().order.id}`,
+      headers: { cookie: admin },
+      payload: { orderStatus: "completed", commissionStatus: "not_due" }
+    });
+    await app.close();
+
+    expect(updated.statusCode).toBe(200);
+    expect(updated.json()).toMatchObject({ orderStatus: "completed", commissionStatus: "pending", commissionCents: 600 });
+  });
+
   it("extracts managed OSS asset keys without touching external links", () => {
     const previousBaseUrl = process.env.ALIYUN_OSS_PUBLIC_BASE_URL;
     const previousR2BaseUrl = process.env.R2_PUBLIC_BASE_URL;

@@ -20,10 +20,17 @@ import {
   diffRemovedManagedStorageKeys,
   managedStorageKeyFromUrl
 } from "./asset-cleanup.js";
-import { createContentRepository, type ContentRepository, type ProductInput } from "./repositories/index.js";
+import {
+  createContentRepository,
+  type AffiliateCommissionStatus,
+  type AffiliateOrderStatus,
+  type ContentRepository,
+  type ProductInput
+} from "./repositories/index.js";
 import { createStorageAdapter, getLocalUploadStream } from "./storage.js";
 
 const sessions = new Map<string, { username: string; createdAt: string }>();
+const affiliateSessions = new Map<string, { affiliateId: string; wechatId: string; createdAt: string }>();
 const rateBuckets = new Map<string, number[]>();
 
 function shouldUseSecureCookies() {
@@ -84,6 +91,100 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       return reply.code(404).send(errorBody("PRODUCT_NOT_FOUND", "商品不存在或尚未发布"));
     }
     return { item: product };
+  });
+
+  app.post<{ Body: unknown }>("/api/affiliate/access", async (request, reply) => {
+    if (!allowRequest(`affiliate-access:${request.ip}`, 12, 60_000)) {
+      return reply.code(429).send(errorBody("RATE_LIMITED", "尝试次数过多，请稍后再试"));
+    }
+    const body = request.body as Record<string, unknown> | null;
+    const wechatId = normalizeWechatId(body?.wechatId);
+    const password = typeof body?.password === "string" ? body.password : "";
+    if (!wechatId) return reply.code(400).send(errorBody("INVALID_WECHAT_ID", "微信号格式不正确"));
+
+    let affiliate = await repository.getAffiliateByWechatId(wechatId);
+    let generatedPassword: string | undefined;
+    if (!affiliate) {
+      generatedPassword = generateQueryPassword();
+      affiliate = await repository.createAffiliate(wechatId, await bcrypt.hash(generatedPassword, 12));
+    } else {
+      if (affiliate.status !== "active") return reply.code(403).send(errorBody("AFFILIATE_DISABLED", "该推广账号已停用"));
+      if (!password) return reply.code(401).send(errorBody("PASSWORD_REQUIRED", "请输入查询密码"));
+      if (!(await bcrypt.compare(password, affiliate.passwordHash))) {
+        return reply.code(401).send(errorBody("INVALID_PASSWORD", "微信号或查询密码不正确"));
+      }
+    }
+
+    const token = newToken();
+    affiliateSessions.set(sha256(token), { affiliateId: affiliate.id, wechatId: affiliate.wechatId, createdAt: new Date().toISOString() });
+    reply.setCookie("fp_affiliate_session", token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: shouldUseSecureCookies(),
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30
+    });
+    return {
+      created: Boolean(generatedPassword),
+      generatedPassword,
+      shareUrl: affiliateShareUrl(affiliate.wechatId),
+      dashboard: await repository.getAffiliateDashboard(affiliate.id)
+    };
+  });
+
+  app.get("/api/affiliate/dashboard", async (request, reply) => {
+    const session = getAffiliateSession(request.cookies.fp_affiliate_session);
+    if (!session) return reply.code(401).send(errorBody("UNAUTHENTICATED", "请使用微信号和查询密码进入"));
+    const dashboard = await repository.getAffiliateDashboard(session.affiliateId);
+    if (!dashboard || dashboard.affiliate.status !== "active") {
+      return reply.code(403).send(errorBody("AFFILIATE_DISABLED", "该推广账号已停用"));
+    }
+    return { shareUrl: affiliateShareUrl(session.wechatId), dashboard };
+  });
+
+  app.post("/api/affiliate/logout", async (request, reply) => {
+    const token = request.cookies.fp_affiliate_session;
+    if (token) affiliateSessions.delete(sha256(token));
+    reply.clearCookie("fp_affiliate_session", { path: "/" });
+    return { ok: true };
+  });
+
+  app.post<{ Body: unknown }>("/api/affiliate/clicks", async (request, reply) => {
+    const body = request.body as Record<string, unknown> | null;
+    const wechatId = normalizeWechatId(body?.ref);
+    const localId = readText(body?.localId, 128);
+    const path = readText(body?.path, 500) || "/market/";
+    if (!wechatId || !localId || !path.startsWith("/")) {
+      return reply.code(400).send(errorBody("INVALID_REFERRAL", "推广链接无效"));
+    }
+    const visitorKey = sha256([localId, request.ip, request.headers["user-agent"] ?? ""].join(":"));
+    const result = await repository.recordAffiliateClick(wechatId, visitorKey, path);
+    if (!result.accepted) return reply.code(404).send(errorBody("AFFILIATE_NOT_FOUND", "推广链接无效或已停用"));
+    return { ...result, ref: wechatId };
+  });
+
+  app.post<{ Body: unknown }>("/api/orders", async (request, reply) => {
+    if (!allowRequest(`affiliate-order:${request.ip}`, 20, 60 * 60_000)) {
+      return reply.code(429).send(errorBody("RATE_LIMITED", "下单次数过多，请稍后再试"));
+    }
+    const body = request.body as Record<string, unknown> | null;
+    const productSlug = readText(body?.productSlug, 64);
+    const recommenderWechatId = normalizeWechatId(body?.recommenderWechatId);
+    if (!productSlug || !recommenderWechatId) {
+      return reply.code(400).send(errorBody("INVALID_ORDER", "商品或推荐人微信号格式不正确"));
+    }
+    const [product, affiliate] = await Promise.all([
+      repository.getProductBySlug(productSlug),
+      repository.getAffiliateByWechatId(recommenderWechatId)
+    ]);
+    if (!product || product.status !== "published" || product.stock === 0) {
+      return reply.code(404).send(errorBody("PRODUCT_UNAVAILABLE", "商品不存在或暂时无法下单"));
+    }
+    if (!affiliate || affiliate.status !== "active") {
+      return reply.code(400).send(errorBody("INVALID_RECOMMENDER", "推荐人微信号不存在或已停用"));
+    }
+    const order = await repository.createAffiliateOrder(affiliate.id, product);
+    return reply.code(201).send({ order });
   });
 
   app.get<{ Params: { slug: string } }>("/api/posts/:slug", async (request, reply) => {
@@ -333,6 +434,43 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     return { items: await repository.listProducts() };
   });
 
+  app.get("/api/admin/affiliates", async (request, reply) => {
+    if (!getSession(request.cookies.fp_session)) return reply.code(401).send(errorBody("UNAUTHENTICATED", "未登录"));
+    return { items: await repository.listAffiliates() };
+  });
+
+  app.patch<{ Params: { id: string }; Body: unknown }>("/api/admin/affiliates/:id", async (request, reply) => {
+    if (!getSession(request.cookies.fp_session)) return reply.code(401).send(errorBody("UNAUTHENTICATED", "未登录"));
+    const status = (request.body as Record<string, unknown> | null)?.status;
+    if (status !== "active" && status !== "disabled") return reply.code(400).send(errorBody("INVALID_STATUS", "推广者状态不正确"));
+    const updated = await repository.updateAffiliateStatus(request.params.id, status);
+    return updated ? { ok: true } : reply.code(404).send(errorBody("AFFILIATE_NOT_FOUND", "推广者不存在"));
+  });
+
+  app.post<{ Params: { id: string } }>("/api/admin/affiliates/:id/reset-password", async (request, reply) => {
+    if (!getSession(request.cookies.fp_session)) return reply.code(401).send(errorBody("UNAUTHENTICATED", "未登录"));
+    const queryPassword = generateQueryPassword();
+    const updated = await repository.updateAffiliatePassword(request.params.id, await bcrypt.hash(queryPassword, 12));
+    return updated ? { queryPassword } : reply.code(404).send(errorBody("AFFILIATE_NOT_FOUND", "推广者不存在"));
+  });
+
+  app.get("/api/admin/affiliate-orders", async (request, reply) => {
+    if (!getSession(request.cookies.fp_session)) return reply.code(401).send(errorBody("UNAUTHENTICATED", "未登录"));
+    return { items: await repository.listAffiliateOrders() };
+  });
+
+  app.patch<{ Params: { id: string }; Body: unknown }>("/api/admin/affiliate-orders/:id", async (request, reply) => {
+    if (!getSession(request.cookies.fp_session)) return reply.code(401).send(errorBody("UNAUTHENTICATED", "未登录"));
+    const body = request.body as Record<string, unknown> | null;
+    const orderStatus = normalizeOrderStatus(body?.orderStatus);
+    let commissionStatus = normalizeCommissionStatus(body?.commissionStatus);
+    if (!orderStatus || !commissionStatus) return reply.code(400).send(errorBody("INVALID_STATUS", "订单或佣金状态不正确"));
+    if (orderStatus !== "completed") commissionStatus = "not_due";
+    if (orderStatus === "completed" && commissionStatus === "not_due") commissionStatus = "pending";
+    const updated = await repository.updateAffiliateOrder(request.params.id, orderStatus, commissionStatus);
+    return updated ?? reply.code(404).send(errorBody("ORDER_NOT_FOUND", "订单不存在"));
+  });
+
   app.post<{ Body: unknown }>("/api/admin/products", async (request, reply) => {
     if (!getSession(request.cookies.fp_session)) {
       return reply.code(401).send(errorBody("UNAUTHENTICATED", "未登录"));
@@ -537,14 +675,55 @@ function normalizeProductInput(value: unknown): ProductInput | null {
   const coverUrl = readOptionalUrl(input.coverUrl);
   const status = input.status === "published" ? "published" : input.status === "draft" ? "draft" : null;
   const priceCents = readInteger(input.priceCents, 0, 100_000_000);
+  const commissionCents = readInteger(input.commissionCents ?? 0, 0, 100_000_000);
   const compareAtCents = input.compareAtCents === null || input.compareAtCents === "" ? null : readInteger(input.compareAtCents, 0, 100_000_000);
   const stock = readInteger(input.stock, -1, 1_000_000);
   const sortOrder = readInteger(input.sortOrder, -100_000, 100_000);
 
-  if (!title || !summary || !description || !status || priceCents === null || stock === null || sortOrder === null) return null;
+  if (!title || !summary || !description || !status || priceCents === null || commissionCents === null || stock === null || sortOrder === null) return null;
   if (compareAtCents === undefined || (compareAtCents !== null && compareAtCents < priceCents)) return null;
 
-  return { title, summary, description, category, priceCents, compareAtCents, currency, stock, coverUrl, status, sortOrder };
+  return { title, summary, description, category, priceCents, commissionCents, compareAtCents, currency, stock, coverUrl, status, sortOrder };
+}
+
+function getAffiliateSession(token: string | undefined) {
+  if (!token) return null;
+  return affiliateSessions.get(sha256(token)) ?? null;
+}
+
+function normalizeWechatId(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim();
+  return /^[A-Za-z][A-Za-z0-9_-]{5,31}$/.test(normalized) ? normalized : null;
+}
+
+function normalizeOrderStatus(value: unknown): AffiliateOrderStatus | null {
+  return value === "pending" || value === "completed" || value === "canceled" ? value : null;
+}
+
+function normalizeCommissionStatus(value: unknown): AffiliateCommissionStatus | null {
+  return value === "not_due" || value === "pending" || value === "paid" ? value : null;
+}
+
+function generateQueryPassword(): string {
+  return crypto.randomUUID().replace(/-/g, "").slice(0, 10).toUpperCase();
+}
+
+function affiliateShareUrl(wechatId: string): string {
+  const publicSite = (process.env.PUBLIC_SITE_URL ?? "https://freedompost.thinderbox.uk").replace(/\/$/, "");
+  return `${publicSite}/market/?ref=${encodeURIComponent(wechatId)}`;
+}
+
+function allowRequest(key: string, limit: number, windowMs: number): boolean {
+  const now = Date.now();
+  const recent = (rateBuckets.get(key) ?? []).filter((value) => value > now - windowMs);
+  if (recent.length >= limit) {
+    rateBuckets.set(key, recent);
+    return false;
+  }
+  recent.push(now);
+  rateBuckets.set(key, recent);
+  return true;
 }
 
 function readText(value: unknown, maxLength: number): string {

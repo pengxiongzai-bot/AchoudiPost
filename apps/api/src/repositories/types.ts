@@ -25,6 +25,7 @@ export interface StoredProduct {
   description: string;
   category: string;
   priceCents: number;
+  commissionCents: number;
   compareAtCents: number | null;
   currency: string;
   stock: number;
@@ -41,12 +42,54 @@ export interface ProductInput {
   description: string;
   category: string;
   priceCents: number;
+  commissionCents: number;
   compareAtCents: number | null;
   currency: string;
   stock: number;
   coverUrl: string | null;
   status: ProductStatus;
   sortOrder: number;
+}
+
+export type AffiliateStatus = "active" | "disabled";
+export type AffiliateOrderStatus = "pending" | "completed" | "canceled";
+export type AffiliateCommissionStatus = "not_due" | "pending" | "paid";
+
+export interface StoredAffiliate {
+  id: string;
+  wechatId: string;
+  passwordHash: string;
+  status: AffiliateStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredAffiliateOrder {
+  id: string;
+  orderCode: string;
+  affiliateId: string;
+  affiliateWechatId: string;
+  productId: string | null;
+  productTitle: string;
+  priceCents: number;
+  commissionCents: number;
+  currency: string;
+  orderStatus: AffiliateOrderStatus;
+  commissionStatus: AffiliateCommissionStatus;
+  createdAt: string;
+  updatedAt: string;
+  completedAt: string | null;
+  commissionPaidAt: string | null;
+}
+
+export interface AffiliateDashboard {
+  affiliate: Omit<StoredAffiliate, "passwordHash">;
+  totalClicks: number;
+  uniqueClicks: number;
+  completedOrders: number;
+  pendingCommissionCents: number;
+  paidCommissionCents: number;
+  orders: StoredAffiliateOrder[];
 }
 
 export interface CreatePostInput {
@@ -104,4 +147,14 @@ export interface ContentRepository {
   createProduct(input: ProductInput): Promise<StoredProduct>;
   updateProduct(id: string, input: ProductInput): Promise<StoredProduct | null>;
   deleteProduct(id: string): Promise<boolean>;
+  getAffiliateByWechatId(wechatId: string): Promise<StoredAffiliate | null>;
+  createAffiliate(wechatId: string, passwordHash: string): Promise<StoredAffiliate>;
+  listAffiliates(): Promise<Array<Omit<StoredAffiliate, "passwordHash"> & { totalClicks: number; uniqueClicks: number; orderCount: number }>>;
+  updateAffiliateStatus(id: string, status: AffiliateStatus): Promise<boolean>;
+  updateAffiliatePassword(id: string, passwordHash: string): Promise<boolean>;
+  recordAffiliateClick(wechatId: string, visitorKey: string, path: string): Promise<{ accepted: boolean; isUnique: boolean }>;
+  getAffiliateDashboard(affiliateId: string): Promise<AffiliateDashboard | null>;
+  createAffiliateOrder(affiliateId: string, product: StoredProduct): Promise<StoredAffiliateOrder>;
+  listAffiliateOrders(): Promise<StoredAffiliateOrder[]>;
+  updateAffiliateOrder(id: string, orderStatus: AffiliateOrderStatus, commissionStatus: AffiliateCommissionStatus): Promise<StoredAffiliateOrder | null>;
 }
