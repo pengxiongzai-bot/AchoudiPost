@@ -14,10 +14,10 @@ const pageTitle = activePage === "home" ? siteName : `${title} - ${siteName}`;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://example.com").toString();
 const navItems = [
   { id: "home", href: "/", label: "首页" },
-  { id: "articles", href: "/articles/", label: "文章" },
-  { id: "topics", href: "/topics/", label: "专题" },
   { id: "market", href: "/market/", label: "商城" },
   { id: "earn", href: "/earn/", label: "分享赚钱", className: "earn-nav-link" },
+  { id: "articles", href: "/articles/", label: "文章" },
+  { id: "topics", href: "/topics/", label: "专题" },
   { id: "guide", href: "/guide/", label: "使用指南" },
   { id: "about", href: "/about/", label: "关于" }
 ] as const;
