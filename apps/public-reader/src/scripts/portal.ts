@@ -141,6 +141,7 @@ function bindPageInteractions() {
   searchInput = document.querySelector<HTMLInputElement>("#portalSearchInput");
   searchMeta = document.querySelector<HTMLElement>("#articleSearchMeta");
   emptyState = document.querySelector<HTMLElement>("#emptyArticles");
+  syncArticleReader();
 
   if (searchInput) {
     const requestedQuery = new URLSearchParams(location.search).get("q")?.trim() ?? "";
@@ -153,6 +154,15 @@ function bindPageInteractions() {
   void hydrateTools();
   void hydrateAffiliateDashboard();
   propagateReferralLinks();
+}
+
+function syncArticleReader() {
+  const frame = document.querySelector<HTMLIFrameElement>("#articleReaderFrame");
+  if (!frame) return;
+
+  const requestedPost = new URLSearchParams(location.search).get("post")?.trim();
+  const nextSource = requestedPost ? `/reader/?post=${encodeURIComponent(requestedPost)}` : "/reader/";
+  if (frame.getAttribute("src") !== nextSource) frame.src = nextSource;
 }
 
 function bindRouteNavigation() {

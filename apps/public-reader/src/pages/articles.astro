@@ -1,12 +1,9 @@
 ---
 import PortalShell from "../layouts/PortalShell.astro";
-
-const post = Astro.url.searchParams.get("post")?.trim();
-const readerSource = post ? `/reader/?post=${encodeURIComponent(post)}` : "/reader/";
 ---
 
 <PortalShell activePage="articles" title="文章" description="使用 FreedomPost 原有阅读工作台浏览全部文章。" hideFooter={true}>
   <section class="reader-route" aria-label="FreedomPost 文章阅读器">
-    <iframe id="articleReaderFrame" title="FreedomPost 文章阅读器" src={readerSource}></iframe>
+    <iframe id="articleReaderFrame" title="FreedomPost 文章阅读器"></iframe>
   </section>
 </PortalShell>
