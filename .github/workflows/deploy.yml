@@ -111,6 +111,29 @@ jobs:
           fi
           exit "$missing"
 
+      - name: Prepare server disk
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          password: ${{ secrets.DEPLOY_KEY == '' && secrets.DEPLOY_PASSWORD || '' }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          command_timeout: 5m
+          script: |
+            set -eu
+            rm -f /tmp/freedompost-deploy.tar.gz
+            if command -v docker >/dev/null 2>&1; then
+              if [ "$(id -u)" -eq 0 ]; then
+                docker builder prune --all --force || true
+                docker image prune --all --force || true
+                docker system df || true
+              else
+                sudo docker builder prune --all --force || true
+                sudo docker image prune --all --force || true
+                sudo docker system df || true
+              fi
+            fi
+
       - name: Copy bundle to server
         uses: appleboy/scp-action@v0.1.7
         with:
