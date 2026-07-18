@@ -1,5 +1,6 @@
 ---
-import ReaderShell from "../../layouts/ReaderShell.astro";
+import ArticleReaderRoute from "../../components/ArticleReaderRoute.astro";
+import PortalShell from "../../layouts/PortalShell.astro";
 import { articles, findArticle } from "../../lib/articles";
 
 export function getStaticPaths() {
@@ -15,4 +16,6 @@ if (!article) {
 }
 ---
 
-<ReaderShell article={article} />
+<PortalShell activePage="articles" title={article.title} description={article.excerpt} hideFooter={true}>
+  <ArticleReaderRoute slug={article.slug} />
+</PortalShell>

@@ -78,6 +78,8 @@ describe("api app", () => {
     await app.close();
 
     expect(created.statusCode).toBe(201);
+    expect(created.json().slug).toMatch(/^p_[A-Za-z0-9_-]{8}$/);
+    expect(created.json().slug).not.toContain("未命名文章");
     expect(created.json().visibility).toBe("private");
     expect(publicList.json().items.some((item: { slug: string }) => item.slug === created.json().slug)).toBe(false);
     expect(adminList.json().items.some((item: { id: string }) => item.id === created.json().id)).toBe(true);

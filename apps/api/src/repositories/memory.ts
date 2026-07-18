@@ -1,5 +1,6 @@
 import type { Comment } from "@freedompost/shared";
 import {
+  makePostSlug,
   makeSlug,
   padPath,
   renderStoredPost,
@@ -94,7 +95,7 @@ export class MemoryContentRepository implements ContentRepository {
     const createdAt = new Date().toISOString();
     const post = renderStoredPost({
       id: crypto.randomUUID(),
-      slug: makeSlug(input.title),
+      slug: makePostSlug(),
       title: input.title.trim() || "未命名文章",
       markdown: input.markdown,
       visibility: input.visibility ?? "public",

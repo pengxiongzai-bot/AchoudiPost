@@ -8,13 +8,15 @@ import {
   affiliateProductMarkups as affiliateProductMarkupsTable,
   affiliates as affiliatesTable,
   comments as commentsTable,
+  postSlugAliases as postSlugAliasesTable,
   postViews as postViewsTable,
   posts as postsTable,
-  products as productsTable
-  ,tools as toolsTable
+  products as productsTable,
+  tools as toolsTable
 } from "@freedompost/db";
 import type { Comment } from "@freedompost/shared";
 import {
+  makePostSlug,
   makeSlug,
   padPath,
   renderStoredPost,
@@ -74,7 +76,15 @@ export class PostgresContentRepository implements ContentRepository {
 
   async getPostBySlug(slug: string): Promise<StoredPost | null> {
     const [row] = await this.db.select().from(postsTable).where(eq(postsTable.slug, slug)).limit(1);
-    return row ? mapPostRow(row) : null;
+    if (row) return mapPostRow(row);
+
+    const [aliased] = await this.db
+      .select({ post: postsTable })
+      .from(postSlugAliasesTable)
+      .innerJoin(postsTable, eq(postSlugAliasesTable.postId, postsTable.id))
+      .where(eq(postSlugAliasesTable.slug, slug))
+      .limit(1);
+    return aliased ? mapPostRow(aliased.post) : null;
   }
 
   async getPostById(id: string): Promise<StoredPost | null> {
@@ -88,7 +98,7 @@ export class PostgresContentRepository implements ContentRepository {
 
   async createPost(input: CreatePostInput): Promise<StoredPost> {
     const createdAt = new Date().toISOString();
-    const slug = await this.uniqueSlug(input.title);
+    const slug = await this.uniquePostSlug();
     const rendered = renderStoredPost({
       id: crypto.randomUUID(),
       slug,
@@ -551,14 +561,14 @@ export class PostgresContentRepository implements ContentRepository {
     throw new Error("Failed to generate unique order code");
   }
 
-  private async uniqueSlug(title: string): Promise<string> {
-    for (let attempt = 0; attempt < 5; attempt += 1) {
-      const slug = makeSlug(title);
+  private async uniquePostSlug(): Promise<string> {
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const slug = makePostSlug();
       const existing = await this.getPostBySlug(slug);
       if (!existing) return slug;
     }
 
-    return `${makeSlug(title)}-${crypto.randomUUID().slice(0, 8)}`;
+    throw new Error("Failed to generate a unique post slug");
   }
 
   private async uniqueProductSlug(title: string): Promise<string> {

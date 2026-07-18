@@ -1,4 +1,10 @@
 import { createIcons, icons } from "lucide";
+import {
+  articlePermalinkPath,
+  normalizeReferral,
+  readArticleSlugFromPath,
+  referralStorageKey
+} from "../lib/article-links.js";
 
 type TocItem = {
   id: string;
@@ -80,6 +86,8 @@ const storageKeys = {
   rate: "fp_comment_rate_v1"
 };
 const configuredPublicOrigin = normalizeOrigin(import.meta.env.PUBLIC_SITE_URL);
+const pageSearchParams = new URLSearchParams(location.search);
+const activeReferral = readAndLockReferral(pageSearchParams.get("ref"));
 
 const app = mustGet<HTMLElement>("app");
 const postList = mustGet<HTMLElement>("postList");
@@ -109,8 +117,8 @@ const commentUser = mustGet<HTMLElement>("commentUser");
 const commentDefaultPlaceholder = "写下评论或者粘贴图片或者拖入文件";
 
 const initial = readInitialPayload();
-const pathSlug = readPathSlug();
-const requestedSlug = new URLSearchParams(location.search).get("post")?.trim() || pathSlug || null;
+const pathSlug = readArticleSlugFromPath(location.pathname);
+const requestedSlug = pageSearchParams.get("post")?.trim() || pathSlug || null;
 let activeSlug = requestedSlug ?? initial?.slug ?? document.body.dataset.activeSlug ?? "";
 let posts: PostListItem[] = [];
 let searchDocs: SearchDocument[] = [];
@@ -145,6 +153,7 @@ async function init() {
   applyStoredListWidth();
   applyStoredTocState();
   enhanceCodeBlocks();
+  propagateReaderLinks();
   renderToc(initial?.toc ?? []);
   renderComments();
   void refreshComments(activeSlug);
@@ -162,7 +171,7 @@ async function init() {
 
   if (requestedSlug && requestedArticleHydration) {
     await requestedArticleHydration;
-    if (!articleCache.has(requestedSlug) || activeSlug !== requestedSlug) return;
+    if (!articleCache.has(requestedSlug) || !activeSlug) return;
   } else if (posts.length > 0) {
     const nextSlug = posts.some((post) => post.slug === activeSlug) ? activeSlug : posts[0]?.slug;
     if (nextSlug) {
@@ -181,17 +190,6 @@ async function hydrateRequestedArticle(slug: string) {
   // A URL slug is authoritative and must never be replaced by the first list item.
   articleCache.delete(slug);
   await openArticle(slug, { push: false, countView: false });
-}
-
-function readPathSlug() {
-  if (!location.pathname.startsWith("/p/")) return null;
-
-  const encodedSlug = location.pathname.split("/p/")[1]?.split("/")[0] ?? "";
-  try {
-    return decodeURIComponent(encodedSlug).trim() || null;
-  } catch {
-    return null;
-  }
 }
 
 function bindEvents() {
@@ -239,9 +237,7 @@ function bindEvents() {
   initResizer();
 
   window.addEventListener("popstate", () => {
-    const slug = location.pathname.startsWith("/p/")
-      ? decodeURIComponent(location.pathname.split("/p/")[1] ?? "")
-      : posts[0]?.slug;
+    const slug = readArticleSlugFromPath(location.pathname) || new URLSearchParams(location.search).get("post")?.trim() || posts[0]?.slug;
 
     if (slug) {
       void openArticle(slug, { push: false, countView: false });
@@ -322,7 +318,9 @@ async function openArticle(
     return;
   }
 
-  activeSlug = slug;
+  const canonicalSlug = cached.slug || cached.meta.slug || slug;
+  activeSlug = canonicalSlug;
+  articleCache.set(canonicalSlug, cached);
   articleBody.innerHTML = cached.html;
   articleTitle.textContent = cached.meta.title;
   articleDate.textContent = `发布时间：${formatDate(cached.meta.createdAt)}`;
@@ -336,18 +334,25 @@ async function openArticle(
 
   renderToc(cached.toc);
   enhanceCodeBlocks();
+  propagateReaderLinks();
   renderComments();
-  void refreshComments(slug);
+  void refreshComments(canonicalSlug);
   renderList();
   readerScroll.scrollTop = 0;
 
   if (options.countView) {
-    countViewOnce(slug);
+    countViewOnce(canonicalSlug);
   }
 
-  if (options.push && location.pathname !== `/p/${slug}`) {
-    history.pushState(null, "", `/p/${slug}`);
+  const permalink = articlePermalinkPath(canonicalSlug, activeReferral);
+  if (window.parent === window) {
+    if (options.push && `${location.pathname}${location.search}` !== permalink) {
+      history.pushState(null, "", permalink);
+    } else if (slug !== canonicalSlug && location.pathname.startsWith("/p/")) {
+      history.replaceState(history.state, "", permalink);
+    }
   }
+  notifyParentArticleChange(canonicalSlug, cached.meta.title, options.push === true);
 
   document.documentElement.classList.remove("article-boot-pending");
 }
@@ -364,6 +369,7 @@ async function prefetchArticle(slug: string) {
   }
   if (apiItem) {
     articleCache.set(slug, apiItem);
+    articleCache.set(apiItem.slug, apiItem);
     return apiItem;
   }
 
@@ -408,7 +414,7 @@ async function fetchArticleFromApi(slug: string): Promise<ArticleCacheItem | nul
         commentCount: item.commentCount,
         excerpt: item.excerpt,
         attachmentCount: item.attachmentCount,
-        canonicalPath: `/p/${item.slug}`
+        canonicalPath: articlePermalinkPath(item.slug)
       },
       cachedAt: Date.now()
     };
@@ -1046,7 +1052,36 @@ function normalize(value: string): string {
 }
 
 function publicArticleUrl(slug: string): string {
-  return `${configuredPublicOrigin ?? location.origin}/p/${encodeURIComponent(slug)}`;
+  return new URL(articlePermalinkPath(slug, activeReferral), configuredPublicOrigin ?? location.origin).toString();
+}
+
+function readAndLockReferral(incomingValue: string | null): string | null {
+  const stored = normalizeReferral(localStorage.getItem(referralStorageKey));
+  if (stored) return stored;
+  const incoming = normalizeReferral(incomingValue);
+  if (incoming) localStorage.setItem(referralStorageKey, incoming);
+  return incoming;
+}
+
+function propagateReaderLinks() {
+  const brand = document.querySelector<HTMLAnchorElement>("a.brand");
+  if (brand && window.parent !== window) brand.target = "_top";
+  if (!activeReferral) return;
+
+  document.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((link) => {
+    const rawHref = link.getAttribute("href");
+    if (!rawHref || rawHref.startsWith("#")) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    url.searchParams.set("ref", activeReferral);
+    link.href = url.toString();
+    if (window.parent !== window && !link.hasAttribute("download")) link.target = "_top";
+  });
+}
+
+function notifyParentArticleChange(slug: string, title: string, push: boolean) {
+  if (window.parent === window) return;
+  window.parent.postMessage({ type: "freedompost:article-change", slug, title, push }, location.origin);
 }
 
 function normalizeOrigin(value: string | undefined): string | null {

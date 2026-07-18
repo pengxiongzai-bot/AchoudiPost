@@ -1,9 +1,8 @@
 ---
 import PortalShell from "../layouts/PortalShell.astro";
+import ArticleReaderRoute from "../components/ArticleReaderRoute.astro";
 ---
 
 <PortalShell activePage="articles" title="文章" description="使用 FreedomPost 原有阅读工作台浏览全部文章。" hideFooter={true}>
-  <section class="reader-route" aria-label="FreedomPost 文章阅读器">
-    <iframe id="articleReaderFrame" title="FreedomPost 文章阅读器"></iframe>
-  </section>
+  <ArticleReaderRoute />
 </PortalShell>

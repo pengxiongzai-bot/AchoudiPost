@@ -59,6 +59,10 @@ export function makeSlug(title: string): string {
   return `${base}-${newToken(4).slice(0, 6)}`;
 }
 
+export function makePostSlug(): string {
+  return `p_${newToken(6)}`;
+}
+
 export function padPath(value: number): string {
   return String(value).padStart(6, "0");
 }

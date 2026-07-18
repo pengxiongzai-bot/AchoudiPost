@@ -40,6 +40,18 @@ export const posts = pgTable(
   })
 );
 
+export const postSlugAliases = pgTable(
+  "post_slug_aliases",
+  {
+    slug: varchar("slug", { length: 32 }).primaryKey(),
+    postId: uuid("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => ({
+    postIdIdx: index("idx_post_slug_aliases_post_id").on(table.postId)
+  })
+);
+
 export const products = pgTable(
   "products",
   {

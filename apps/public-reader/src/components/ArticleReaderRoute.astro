@@ -1,0 +1,11 @@
+---
+interface Props {
+  slug?: string;
+}
+
+const { slug } = Astro.props;
+---
+
+<section class="reader-route" aria-label="FreedomPost 文章阅读器" data-article-slug={slug}>
+  <iframe id="articleReaderFrame" title="FreedomPost 文章阅读器"></iframe>
+</section>

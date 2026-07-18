@@ -1,4 +1,12 @@
 import { createIcons, icons } from "lucide";
+import {
+  articlePermalinkPath,
+  articleReaderPath,
+  isCanonicalArticleSlug,
+  normalizeReferral,
+  readArticleSlugFromPath,
+  referralStorageKey
+} from "../lib/article-links.js";
 
 type PostListItem = {
   slug: string;
@@ -75,7 +83,7 @@ type AffiliateProduct = StoreProduct & {
 };
 
 const themeKey = "fp_theme_v1";
-const referralKey = "fp_ref_v1";
+const referralKey = referralStorageKey;
 const visitorKey = "fp_affiliate_visitor_v1";
 const root = document.documentElement;
 const navToggle = document.querySelector<HTMLButtonElement>("#navToggle");
@@ -96,6 +104,7 @@ initTheme();
 void captureReferral();
 bindNavigation();
 bindRouteNavigation();
+bindArticleReaderMessages();
 bindPageInteractions();
 createPortalIcons();
 void checkService();
@@ -160,9 +169,45 @@ function syncArticleReader() {
   const frame = document.querySelector<HTMLIFrameElement>("#articleReaderFrame");
   if (!frame) return;
 
-  const requestedPost = new URLSearchParams(location.search).get("post")?.trim();
-  const nextSource = requestedPost ? `/reader/?post=${encodeURIComponent(requestedPost)}` : "/reader/";
+  const routeSlug = readArticleSlugFromPath(location.pathname);
+  const declaredSlug = document.querySelector<HTMLElement>(".reader-route")?.dataset.articleSlug?.trim();
+  const requestedPost = new URLSearchParams(location.search).get("post")?.trim() || routeSlug || declaredSlug || null;
+  const nextSource = articleReaderPath(requestedPost, lockedReferral());
   if (frame.getAttribute("src") !== nextSource) frame.src = nextSource;
+}
+
+function bindArticleReaderMessages() {
+  window.addEventListener("message", (event) => {
+    if (event.origin !== location.origin) return;
+    const frame = document.querySelector<HTMLIFrameElement>("#articleReaderFrame");
+    if (!frame?.contentWindow || event.source !== frame.contentWindow) return;
+    const data = event.data as { type?: unknown; slug?: unknown; title?: unknown; push?: unknown } | null;
+    if (data?.type !== "freedompost:article-change" || !isCanonicalArticleSlug(data.slug)) return;
+
+    const destination = new URL(articlePermalinkPath(data.slug, lockedReferral()), location.origin);
+    const nextLocation = `${destination.pathname}${destination.search}`;
+    const currentLocation = `${location.pathname}${location.search}`;
+    if (nextLocation !== currentLocation) {
+      if (data.push === true) history.pushState({}, "", nextLocation);
+      else history.replaceState(history.state, "", nextLocation);
+    }
+
+    document.body.dataset.page = "articles";
+    updateActiveNavigation("/articles/");
+    updateArticleMetadata(destination, typeof data.title === "string" ? data.title : null);
+    propagateReferralLinks();
+  });
+}
+
+function updateArticleMetadata(destination: URL, title: string | null) {
+  const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+  if (canonical) canonical.href = destination.toString();
+  const openGraphUrl = document.querySelector<HTMLMetaElement>('meta[property="og:url"]');
+  if (openGraphUrl) openGraphUrl.content = destination.toString();
+  if (!title) return;
+  document.title = `${title} - FreedomPost`;
+  const openGraphTitle = document.querySelector<HTMLMetaElement>('meta[property="og:title"]');
+  if (openGraphTitle) openGraphTitle.content = title;
 }
 
 function bindRouteNavigation() {
@@ -231,9 +276,10 @@ async function loadRoute(destination: URL, push: boolean) {
 }
 
 function updateActiveNavigation(pathname: string) {
+  const activePath = pathname.startsWith("/p/") ? "/articles/" : pathname;
   document.querySelectorAll<HTMLAnchorElement>(".nav-link").forEach((link) => {
     const linkPath = new URL(link.href, location.href).pathname;
-    const active = linkPath === pathname;
+    const active = linkPath === activePath;
     link.classList.toggle("active", active);
     if (active) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
@@ -669,8 +715,9 @@ function renderPosts(rawQuery: string) {
 
 function renderPostCard(post: PostListItem, index: number, home: boolean) {
   const featured = home && index === 0 ? " featured" : "";
+  const href = articlePermalinkPath(post.slug, lockedReferral());
   return `<article class="post-card${featured}">
-    <a href="/articles/?post=${encodeURIComponent(post.slug)}" data-portal-route aria-label="阅读 ${escapeHtml(post.title)}">
+    <a href="${escapeAttribute(href)}" data-portal-route aria-label="阅读 ${escapeHtml(post.title)}">
       <div class="post-card-topline"><span>${featured ? "最新文章" : "文章"}</span><time datetime="${escapeHtml(post.createdAt)}">${formatDate(post.createdAt)}</time></div>
       <h${home ? "3" : "2"}>${escapeHtml(post.title)}</h${home ? "3" : "2"}>
       <p>${escapeHtml(post.excerpt || "打开文章，继续阅读完整内容。")}</p>
@@ -687,7 +734,7 @@ function updateHomeStats() {
   if (postCount) postCount.textContent = String(posts.length);
   if (viewCount) viewCount.textContent = formatNumber(posts.reduce((sum, post) => sum + post.viewCount, 0));
   if (commentCount) commentCount.textContent = formatNumber(posts.reduce((sum, post) => sum + post.commentCount, 0));
-  if (latestLink && posts[0]) latestLink.href = `/articles/?post=${encodeURIComponent(posts[0].slug)}`;
+  if (latestLink && posts[0]) latestLink.href = articlePermalinkPath(posts[0].slug, lockedReferral());
 }
 
 async function captureReferral() {
@@ -716,6 +763,8 @@ async function captureReferral() {
       localStorage.removeItem(referralKey);
       currentUrl.searchParams.delete("ref");
       history.replaceState(history.state, "", `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
+      propagateReferralLinks();
+      syncArticleReader();
     }
   } catch {
     // Keep the first referral locally when the API is temporarily unavailable.
@@ -724,12 +773,6 @@ async function captureReferral() {
 
 function lockedReferral(): string | null {
   return normalizeReferral(localStorage.getItem(referralKey));
-}
-
-function normalizeReferral(value: string | null): string | null {
-  if (!value) return null;
-  const normalized = value.trim();
-  return /^[A-Za-z][A-Za-z0-9_-]{5,31}$/.test(normalized) ? normalized : null;
 }
 
 function affiliateVisitorId(): string {
@@ -747,11 +790,11 @@ function addLockedReferral(url: URL) {
 
 function propagateReferralLinks() {
   const ref = lockedReferral();
-  if (!ref) return;
   document.querySelectorAll<HTMLAnchorElement>("a[data-portal-route]").forEach((link) => {
     const url = new URL(link.href, location.href);
     if (url.origin !== location.origin) return;
-    url.searchParams.set("ref", ref);
+    if (ref) url.searchParams.set("ref", ref);
+    else url.searchParams.delete("ref");
     link.href = url.toString();
   });
 }
