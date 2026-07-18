@@ -38,3 +38,8 @@ COPY --from=build /app/packages /app/packages
 COPY --from=build /app/deploy/migrations /app/deploy/migrations
 EXPOSE 3000
 CMD ["npm", "run", "start", "-w", "@freedompost/api"]
+
+FROM caddy:2-alpine AS nginx
+COPY deploy/caddy/Caddyfile /etc/caddy/Caddyfile
+COPY --from=build /app/apps/public-reader/dist /var/www/freedompost/public
+COPY --from=build /app/apps/admin/dist /var/www/freedompost/public/admin

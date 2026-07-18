@@ -2,7 +2,8 @@ services:
   nginx:
     build:
       context: ..
-      dockerfile: deploy/caddy/Dockerfile
+      dockerfile: Dockerfile
+      target: nginx
       args:
         PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://example.com}
         VITE_PUBLIC_SITE_URL: ${VITE_PUBLIC_SITE_URL:-https://example.com}
@@ -21,6 +22,7 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
+      target: runtime
       args:
         PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://example.com}
         VITE_PUBLIC_SITE_URL: ${VITE_PUBLIC_SITE_URL:-https://example.com}

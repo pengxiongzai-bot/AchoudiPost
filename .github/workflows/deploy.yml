@@ -353,9 +353,14 @@ jobs:
               sleep "$((attempt * 20))"
             done
             compose --env-file .env -f deploy/docker-compose.yml up -d postgres redis
+            # Keep named volumes and running images, but discard stale build data
+            # before compiling. The production host has limited local disk space.
+            docker_cmd builder prune --all --force || true
+            docker_cmd image prune --all --force || true
+            docker_cmd system df || true
             compose --env-file .env -f deploy/docker-compose.yml build app nginx
             compose --env-file .env -f deploy/docker-compose.yml run --rm app npm run db:migrate:prod -w @freedompost/api
-            compose --env-file .env -f deploy/docker-compose.yml up -d --build --force-recreate app nginx
+            compose --env-file .env -f deploy/docker-compose.yml up -d --force-recreate app nginx
             for attempt in $(seq 1 60); do
               if curl -fsS http://127.0.0.1:3000/health \
                 && curl -fsS -H "Host: $DEPLOY_HOST" http://127.0.0.1/ >/dev/null; then
