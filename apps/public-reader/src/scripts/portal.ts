@@ -114,6 +114,12 @@ function initTheme() {
     localStorage.setItem(themeKey, root.dataset.theme);
     updateThemeIcon();
   });
+
+  window.addEventListener("storage", (event) => {
+    if (event.key !== themeKey || (event.newValue !== "light" && event.newValue !== "dark")) return;
+    root.dataset.theme = event.newValue;
+    updateThemeIcon();
+  });
 }
 
 function updateThemeIcon() {

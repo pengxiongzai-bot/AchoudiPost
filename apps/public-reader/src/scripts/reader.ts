@@ -82,7 +82,7 @@ type StoredComment = {
 };
 
 const storageKeys = {
-  theme: "fp_theme_v1",
+  theme: "achoudi_theme_v1",
   listWidth: "fp_list_width_v1",
   user: "fp_comment_user_v1",
   device: "fp_device_id_v1",
@@ -230,7 +230,14 @@ function bindEvents() {
     const current = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
     document.documentElement.dataset.theme = current;
     localStorage.setItem(storageKeys.theme, current);
-    themeBtn.innerHTML = current === "dark" ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>';
+    updateThemeControls(current);
+    createIcons({ icons });
+  });
+
+  window.addEventListener("storage", (event) => {
+    if (event.key !== storageKeys.theme || (event.newValue !== "light" && event.newValue !== "dark")) return;
+    document.documentElement.dataset.theme = event.newValue;
+    updateThemeControls(event.newValue);
     createIcons({ icons });
   });
 
@@ -996,9 +1003,15 @@ function initResizer() {
 
 function applyStoredTheme() {
   const saved = localStorage.getItem(storageKeys.theme);
-  const theme = saved === "light" || saved === "dark" ? saved : "dark";
+  const theme = saved === "dark" ? "dark" : "light";
   document.documentElement.dataset.theme = theme;
+  updateThemeControls(theme);
+}
+
+function updateThemeControls(theme: "light" | "dark") {
   themeBtn.innerHTML = theme === "dark" ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>';
+  const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  if (themeColor) themeColor.content = theme === "dark" ? "#121312" : "#ffffff";
 }
 
 function applyStoredListWidth() {

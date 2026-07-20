@@ -42,10 +42,11 @@ const canonicalUrl = new URL(`/p/${encodeURIComponent(article.slug)}`, Astro.sit
 ---
 
 <!doctype html>
-<html lang="zh-CN" data-theme="dark" class={readerBootPendingClass}>
+<html lang="zh-CN" data-theme="light" class={readerBootPendingClass}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#ffffff" />
     <title>{article.title}</title>
     <meta name="description" content={article.excerpt} />
     <link rel="canonical" href={canonicalUrl} />

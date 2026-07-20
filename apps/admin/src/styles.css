@@ -1,6 +1,21 @@
 :root {
-  color: #20242a;
-  background: #f6f7f4;
+  --admin-bg: #f4f5f2;
+  --admin-panel: #ffffff;
+  --admin-panel-soft: #f8f9f6;
+  --admin-text: #000000;
+  --admin-muted: #545555;
+  --admin-line: #e2e4df;
+  --admin-line-strong: #b9bdb4;
+  --admin-accent: #97c731;
+  --admin-accent-hover: #86b527;
+  --admin-accent-text: #5f7f12;
+  --admin-accent-ink: #0d0f09;
+  --admin-accent-soft: #edf6da;
+  --admin-danger: #b42318;
+  --admin-danger-soft: #fff2f0;
+  color: var(--admin-text);
+  background: var(--admin-bg);
+  color-scheme: light;
   font-family:
     ui-sans-serif,
     system-ui,
@@ -48,9 +63,9 @@ button {
   display: grid;
   gap: 14px;
   padding: 22px;
-  border: 1px solid #dde4dc;
+  border: 1px solid var(--admin-line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--admin-panel);
 }
 
 .login-box h1 {
@@ -61,24 +76,24 @@ button {
 
 .login-box p {
   margin: 2px 0 0;
-  color: #667085;
+  color: var(--admin-muted);
 }
 
 label {
   display: grid;
   gap: 6px;
-  color: #667085;
+  color: var(--admin-muted);
   font-size: 13px;
 }
 
 input,
 textarea {
   width: 100%;
-  border: 1px solid #cbd5c8;
+  border: 1px solid var(--admin-line-strong);
   border-radius: 8px;
   outline: none;
-  background: #fff;
-  color: #20242a;
+  background: var(--admin-panel);
+  color: var(--admin-text);
 }
 
 input {
@@ -97,8 +112,8 @@ input {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #dde4dc;
-  background: #fff;
+  border-right: 1px solid var(--admin-line);
+  background: var(--admin-panel);
 }
 
 .workspace-tabs {
@@ -106,8 +121,8 @@ input {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 4px;
   padding: 8px;
-  border-bottom: 1px solid #dde4dc;
-  background: #f6f7f4;
+  border-bottom: 1px solid var(--admin-line);
+  background: var(--admin-bg);
 }
 
 .workspace-tabs button {
@@ -115,14 +130,14 @@ input {
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: #667085;
+  color: var(--admin-muted);
   font-weight: 700;
 }
 
 .workspace-tabs button.active {
-  background: #fff;
-  color: #1f7a5b;
-  box-shadow: 0 1px 2px rgba(32, 36, 42, 0.08);
+  background: var(--admin-panel);
+  color: var(--admin-accent-text);
+  box-shadow: inset 0 -2px 0 var(--admin-accent), 0 1px 2px rgba(32, 36, 42, 0.08);
 }
 
 .rail-head {
@@ -131,7 +146,7 @@ input {
   align-items: center;
   justify-content: space-between;
   padding: 0 12px;
-  border-bottom: 1px solid #dde4dc;
+  border-bottom: 1px solid var(--admin-line);
 }
 
 .rail-actions,
@@ -144,7 +159,7 @@ input {
 
 .rail-actions {
   padding: 10px 12px;
-  border-bottom: 1px solid #dde4dc;
+  border-bottom: 1px solid var(--admin-line);
 }
 
 .post-list {
@@ -162,13 +177,13 @@ input {
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: #20242a;
+  color: var(--admin-text);
   text-align: left;
 }
 
 .post-list button:hover,
 .post-list button.active {
-  background: #e9f5ef;
+  background: var(--admin-accent-soft);
 }
 
 .post-list span {
@@ -180,7 +195,7 @@ input {
 
 .post-list small,
 .editor-topbar span {
-  color: #667085;
+  color: var(--admin-muted);
   font-size: 12px;
 }
 
@@ -199,8 +214,8 @@ input {
   justify-content: flex-start;
   gap: 16px;
   padding: 0 16px;
-  border-bottom: 1px solid #dde4dc;
-  background: #fff;
+  border-bottom: 1px solid var(--admin-line);
+  background: var(--admin-panel);
 }
 
 .editor-topbar > div:first-child {
@@ -236,8 +251,8 @@ input {
   z-index: 20;
   margin: 0;
   padding: 10px 16px;
-  border-top: 1px solid #dde4dc;
-  background: #f6f7f4;
+  border-top: 1px solid var(--admin-line);
+  background: var(--admin-bg);
   box-shadow: 0 -8px 18px rgba(32, 36, 42, 0.08);
 }
 
@@ -246,7 +261,7 @@ input {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #20242a;
+  color: var(--admin-text);
   font-size: 14px;
   white-space: nowrap;
 }
@@ -255,10 +270,10 @@ input {
   height: 32px;
   min-width: 82px;
   padding: 0 28px 0 8px;
-  border: 1px solid #cbd5c8;
+  border: 1px solid var(--admin-line-strong);
   border-radius: 8px;
-  background: #fff;
-  color: #20242a;
+  background: var(--admin-panel);
+  color: var(--admin-text);
   outline: none;
 }
 
@@ -266,7 +281,7 @@ input {
   flex: 0 0 auto;
   width: 1px;
   height: 22px;
-  background: #d8ded5;
+  background: var(--admin-line);
 }
 
 .toolbar-fill {
@@ -303,10 +318,10 @@ button,
   justify-content: center;
   gap: 6px;
   padding: 0 10px;
-  border: 1px solid #cbd5c8;
+  border: 1px solid var(--admin-line-strong);
   border-radius: 8px;
-  background: #fff;
-  color: #20242a;
+  background: var(--admin-panel);
+  color: var(--admin-text);
   white-space: nowrap;
 }
 
@@ -316,35 +331,35 @@ button,
 }
 
 button:hover {
-  background: #f3f6f1;
+  background: var(--admin-accent-soft);
 }
 
 .primary {
-  border-color: #1f7a5b;
-  background: #1f7a5b;
-  color: #fff;
+  border-color: var(--admin-accent);
+  background: var(--admin-accent);
+  color: var(--admin-accent-ink);
 }
 
 .primary:hover {
-  background: #196449;
+  background: var(--admin-accent-hover);
 }
 
 .danger-button {
-  border-color: #e4b8b2;
-  color: #b42318;
+  border-color: color-mix(in srgb, var(--admin-danger) 35%, var(--admin-line));
+  color: var(--admin-danger);
 }
 
 .danger-button:hover {
-  background: #fff2f0;
+  background: var(--admin-danger-soft);
 }
 
 .rich-editor {
   min-height: calc(100vh - 190px);
   padding: 14px;
   overflow: auto;
-  border: 1px solid #cbd5c8;
+  border: 1px solid var(--admin-line-strong);
   border-radius: 8px;
-  background: #fff;
+  background: var(--admin-panel);
   font-family:
     "Noto Serif SC",
     "Source Han Serif SC",
@@ -358,8 +373,8 @@ button:hover {
 }
 
 .rich-editor:focus {
-  border-color: #1f7a5b;
-  box-shadow: 0 0 0 3px rgba(31, 122, 91, 0.12);
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--admin-accent) 18%, transparent);
 }
 
 .rich-editor p {
@@ -407,7 +422,7 @@ button:hover {
   display: block;
   max-width: 100%;
   max-height: 520px;
-  border: 1px solid #dde4dc;
+  border: 1px solid var(--admin-line);
   border-radius: 8px;
   object-fit: contain;
 }
@@ -419,7 +434,7 @@ button:hover {
 
 .editor-image figcaption {
   margin-top: 6px;
-  color: #667085;
+  color: var(--admin-muted);
   font-size: 12px;
 }
 
@@ -430,9 +445,9 @@ button:hover {
   gap: 12px;
   margin: 14px 0;
   padding: 12px 14px;
-  border: 1px solid #cbd5c8;
+  border: 1px solid var(--admin-line-strong);
   border-radius: 8px;
-  background: #f6f7f4;
+  background: var(--admin-bg);
 }
 
 .editor-attachment span {
@@ -445,7 +460,7 @@ button:hover {
 
 .editor-attachment a {
   flex: 0 0 auto;
-  color: #1f7a5b;
+  color: var(--admin-accent-text);
   text-decoration: none;
 }
 
@@ -453,7 +468,7 @@ button:hover {
   height: 100%;
   display: grid;
   place-items: center;
-  color: #667085;
+  color: var(--admin-muted);
 }
 
 .toast {
@@ -493,7 +508,7 @@ button:hover {
 }
 
 .product-editor-pane {
-  background: #f6f7f4;
+  background: var(--admin-bg);
 }
 
 .product-workspace {
@@ -519,10 +534,10 @@ button:hover {
   width: 100%;
   height: 38px;
   padding: 0 10px;
-  border: 1px solid #cbd5c8;
+  border: 1px solid var(--admin-line-strong);
   border-radius: 8px;
-  background: #fff;
-  color: #20242a;
+  background: var(--admin-panel);
+  color: var(--admin-text);
 }
 
 .product-title-field {
@@ -530,7 +545,7 @@ button:hover {
 }
 
 .product-form-grid small {
-  color: #667085;
+  color: var(--admin-muted);
   font-size: 11px;
 }
 
@@ -546,9 +561,9 @@ button:hover {
   align-items: center;
   gap: 16px;
   padding: 14px;
-  border: 1px solid #dde4dc;
+  border: 1px solid var(--admin-line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--admin-panel);
 }
 
 .product-cover-preview {
@@ -558,10 +573,10 @@ button:hover {
   place-items: center;
   flex: 0 0 auto;
   overflow: hidden;
-  border: 1px solid #cbd5c8;
+  border: 1px solid var(--admin-line-strong);
   border-radius: 6px;
-  background: #f6f7f4;
-  color: #667085;
+  background: var(--admin-bg);
+  color: var(--admin-muted);
 }
 
 .product-cover-preview img {
@@ -572,7 +587,7 @@ button:hover {
 
 .product-cover-row p {
   margin: 3px 0 10px;
-  color: #667085;
+  color: var(--admin-muted);
   font-size: 13px;
 }
 
@@ -581,12 +596,12 @@ button:hover {
 }
 
 .product-status-note {
-  color: #667085;
+  color: var(--admin-muted);
   font-size: 13px;
 }
 
 .distribution-pane {
-  background: #f6f7f4;
+  background: var(--admin-bg);
 }
 
 .distribution-workspace {
@@ -600,15 +615,15 @@ button:hover {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px;
   overflow: hidden;
-  border: 1px solid #dde4dc;
+  border: 1px solid var(--admin-line);
   border-radius: 8px;
-  background: #dde4dc;
+  background: var(--admin-line);
 }
 
 .distribution-summary > div {
   min-width: 0;
   padding: 16px;
-  background: #fff;
+  background: var(--admin-panel);
 }
 
 .distribution-summary span,
@@ -617,13 +632,13 @@ button:hover {
 }
 
 .distribution-summary span {
-  color: #667085;
+  color: var(--admin-muted);
   font-size: 12px;
 }
 
 .distribution-summary strong {
   margin-top: 4px;
-  color: #1f7a5b;
+  color: var(--admin-accent-text);
   font-size: 20px;
 }
 
@@ -634,9 +649,9 @@ button:hover {
   gap: 18px;
   margin-top: 16px;
   padding: 16px;
-  border: 1px solid #dde4dc;
+  border: 1px solid var(--admin-line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--admin-panel);
 }
 
 .affiliate-admin-detail span,
@@ -645,7 +660,7 @@ button:hover {
 }
 
 .affiliate-admin-detail span {
-  color: #667085;
+  color: var(--admin-muted);
   font-size: 12px;
 }
 
@@ -671,15 +686,15 @@ button:hover {
 }
 
 .distribution-section-head span {
-  color: #667085;
+  color: var(--admin-muted);
   font-size: 12px;
 }
 
 .distribution-table-wrap {
   overflow-x: auto;
-  border: 1px solid #dde4dc;
+  border: 1px solid var(--admin-line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--admin-panel);
 }
 
 .distribution-table-wrap table {
@@ -691,14 +706,14 @@ button:hover {
 .distribution-table-wrap th,
 .distribution-table-wrap td {
   padding: 12px;
-  border-bottom: 1px solid #eef1ed;
+  border-bottom: 1px solid var(--admin-line);
   text-align: left;
   vertical-align: middle;
 }
 
 .distribution-table-wrap th {
-  color: #667085;
-  background: #fafbf9;
+  color: var(--admin-muted);
+  background: var(--admin-panel-soft);
   font-size: 12px;
   font-weight: 700;
 }
@@ -714,21 +729,21 @@ button:hover {
 
 .distribution-table-wrap td small {
   margin-top: 2px;
-  color: #667085;
+  color: var(--admin-muted);
 }
 
 .distribution-table-wrap select {
   height: 34px;
   padding: 0 8px;
-  border: 1px solid #cbd5c8;
+  border: 1px solid var(--admin-line-strong);
   border-radius: 6px;
-  background: #fff;
+  background: var(--admin-panel);
 }
 
 .empty-table {
   margin: 0;
   padding: 30px;
-  color: #667085;
+  color: var(--admin-muted);
   text-align: center;
 }
 
@@ -763,15 +778,15 @@ button:hover {
 }
 
 .fp-color-ink {
-  color: #20242a;
+  color: var(--admin-text);
 }
 
 .fp-color-red {
-  color: #b42318;
+  color: var(--admin-danger);
 }
 
 .fp-color-green {
-  color: #1f7a5b;
+  color: var(--admin-accent-text);
 }
 
 .fp-color-blue {

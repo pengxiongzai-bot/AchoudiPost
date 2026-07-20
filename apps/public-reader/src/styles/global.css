@@ -1,36 +1,40 @@
 :root {
-  --bg: #f6f7f4;
+  --bg: #ffffff;
   --panel: #ffffff;
-  --panel-soft: #f9faf8;
-  --text: #20242a;
-  --muted: #667085;
-  --line: #e1e5df;
-  --line-strong: #cbd5c8;
-  --accent: #1f7a5b;
-  --accent-ink: #ffffff;
-  --accent-soft: #e9f5ef;
+  --panel-soft: #f4f5f2;
+  --text: #000000;
+  --muted: #545555;
+  --line: #e2e4df;
+  --line-strong: #b9bdb4;
+  --accent: #97c731;
+  --accent-text: #5f7f12;
+  --accent-ink: #0d0f09;
+  --accent-soft: #edf6da;
   --danger: #b42318;
   --code-bg: #171b22;
   --code-text: #e7edf3;
   --list-width: 280px;
   --toc-width: 240px;
   --toc-collapsed-width: 42px;
+  color-scheme: light;
 }
 
 [data-theme="dark"] {
-  --bg: #151714;
-  --panel: #1d211e;
-  --panel-soft: #242a25;
-  --text: #ecefea;
-  --muted: #a1aa9f;
-  --line: #333a35;
-  --line-strong: #475149;
-  --accent: #71d7a7;
-  --accent-ink: #102018;
-  --accent-soft: #23382d;
+  --bg: #121312;
+  --panel: #1b1d1a;
+  --panel-soft: #23261f;
+  --text: #f7f8f4;
+  --muted: #a9ada5;
+  --line: #343830;
+  --line-strong: #50564a;
+  --accent: #a7d93c;
+  --accent-text: #a7d93c;
+  --accent-ink: #10110f;
+  --accent-soft: #2c361d;
   --danger: #ffb4a8;
   --code-bg: #111418;
   --code-text: #e7edf3;
+  color-scheme: dark;
 }
 
 * {
@@ -121,10 +125,10 @@ a {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  border-radius: 8px;
+  border-radius: 4px;
   background: var(--accent);
   color: var(--accent-ink);
-  font-weight: 800;
+  font-weight: 900;
 }
 
 .brand strong,
@@ -231,8 +235,8 @@ a {
 mark {
   padding: 0 2px;
   border-radius: 4px;
-  background: #fff0a6;
-  color: #171717;
+  background: var(--accent-soft);
+  color: var(--text);
 }
 
 .list-resizer {
@@ -485,7 +489,7 @@ mark {
 }
 
 .article-body .fp-color-green {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .article-body .fp-color-blue {
@@ -501,7 +505,7 @@ mark {
 }
 
 .article-body a {
-  color: var(--accent);
+  color: var(--accent-text);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -846,7 +850,7 @@ mark {
 }
 
 .reply-btn:hover {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .reader-footer {
@@ -874,7 +878,7 @@ mark {
 }
 
 .social-links a:hover {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .footer-slot {
@@ -969,16 +973,82 @@ mark {
 }
 
 @media (max-width: 900px) {
-  body::before {
-    content: "第一版面向桌面宽屏。";
-    position: fixed;
-    inset: 0;
-    z-index: 99;
-    display: grid;
-    place-items: center;
-    padding: 24px;
-    background: var(--panel);
-    color: var(--text);
-    text-align: center;
+  body {
+    overflow: hidden;
+  }
+
+  .app-shell,
+  .app-shell.toc-collapsed {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 52px minmax(0, 1fr) 44px;
+  }
+
+  .article-list-panel,
+  .list-resizer,
+  .toc-panel {
+    display: none;
+  }
+
+  .topbar,
+  .reader-scroll,
+  .reader-footer {
+    grid-column: 1;
+  }
+
+  .topbar {
+    padding-inline: 14px;
+  }
+
+  .topbar-main span,
+  .topbar-actions > span {
+    display: none;
+  }
+
+  .reader {
+    padding: 30px 20px 56px;
+  }
+
+  .article-title-block h1 {
+    font-size: 30px;
+  }
+
+  .reader-footer {
+    padding-inline: 14px;
+  }
+
+  .social-links {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .footer-slot {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .topbar-main strong {
+    font-size: 14px;
+  }
+
+  .tool-button span {
+    display: none;
+  }
+
+  .tool-button {
+    width: 32px;
+    padding: 0;
+  }
+
+  .reader {
+    padding-inline: 16px;
+  }
+
+  .article-title-block h1 {
+    font-size: 27px;
+  }
+
+  .article-body {
+    font-size: 15px;
   }
 }
