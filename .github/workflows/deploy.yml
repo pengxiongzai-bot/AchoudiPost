@@ -21,13 +21,19 @@ jobs:
           cache: npm
 
       - name: Install dependencies
+        timeout-minutes: 15
         run: |
+          node --version
+          npm --version
+          npm config set registry https://registry.npmmirror.com
+          npm config set replace-registry-host always
           npm config set fetch-retries 5
           npm config set fetch-retry-factor 2
           npm config set fetch-retry-mintimeout 20000
           npm config set fetch-retry-maxtimeout 120000
+          npm config set fetch-timeout 60000
           for attempt in 1 2 3; do
-            npm ci --no-audit --no-fund && break
+            timeout 8m npm ci --no-audit --no-fund --loglevel=notice && break
             if [ "$attempt" -eq 3 ]; then
               exit 1
             fi
