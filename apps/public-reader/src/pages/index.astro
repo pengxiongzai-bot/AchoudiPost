@@ -13,23 +13,25 @@ const formatDate = (value: string) => new Intl.DateTimeFormat("zh-CN", {
 
 <PortalShell
   activePage="home"
-  title="FreedomPost"
-  description="FreedomPost 是一个专注写作、发布与阅读的独立内容空间。"
+  title="AchoudiPost"
+  description="阿臭弟的小站，整理电商 AI 赋能框架、实战课程和长期更新的飞书知识库。"
 >
   <section class="portal-hero" aria-labelledby="heroTitle">
     <div class="hero-media" aria-hidden="true"></div>
     <div class="hero-content portal-container">
-      <p class="eyebrow"><span></span> 独立发布 · 长文阅读 · 开放讨论</p>
-      <h1 id="heroTitle">把想说的话，<br />完整地留下来。</h1>
-      <p class="hero-lead">FreedomPost 让写作回到内容本身。没有信息流噪声，没有复杂门槛，文章、资料与讨论都在一处安静展开。</p>
+      <p class="eyebrow"><span></span> 电商 AI · 商业实战Skill · 飞书知识库</p>
+      <h1 id="heroTitle">阿臭弟的小站</h1>
+      <p class="hero-lead">这里整理我的电商 AI 赋能框架、实战课程和长期更新的飞书知识库。内容会围绕 AI 生图、生视频，以及不同商业场景下可直接复用的 Skill 框架慢慢展开。</p>
       <div class="hero-actions">
-        <a id="latestArticleLink" class="button primary" href={latest ? `/articles/?post=${encodeURIComponent(latest.slug)}` : "/articles/"} data-portal-route>
-          <i data-lucide="book-open"></i><span>开始阅读</span>
+        <a class="button primary" href="/market/" data-portal-route>
+          <i data-lucide="sparkles"></i><span>进入AI实战库</span>
         </a>
-        <a class="button secondary" href="/articles/"><i data-lucide="library"></i><span>浏览全部文章</span></a>
+        <a id="latestArticleLink" class="button secondary" href={latest ? `/articles/?post=${encodeURIComponent(latest.slug)}` : "/articles/"} data-portal-route>
+          <i data-lucide="book-open"></i><span>看最新文章</span>
+        </a>
       </div>
       <dl class="hero-stats" aria-label="站点统计">
-        <div><dt id="heroPostCount">{initialPosts.length}</dt><dd>篇内容</dd></div>
+        <div><dt id="heroPostCount">{initialPosts.length}</dt><dd>篇文章</dd></div>
         <div><dt id="heroViewCount">{initialPosts.reduce((sum, post) => sum + post.viewCount, 0)}</dt><dd>次阅读</dd></div>
         <div><dt id="heroCommentCount">{initialPosts.reduce((sum, post) => sum + post.commentCount, 0)}</dt><dd>条讨论</dd></div>
       </dl>
@@ -62,15 +64,15 @@ const formatDate = (value: string) => new Intl.DateTimeFormat("zh-CN", {
   <section class="portal-section route-section" aria-labelledby="routesHeading">
     <div class="portal-container route-layout">
       <div class="route-intro">
-        <p class="section-kicker">Explore FreedomPost</p>
-        <h2 id="routesHeading">从你关心的内容开始</h2>
-        <p>参考新原型的入口式布局，把阅读、查找和了解本站拆成清晰路径。每个入口都有明确去处，不让访客在首页绕路。</p>
+        <p class="section-kicker">Explore AchoudiPost</p>
+        <h2 id="routesHeading">从你现在需要的场景开始</h2>
+        <p>这里不是单纯堆提示词，而是把电商 AI 生图、生视频和私域转化里常用的 Skill 框架整理出来。你可以先看内容建立判断，再进入 AI 实战库了解具体框架。</p>
       </div>
       <div class="route-list">
-        <a href="/articles/"><span class="route-icon"><i data-lucide="newspaper"></i></span><span><strong>文章广场</strong><small>按标题和正文搜索全部内容</small></span><i data-lucide="chevron-right"></i></a>
-        <a href="/topics/"><span class="route-icon amber"><i data-lucide="shapes"></i></span><span><strong>专题导航</strong><small>从技术、产品和随笔进入阅读</small></span><i data-lucide="chevron-right"></i></a>
-        <a href="/guide/"><span class="route-icon blue"><i data-lucide="route"></i></span><span><strong>使用指南</strong><small>发布、分享、评论和附件说明</small></span><i data-lucide="chevron-right"></i></a>
-        <a href="/about/"><span class="route-icon neutral"><i data-lucide="info"></i></span><span><strong>关于 FreedomPost</strong><small>设计原则、服务边界与联系方式</small></span><i data-lucide="chevron-right"></i></a>
+        <a href="/market/" data-portal-route><span class="route-icon"><i data-lucide="sparkles"></i></span><span><strong>AI实战库</strong><small>查看商业实战Skill、课程和飞书知识库入口</small></span><i data-lucide="chevron-right"></i></a>
+        <a href="/articles/" data-portal-route><span class="route-icon amber"><i data-lucide="newspaper"></i></span><span><strong>文章</strong><small>后续会持续补充电商 AI 实战内容</small></span><i data-lucide="chevron-right"></i></a>
+        <a href="/tools/" data-portal-route><span class="route-icon blue"><i data-lucide="wrench"></i></span><span><strong>资源工具</strong><small>整理创作、运营和 AI 工作流里常用的工具</small></span><i data-lucide="chevron-right"></i></a>
+        <a href="/about/" data-portal-route><span class="route-icon neutral"><i data-lucide="info"></i></span><span><strong>关于阿臭弟</strong><small>了解这个小站的方向、内容和交付方式</small></span><i data-lucide="chevron-right"></i></a>
       </div>
     </div>
   </section>
@@ -78,13 +80,13 @@ const formatDate = (value: string) => new Intl.DateTimeFormat("zh-CN", {
   <section class="portal-section manifesto-section" aria-labelledby="manifestoHeading">
     <div class="portal-container manifesto-layout">
       <div>
-        <p class="section-kicker">Publishing flow</p>
-        <h2 id="manifestoHeading">写作、发布、阅读，一条完整链路</h2>
+        <p class="section-kicker">Private flow</p>
+        <h2 id="manifestoHeading">从公开内容，到私域交付</h2>
       </div>
       <ol class="process-list">
-        <li><span>01</span><div><strong>在后台完成内容</strong><p>标题、层级、颜色、图片和附件都在同一编辑器中处理。</p></div></li>
-        <li><span>02</span><div><strong>保存即对外发布</strong><p>正文与文件进入统一存储，文章地址保持稳定，可直接分享。</p></div></li>
-        <li><span>03</span><div><strong>围绕内容继续讨论</strong><p>访客可以匿名评论，粘贴图片或拖入文件，讨论留在文章下方。</p></div></li>
+        <li><span>01</span><div><strong>先看公开内容</strong><p>文章和资源会记录我对电商 AI、生图生视频和商业场景 Skill 的长期整理。</p></div></li>
+        <li><span>02</span><div><strong>选择实战Skill</strong><p>AI实战库会展示可购买的商业实战Skill，以及对应课程、知识库和更新说明。</p></div></li>
+        <li><span>03</span><div><strong>加微信转私域</strong><p>点击下单后添加微信，确认后交付飞书知识库和视频入口，后续内容继续更新。</p></div></li>
       </ol>
     </div>
   </section>

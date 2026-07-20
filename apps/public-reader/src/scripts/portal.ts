@@ -3,9 +3,7 @@ import {
   articlePermalinkPath,
   articleReaderPath,
   isCanonicalArticleSlug,
-  normalizeReferral,
-  readArticleSlugFromPath,
-  referralStorageKey
+  readArticleSlugFromPath
 } from "../lib/article-links.js";
 
 type PostListItem = {
@@ -83,8 +81,6 @@ type AffiliateProduct = StoreProduct & {
 };
 
 const themeKey = "fp_theme_v1";
-const referralKey = referralStorageKey;
-const visitorKey = "fp_affiliate_visitor_v1";
 const root = document.documentElement;
 const navToggle = document.querySelector<HTMLButtonElement>("#navToggle");
 const primaryNav = document.querySelector<HTMLElement>("#primaryNav");
@@ -101,7 +97,6 @@ let posts: PostListItem[] = [];
 let searchDocuments: SearchDocument[] = [];
 
 initTheme();
-void captureReferral();
 bindNavigation();
 bindRouteNavigation();
 bindArticleReaderMessages();
@@ -205,7 +200,7 @@ function updateArticleMetadata(destination: URL, title: string | null) {
   const openGraphUrl = document.querySelector<HTMLMetaElement>('meta[property="og:url"]');
   if (openGraphUrl) openGraphUrl.content = destination.toString();
   if (!title) return;
-  document.title = `${title} - FreedomPost`;
+  document.title = `${title} - AchoudiPost`;
   const openGraphTitle = document.querySelector<HTMLMetaElement>('meta[property="og:title"]');
   if (openGraphTitle) openGraphTitle.content = title;
 }
@@ -244,7 +239,7 @@ async function loadRoute(destination: URL, push: boolean) {
   routeLoading = true;
   document.body.classList.add("route-loading");
   try {
-    const response = await fetch(destination.href, { headers: { "X-FreedomPost-Route": "1" } });
+    const response = await fetch(destination.href, { headers: { "X-AchoudiPost-Route": "1" } });
     if (!response.ok) throw new Error(`Route request failed: ${response.status}`);
     const documentText = await response.text();
     const nextDocument = new DOMParser().parseFromString(documentText, "text/html");
@@ -346,7 +341,7 @@ async function hydrateMarket() {
     const visible = products.filter((product) => category === "all" || product.category === category);
     grid.innerHTML = visible.map(renderMarketProduct).join("");
     empty.hidden = visible.length > 0;
-    count.textContent = `${visible.length} 件在售商品`;
+    count.textContent = `${visible.length} 个在售Skill`;
     grid.querySelectorAll<HTMLButtonElement>("[data-product-slug]").forEach((button) => {
       button.addEventListener("click", () => {
         const product = products.find((item) => item.slug === button.dataset.productSlug);
@@ -394,7 +389,7 @@ async function hydrateMarket() {
       createPortalIcons();
     }
   } catch {
-    count.textContent = "商品加载失败";
+    count.textContent = "Skill加载失败";
     empty.hidden = false;
   }
 }
@@ -480,87 +475,21 @@ function renderProductDialog(product: StoreProduct) {
   const displayPrice = product.customerPriceCents ?? product.priceCents;
   const cover = product.coverUrl ? `<img src="${escapeAttribute(product.coverUrl)}" alt="${escapeAttribute(product.title)}" />` : "";
   const availability = product.stock === 0 ? `已售出 ${product.soldCount} · 暂时售罄` : product.stock < 0 ? `已售出 ${product.soldCount} · 不限量供应` : `已售出 ${product.soldCount} · 当前库存 ${product.stock}`;
-  const commission = product.commissionCents > 0 ? ` · 可得 ${formatCurrency(product.commissionCents, product.currency)}` : "";
-  return `<div class="product-dialog-cover">${cover}</div><p class="section-kicker">${escapeHtml(productCategoryLabel(product.category))}</p><h2>${escapeHtml(product.title)}</h2><p class="product-dialog-summary">${escapeHtml(product.summary)}</p><div class="product-dialog-price">${formatCurrency(displayPrice, product.currency)} <span>${availability}</span></div><div class="product-dialog-description">${escapeHtml(product.description).replace(/\n/g, "<br>")}</div><div class="product-dialog-actions"><button class="button secondary" type="button" data-share-product>分享此商品赚钱${escapeHtml(commission)}</button><button class="button primary" type="button" data-order-product ${product.stock === 0 ? "disabled" : ""}>立即下单</button></div>`;
+  return `<div class="product-dialog-cover">${cover}</div><p class="section-kicker">${escapeHtml(productCategoryLabel(product.category))}</p><h2>${escapeHtml(product.title)}</h2><p class="product-dialog-summary">${escapeHtml(product.summary)}</p><div class="product-dialog-price">${formatCurrency(displayPrice, product.currency)} <span>${availability}</span></div><div class="product-dialog-description">${escapeHtml(product.description).replace(/\n/g, "<br>")}</div><div class="product-dialog-actions"><button class="button primary" type="button" data-order-product ${product.stock === 0 ? "disabled" : ""}>立即下单</button></div>`;
 }
 
 function bindProductDialogActions(product: StoreProduct, productDialog: HTMLDialogElement, orderDialog: HTMLDialogElement, content: HTMLElement) {
-  productDialog.querySelector<HTMLButtonElement>("[data-share-product]")?.addEventListener("click", (event) => {
-    void shareMarketProduct(product, productDialog, event.currentTarget as HTMLButtonElement);
-  });
   productDialog.querySelector<HTMLButtonElement>("[data-order-product]")?.addEventListener("click", () => {
-    const ref = lockedReferral();
-    const displayPrice = product.customerPriceCents ?? product.priceCents;
-    content.innerHTML = `<p class="section-kicker">Order</p><h2>提交下单信息</h2><p class="product-dialog-summary">${escapeHtml(product.title)} · ${formatCurrency(displayPrice, product.currency)}</p><form id="affiliateOrderForm" class="order-form"><label><span>推荐人微信号</span><input name="recommenderWechatId" maxlength="32" required value="${escapeAttribute(ref ?? "")}" ${ref ? "readonly" : ""} placeholder="填写推荐人的微信号" /></label><p>提交后会生成订单号，请添加客服微信或 QQ 完成人工交易。</p><button class="button primary" type="submit">生成订单号</button><p class="form-error" role="alert" hidden></p></form>`;
+    content.innerHTML = renderPrivateContactPanel(product);
     productDialog.close();
     orderDialog.showModal();
-    content.querySelector<HTMLFormElement>("#affiliateOrderForm")?.addEventListener("submit", (event) => void submitAffiliateOrder(event, product, content));
+    createPortalIcons();
   });
 }
 
-async function shareMarketProduct(product: StoreProduct, productDialog: HTMLDialogElement, button: HTMLButtonElement) {
-  button.disabled = true;
-  try {
-    const response = await fetch("/api/affiliate/dashboard", { headers: { Accept: "application/json" } });
-    if (response.ok) {
-      const result = await response.json() as { shareUrl: string };
-      const shareUrl = new URL(result.shareUrl);
-      shareUrl.searchParams.set("product", product.slug);
-      await copyTextToClipboard(shareUrl.toString());
-      productDialog.close();
-      showPortalToast("分享链接复制成功", { center: true, success: true, duration: 2000 });
-      return;
-    }
-
-    if (response.status === 401 || response.status === 403) {
-      const destination = new URL("/earn/", location.origin);
-      destination.searchParams.set("product", product.slug);
-      addLockedReferral(destination);
-      productDialog.close();
-      await loadRoute(destination, true);
-      return;
-    }
-    throw new Error("Affiliate session check failed");
-  } catch {
-    showPortalToast("分享链接复制失败，请稍后重试", { center: true, duration: 2000 });
-  } finally {
-    button.disabled = false;
-  }
-}
-
-async function copyTextToClipboard(value: string) {
-  if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
-  await navigator.clipboard.writeText(value);
-}
-
-async function submitAffiliateOrder(event: SubmitEvent, product: StoreProduct, content: HTMLElement) {
-  event.preventDefault();
-  const form = event.currentTarget as HTMLFormElement;
-  const button = form.querySelector<HTMLButtonElement>("button[type=submit]");
-  const error = form.querySelector<HTMLElement>(".form-error");
-  const recommenderWechatId = String(new FormData(form).get("recommenderWechatId") ?? "").trim();
-  if (button) button.disabled = true;
-  try {
-    const response = await fetch("/api/orders", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ productSlug: product.slug, recommenderWechatId })
-    });
-    const result = await response.json() as { order?: AffiliateOrder; error?: { message?: string } };
-    if (!response.ok || !result.order) throw new Error(result.error?.message || "下单失败");
-    content.innerHTML = renderContactPanel(result.order);
-    createPortalIcons();
-  } catch (reason) {
-    if (error) {
-      error.textContent = reason instanceof Error ? reason.message : "下单失败，请稍后再试";
-      error.hidden = false;
-    }
-    if (button) button.disabled = false;
-  }
-}
-
-function renderContactPanel(order: AffiliateOrder) {
-  return `<p class="section-kicker">Order created</p><h2>订单已登记</h2><div class="order-code"><span>订单号</span><strong>${escapeHtml(order.orderCode)}</strong><small>联系时请发送此订单号</small></div><div class="contact-grid"><figure><img src="/images/contact-wechat.jpg" alt="客服微信二维码" /><figcaption>微信：扫码添加客服</figcaption></figure><figure><img src="/images/contact-qq.jpg" alt="客服 QQ 二维码" /><figcaption>QQ：2682460530</figcaption></figure></div><p class="settlement-note">管理员确认成交后，推广佣金将在当天人工结算。</p>`;
+function renderPrivateContactPanel(product: StoreProduct) {
+  const displayPrice = product.customerPriceCents ?? product.priceCents;
+  return `<p class="section-kicker">Wechat</p><h2>添加微信了解这个Skill</h2><p class="product-dialog-summary">${escapeHtml(product.title)} · ${formatCurrency(displayPrice, product.currency)}</p><div class="private-contact-card"><div class="wechat-qr-placeholder"><i data-lucide="scan-line"></i><strong>微信二维码待放置</strong><span>后续上传二维码后，这里会展示扫码入口。</span></div><div><strong>添加时请备注想了解的Skill名称</strong><p>我会在微信里确认具体内容、购买方式，并在确认后发送对应飞书知识库和视频入口。</p></div></div><p class="settlement-note">知识库会按框架和场景持续整理，购买后可查看对应内容的后续更新。</p>`;
 }
 
 async function hydrateAffiliateDashboard() {
@@ -737,50 +666,8 @@ function updateHomeStats() {
   if (latestLink && posts[0]) latestLink.href = articlePermalinkPath(posts[0].slug, lockedReferral());
 }
 
-async function captureReferral() {
-  const currentUrl = new URL(location.href);
-  const incoming = normalizeReferral(currentUrl.searchParams.get("ref"));
-  let locked = lockedReferral();
-  const isNewLock = !locked && Boolean(incoming);
-  if (!locked && incoming) {
-    localStorage.setItem(referralKey, incoming);
-    locked = incoming;
-  }
-  if (!locked) return;
-
-  currentUrl.searchParams.set("ref", locked);
-  history.replaceState(history.state, "", `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
-  propagateReferralLinks();
-  if (!incoming || incoming !== locked) return;
-
-  try {
-    const response = await fetch("/api/affiliate/clicks", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ref: locked, localId: affiliateVisitorId(), path: currentUrl.pathname })
-    });
-    if (!response.ok && isNewLock) {
-      localStorage.removeItem(referralKey);
-      currentUrl.searchParams.delete("ref");
-      history.replaceState(history.state, "", `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
-      propagateReferralLinks();
-      syncArticleReader();
-    }
-  } catch {
-    // Keep the first referral locally when the API is temporarily unavailable.
-  }
-}
-
 function lockedReferral(): string | null {
-  return normalizeReferral(localStorage.getItem(referralKey));
-}
-
-function affiliateVisitorId(): string {
-  const existing = localStorage.getItem(visitorKey);
-  if (existing) return existing;
-  const created = crypto.randomUUID();
-  localStorage.setItem(visitorKey, created);
-  return created;
+  return null;
 }
 
 function addLockedReferral(url: URL) {
@@ -839,11 +726,11 @@ function formatCurrency(cents: number, currency: string) {
 }
 
 function productCategoryLabel(category: string) {
-  return ({ service: "服务", digital: "数字内容", software: "软件工具", other: "其它" } as Record<string, string>)[category] ?? "其它";
+  return ({ service: "商业实战Skill", digital: "飞书知识库", software: "AI工具", other: "其它" } as Record<string, string>)[category] ?? "其它";
 }
 
 function toolCategoryLabel(category: string) {
-  return ({ writing: "写作", design: "设计", productivity: "效率", other: "其它" } as Record<string, string>)[category] ?? "其它";
+  return ({ writing: "文案", design: "图片视频", productivity: "运营效率", other: "其它" } as Record<string, string>)[category] ?? "其它";
 }
 
 function escapeHtml(value: string) {

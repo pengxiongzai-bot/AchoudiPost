@@ -486,7 +486,7 @@ function App() {
       <main className="login-screen">
         <form className="login-box" onSubmit={login}>
           <div>
-            <h1>FreedomPost</h1>
+            <h1>AchoudiPost</h1>
             <p>管理员登录</p>
           </div>
           <label>
@@ -540,9 +540,8 @@ function App() {
       <aside className="post-rail">
         <div className="workspace-tabs" role="tablist" aria-label="后台工作区">
           <button className="active" type="button" role="tab" aria-selected="true">文章</button>
-          <button type="button" role="tab" aria-selected="false" onClick={openProductWorkspace}>商品</button>
-          <button type="button" role="tab" aria-selected="false" onClick={openToolsWorkspace}>工具</button>
-          <button type="button" role="tab" aria-selected="false" onClick={() => { setWorkspace("distribution"); void loadDistribution(); }}>分销</button>
+          <button type="button" role="tab" aria-selected="false" onClick={openProductWorkspace}>AI实战库</button>
+          <button type="button" role="tab" aria-selected="false" onClick={openToolsWorkspace}>资源工具</button>
         </div>
         <div className="rail-head">
           <strong>文章管理</strong>
@@ -847,13 +846,12 @@ function ProductWorkspace({
       <aside className="post-rail">
         <div className="workspace-tabs" role="tablist" aria-label="后台工作区">
           <button type="button" role="tab" aria-selected="false" onClick={onOpenPosts}>文章</button>
-          <button className="active" type="button" role="tab" aria-selected="true">商品</button>
-          <button type="button" role="tab" aria-selected="false" onClick={onOpenTools}>工具</button>
-          <button type="button" role="tab" aria-selected="false" onClick={onOpenDistribution}>分销</button>
+          <button className="active" type="button" role="tab" aria-selected="true">AI实战库</button>
+          <button type="button" role="tab" aria-selected="false" onClick={onOpenTools}>资源工具</button>
         </div>
         <div className="rail-head">
-          <strong>商品管理</strong>
-          <button className="icon-button" type="button" onClick={createProduct} title="新建商品"><Plus size={17} /></button>
+          <strong>Skill管理</strong>
+          <button className="icon-button" type="button" onClick={createProduct} title="新建Skill"><Plus size={17} /></button>
         </div>
         <div className="rail-actions">
           <button type="button" onClick={() => void onRefresh()}><RefreshCw size={15} />刷新</button>
@@ -875,27 +873,26 @@ function ProductWorkspace({
             <header className="editor-topbar"><div><strong>{activeProduct.title}</strong><span>/market/{activeProduct.slug}</span></div></header>
             <div className="editor-workspace product-workspace">
               <div className="product-form-grid">
-                <label className="title-field product-title-field"><span>商品名称</span><input value={activeProduct.title} onChange={(event) => patchProduct({ title: event.target.value })} /></label>
-                <label><span>分类</span><select value={activeProduct.category} onChange={(event) => patchProduct({ category: event.target.value })}><option value="service">服务</option><option value="digital">数字内容</option><option value="software">软件工具</option><option value="other">其它</option></select></label>
+                <label className="title-field product-title-field"><span>Skill名称</span><input value={activeProduct.title} onChange={(event) => patchProduct({ title: event.target.value })} /></label>
+                <label><span>分类</span><select value={activeProduct.category} onChange={(event) => patchProduct({ category: event.target.value })}><option value="service">商业实战Skill</option><option value="digital">飞书知识库</option><option value="software">AI工具</option><option value="other">其它</option></select></label>
                 <label><span>价格</span><input type="number" min="0" step="0.01" value={formatPriceInput(activeProduct.priceCents)} onChange={(event) => patchProduct({ priceCents: priceToCents(event.target.value) })} /></label>
-                <label><span>分销佣金</span><input type="number" min="0" step="0.01" value={formatPriceInput(activeProduct.commissionCents)} onChange={(event) => patchProduct({ commissionCents: priceToCents(event.target.value) })} /><small>每笔确认成交订单的佣金</small></label>
                 <label><span>划线价（可选）</span><input type="number" min="0" step="0.01" value={activeProduct.compareAtCents === null ? "" : formatPriceInput(activeProduct.compareAtCents)} onChange={(event) => patchProduct({ compareAtCents: event.target.value ? priceToCents(event.target.value) : null })} /></label>
                 <label><span>币种</span><select value={activeProduct.currency} onChange={(event) => patchProduct({ currency: event.target.value })}><option value="CNY">CNY</option><option value="USD">USD</option></select></label>
                 <label><span>库存</span><input type="number" min="-1" step="1" value={activeProduct.stock} onChange={(event) => patchProduct({ stock: Number(event.target.value) || 0 })} /><small>-1 表示不限量</small></label>
-                <label><span>已售出</span><input type="number" min="0" step="1" value={activeProduct.soldCount} onChange={(event) => patchProduct({ soldCount: Number(event.target.value) || 0 })} /><small>商城展示的累计销量</small></label>
+                <label><span>已售出</span><input type="number" min="0" step="1" value={activeProduct.soldCount} onChange={(event) => patchProduct({ soldCount: Number(event.target.value) || 0 })} /><small>AI实战库展示的累计销量</small></label>
                 <label><span>排序</span><input type="number" value={activeProduct.sortOrder} onChange={(event) => patchProduct({ sortOrder: Number(event.target.value) || 0 })} /></label>
                 <label><span>发布状态</span><select value={activeProduct.status} onChange={(event) => patchProduct({ status: event.target.value as AdminProduct["status"] })}><option value="draft">草稿</option><option value="published">公开发布</option></select></label>
               </div>
               <label className="wide-field"><span>一句话简介</span><input maxLength={500} value={activeProduct.summary} onChange={(event) => patchProduct({ summary: event.target.value })} /></label>
               <div className="product-cover-row">
-                <div className="product-cover-preview">{activeProduct.coverUrl ? <img src={activeProduct.coverUrl} alt="商品封面" /> : <Package size={30} />}</div>
-                <div><strong>商品封面</strong><p>上传后的图片存入现有 R2 存储。</p><button type="button" onClick={() => coverInputRef.current?.click()}><ImagePlus size={15} />上传封面</button><input ref={coverInputRef} className="hidden-input" type="file" accept="image/*" onChange={(event) => { void uploadCover(event.target.files); event.target.value = ""; }} /></div>
+                <div className="product-cover-preview">{activeProduct.coverUrl ? <img src={activeProduct.coverUrl} alt="Skill封面" /> : <Package size={30} />}</div>
+                <div><strong>Skill封面</strong><p>上传后的图片存入现有 R2 存储。</p><button type="button" onClick={() => coverInputRef.current?.click()}><ImagePlus size={15} />上传封面</button><input ref={coverInputRef} className="hidden-input" type="file" accept="image/*" onChange={(event) => { void uploadCover(event.target.files); event.target.value = ""; }} /></div>
               </div>
-              <label className="wide-field"><span>商品详情</span><textarea rows={12} maxLength={12000} value={activeProduct.description} onChange={(event) => patchProduct({ description: event.target.value })} /></label>
+              <label className="wide-field"><span>Skill详情</span><textarea rows={12} maxLength={12000} value={activeProduct.description} onChange={(event) => patchProduct({ description: event.target.value })} /></label>
             </div>
             <div className="toolbar product-toolbar"><span className="product-status-note">{activeProduct.status === "published" ? "公开页可见" : "仅后台可见"}</span><span className="toolbar-fill" /><button className="danger-button" type="button" onClick={() => void deleteProduct()}><Trash2 size={15} />删除</button><button className="primary" type="button" onClick={() => void saveProduct()}><Save size={15} />保存</button></div>
           </>
-        ) : <div className="empty-state">暂无商品，点击左上角加号创建第一个商品。</div>}
+        ) : <div className="empty-state">暂无Skill，点击左上角加号创建第一个Skill。</div>}
       </section>
       {toast && <div className="toast">{toast.text}</div>}
     </main>
@@ -903,7 +900,7 @@ function ProductWorkspace({
 }
 
 function defaultProductPayload(): Omit<AdminProduct, "id" | "slug" | "createdAt" | "updatedAt"> {
-  return { title: "未命名商品", summary: "请填写商品简介", description: "请填写商品详情", category: "service", priceCents: 0, commissionCents: 0, compareAtCents: null, currency: "CNY", stock: -1, soldCount: 0, coverUrl: null, status: "draft", sortOrder: 0 };
+  return { title: "未命名Skill", summary: "请填写Skill简介", description: "请填写Skill详情", category: "service", priceCents: 0, commissionCents: 0, compareAtCents: null, currency: "CNY", stock: -1, soldCount: 0, coverUrl: null, status: "draft", sortOrder: 0 };
 }
 
 function ToolWorkspace({
@@ -985,11 +982,10 @@ function ToolWorkspace({
       <aside className="post-rail">
         <div className="workspace-tabs" role="tablist" aria-label="后台工作区">
           <button type="button" role="tab" aria-selected="false" onClick={onOpenPosts}>文章</button>
-          <button type="button" role="tab" aria-selected="false" onClick={onOpenProducts}>商品</button>
-          <button className="active" type="button" role="tab" aria-selected="true">工具</button>
-          <button type="button" role="tab" aria-selected="false" onClick={onOpenDistribution}>分销</button>
+          <button type="button" role="tab" aria-selected="false" onClick={onOpenProducts}>AI实战库</button>
+          <button className="active" type="button" role="tab" aria-selected="true">资源工具</button>
         </div>
-        <div className="rail-head"><strong>工具管理</strong><button className="icon-button" type="button" onClick={createTool} title="新建工具"><Plus size={17} /></button></div>
+        <div className="rail-head"><strong>资源工具管理</strong><button className="icon-button" type="button" onClick={createTool} title="新建资源工具"><Plus size={17} /></button></div>
         <div className="rail-actions"><button type="button" onClick={() => void onRefresh()}><RefreshCw size={15} />刷新</button><button type="button" onClick={() => void onLogout()}><LogOut size={15} />退出</button></div>
         <div className="post-list product-list">{tools.map((tool) => <button key={tool.id} type="button" className={tool.id === activeTool?.id ? "active" : ""} onClick={() => setActiveId(tool.id)}><span>{tool.title}</span><small>{tool.status === "published" ? "已发布" : "草稿"} · {tool.category}</small></button>)}</div>
       </aside>
@@ -999,7 +995,7 @@ function ToolWorkspace({
           <div className="editor-workspace product-workspace">
             <div className="product-form-grid">
               <label className="title-field product-title-field"><span>工具名称</span><input value={activeTool.title} onChange={(event) => patchTool({ title: event.target.value })} /></label>
-              <label><span>分类</span><select value={activeTool.category} onChange={(event) => patchTool({ category: event.target.value })}><option value="writing">写作</option><option value="design">设计</option><option value="productivity">效率</option><option value="other">其它</option></select></label>
+              <label><span>分类</span><select value={activeTool.category} onChange={(event) => patchTool({ category: event.target.value })}><option value="writing">文案</option><option value="design">图片视频</option><option value="productivity">运营效率</option><option value="other">其它</option></select></label>
               <label><span>排序</span><input type="number" value={activeTool.sortOrder} onChange={(event) => patchTool({ sortOrder: Number(event.target.value) || 0 })} /></label>
               <label><span>发布状态</span><select value={activeTool.status} onChange={(event) => patchTool({ status: event.target.value as AdminTool["status"] })}><option value="draft">草稿</option><option value="published">公开发布</option></select></label>
             </div>

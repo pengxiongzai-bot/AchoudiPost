@@ -1303,12 +1303,61 @@ svg {
 
 .product-dialog-actions {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(150px, 0.6fr);
+  grid-template-columns: 1fr;
   gap: 10px;
 }
 
 .product-dialog-actions .button {
   width: 100%;
+}
+
+.private-contact-card {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  margin: 22px 0;
+  padding: 18px;
+  border: 1px solid var(--portal-line);
+  background: var(--portal-bg);
+}
+
+.private-contact-card > div:last-child {
+  min-width: 0;
+}
+
+.private-contact-card strong,
+.private-contact-card span,
+.private-contact-card p {
+  display: block;
+}
+
+.private-contact-card p {
+  margin: 8px 0 0;
+  color: var(--portal-muted);
+  line-height: 1.7;
+}
+
+.wechat-qr-placeholder {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  padding: 16px;
+  border: 1px dashed var(--portal-line-strong);
+  background: var(--portal-panel-soft);
+  text-align: center;
+}
+
+.wechat-qr-placeholder svg {
+  width: 28px;
+  height: 28px;
+  color: var(--portal-accent);
+}
+
+.wechat-qr-placeholder span {
+  color: var(--portal-muted);
+  font-size: 13px;
 }
 
 .affiliate-section {
@@ -2192,6 +2241,7 @@ svg {
   }
 
   .product-dialog-actions,
+  .private-contact-card,
   .affiliate-link-block > div,
   .affiliate-order-list article {
     grid-template-columns: 1fr;

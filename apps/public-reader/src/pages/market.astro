@@ -2,22 +2,22 @@
 import PortalShell from "../layouts/PortalShell.astro";
 ---
 
-<PortalShell activePage="market" title="商城" description="浏览 FreedomPost 发布的服务与数字商品。">
+<PortalShell activePage="market" title="AI实战库" description="查看阿臭弟整理的电商 AI 商业实战Skill、课程和飞书知识库。">
   <section class="portal-section market-section">
     <div class="portal-container">
       <div class="market-console">
-        <div><p class="section-kicker">Storefront</p><strong>选择服务类型</strong></div>
-        <div id="marketFilters" class="market-filters" role="group" aria-label="商品分类">
+        <div><p class="section-kicker">AI Skill Library</p><strong>选择实战类型</strong></div>
+        <div id="marketFilters" class="market-filters" role="group" aria-label="Skill分类">
           <button class="active" type="button" data-category="all">全部</button>
-          <button type="button" data-category="service">服务</button>
-          <button type="button" data-category="digital">数字内容</button>
-          <button type="button" data-category="software">软件工具</button>
+          <button type="button" data-category="service">商业实战Skill</button>
+          <button type="button" data-category="digital">知识库</button>
+          <button type="button" data-category="software">AI工具</button>
           <button type="button" data-category="other">其它</button>
         </div>
-        <span id="marketCount" class="market-count">加载商品中</span>
+        <span id="marketCount" class="market-count">加载Skill中</span>
       </div>
       <div id="marketProductGrid" class="market-product-grid" aria-live="polite"></div>
-      <div id="marketEmpty" class="empty-state" hidden><i data-lucide="store"></i><strong>暂时没有可购买的商品</strong><span>管理员发布商品后会在这里出现。</span></div>
+      <div id="marketEmpty" class="empty-state" hidden><i data-lucide="store"></i><strong>暂时没有可了解的Skill</strong><span>新的商业实战Skill发布后会在这里出现。</span></div>
     </div>
   </section>
   <dialog id="productDialog" class="product-dialog">
