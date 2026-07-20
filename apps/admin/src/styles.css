@@ -1,16 +1,21 @@
 :root {
-  --admin-bg: #f4f5f2;
+  --admin-bg: #f7f7f4;
   --admin-panel: #ffffff;
-  --admin-panel-soft: #f8f9f6;
-  --admin-text: #000000;
-  --admin-muted: #545555;
-  --admin-line: #e2e4df;
-  --admin-line-strong: #b9bdb4;
-  --admin-accent: #97c731;
-  --admin-accent-hover: #86b527;
-  --admin-accent-text: #5f7f12;
-  --admin-accent-ink: #0d0f09;
-  --admin-accent-soft: #edf6da;
+  --admin-panel-soft: #efefec;
+  --admin-text: #0b0b09;
+  --admin-muted: #666660;
+  --admin-line: #dfdfda;
+  --admin-line-strong: #b6b6af;
+  --admin-accent: #0b0b09;
+  --admin-accent-hover: #242420;
+  --admin-accent-text: #0b0b09;
+  --admin-accent-ink: #f7f7f4;
+  --admin-accent-soft: #e9e9e4;
+  --admin-action: #0b0b09;
+  --admin-action-hover: #242420;
+  --admin-action-text: #f7f7f4;
+  --admin-action-shadow: rgba(11, 11, 9, 0.18);
+  --admin-signal: #97c731;
   --admin-danger: #b42318;
   --admin-danger-soft: #fff2f0;
   color: var(--admin-text);
@@ -45,6 +50,16 @@ textarea,
 
 button {
   cursor: pointer;
+}
+
+:where(a, button, input, textarea, select, [contenteditable]):focus-visible {
+  outline: 2px solid var(--admin-signal);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--admin-signal);
+  color: #0b0b09;
 }
 
 .login-screen,
@@ -137,7 +152,7 @@ input {
 .workspace-tabs button.active {
   background: var(--admin-panel);
   color: var(--admin-accent-text);
-  box-shadow: inset 0 -2px 0 var(--admin-accent), 0 1px 2px rgba(32, 36, 42, 0.08);
+  box-shadow: inset 0 -2px 0 var(--admin-signal), 0 1px 2px rgba(32, 36, 42, 0.08);
 }
 
 .rail-head {
@@ -184,6 +199,10 @@ input {
 .post-list button:hover,
 .post-list button.active {
   background: var(--admin-accent-soft);
+}
+
+.post-list button.active {
+  box-shadow: inset 2px 0 0 var(--admin-signal);
 }
 
 .post-list span {
@@ -323,6 +342,7 @@ button,
   background: var(--admin-panel);
   color: var(--admin-text);
   white-space: nowrap;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
 .icon-button {
@@ -335,13 +355,35 @@ button:hover {
 }
 
 .primary {
-  border-color: var(--admin-accent);
-  background: var(--admin-accent);
-  color: var(--admin-accent-ink);
+  border-color: var(--admin-action);
+  background: var(--admin-action);
+  color: var(--admin-action-text);
 }
 
 .primary:hover {
-  background: var(--admin-accent-hover);
+  border-color: var(--admin-action);
+  background: var(--admin-action-hover);
+  box-shadow: 0 8px 22px var(--admin-action-shadow);
+  transform: translateY(-1px);
+}
+
+.primary:active {
+  box-shadow: 0 3px 10px var(--admin-action-shadow);
+  transform: translateY(0);
+}
+
+.primary:focus-visible {
+  outline-color: var(--admin-signal);
+  outline-offset: 2px;
+}
+
+.primary:disabled {
+  cursor: not-allowed;
+  border-color: var(--admin-line-strong);
+  background: var(--admin-panel-soft);
+  color: var(--admin-muted);
+  box-shadow: none;
+  opacity: 0.72;
 }
 
 .danger-button {
@@ -373,8 +415,8 @@ button:hover {
 }
 
 .rich-editor:focus {
-  border-color: var(--admin-accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--admin-accent) 18%, transparent);
+  border-color: var(--admin-signal);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--admin-signal) 18%, transparent);
 }
 
 .rich-editor p {

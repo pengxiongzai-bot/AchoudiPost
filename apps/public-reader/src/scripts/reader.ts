@@ -1011,7 +1011,7 @@ function applyStoredTheme() {
 function updateThemeControls(theme: "light" | "dark") {
   themeBtn.innerHTML = theme === "dark" ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>';
   const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-  if (themeColor) themeColor.content = theme === "dark" ? "#121312" : "#ffffff";
+  if (themeColor) themeColor.content = theme === "dark" ? "#0b0b08" : "#f7f7f4";
 }
 
 function applyStoredListWidth() {

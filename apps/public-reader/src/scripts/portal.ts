@@ -126,7 +126,7 @@ function updateThemeIcon() {
   if (!themeButton) return;
   themeButton.innerHTML = `<i data-lucide="${root.dataset.theme === "dark" ? "sun" : "moon"}"></i>`;
   const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-  if (themeColor) themeColor.content = root.dataset.theme === "dark" ? "#121312" : "#ffffff";
+  if (themeColor) themeColor.content = root.dataset.theme === "dark" ? "#0b0b08" : "#f7f7f4";
   createPortalIcons();
 }
 
