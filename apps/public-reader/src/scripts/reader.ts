@@ -5,6 +5,10 @@ import {
   readArticleSlugFromPath,
   referralStorageKey
 } from "../lib/article-links.js";
+import {
+  finishReaderBootGuard,
+  releaseReaderBootGuardIfUnrequested
+} from "../lib/reader-boot.js";
 
 type TocItem = {
   id: string;
@@ -119,6 +123,8 @@ const commentDefaultPlaceholder = "写下评论或者粘贴图片或者拖入文
 const initial = readInitialPayload();
 const pathSlug = readArticleSlugFromPath(location.pathname);
 const requestedSlug = pageSearchParams.get("post")?.trim() || pathSlug || null;
+const embeddedPortal = pageSearchParams.get("embed") === "portal";
+releaseReaderBootGuardIfUnrequested(document.documentElement, document.body, requestedSlug, embeddedPortal);
 let activeSlug = requestedSlug ?? initial?.slug ?? document.body.dataset.activeSlug ?? "";
 let posts: PostListItem[] = [];
 let searchDocs: SearchDocument[] = [];
@@ -178,6 +184,9 @@ async function init() {
       articleCache.delete(nextSlug);
       await openArticle(nextSlug, { push: false, countView: false });
     }
+  } else if (embeddedPortal) {
+    renderUnavailableArticle();
+    finishReaderBootGuard(document.documentElement, document.body);
   }
 
   prefetchIdleArticles();
@@ -314,7 +323,7 @@ async function openArticle(
   const cached = articleCache.get(slug) ?? (await prefetchArticle(slug));
   if (!cached) {
     if (requestedSlug) renderUnavailableArticle();
-    document.documentElement.classList.remove("article-boot-pending");
+    finishReaderBootGuard(document.documentElement, document.body);
     if (location.pathname.startsWith("/p/")) location.replace("/");
     return;
   }
@@ -355,7 +364,7 @@ async function openArticle(
   }
   notifyParentArticleChange(canonicalSlug, cached.meta.title, options.push === true);
 
-  document.documentElement.classList.remove("article-boot-pending");
+  finishReaderBootGuard(document.documentElement, document.body);
 }
 
 function renderUnavailableArticle() {
