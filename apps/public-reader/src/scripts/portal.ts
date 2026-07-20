@@ -80,7 +80,7 @@ type AffiliateProduct = StoreProduct & {
   customerPriceCents: number;
 };
 
-const themeKey = "fp_theme_v1";
+const themeKey = "achoudi_theme_v1";
 const root = document.documentElement;
 const navToggle = document.querySelector<HTMLButtonElement>("#navToggle");
 const primaryNav = document.querySelector<HTMLElement>("#primaryNav");
@@ -106,7 +106,7 @@ void checkService();
 
 function initTheme() {
   const saved = localStorage.getItem(themeKey);
-  root.dataset.theme = saved === "light" ? "light" : "dark";
+  root.dataset.theme = saved === "dark" ? "dark" : "light";
   updateThemeIcon();
 
   themeButton?.addEventListener("click", () => {
@@ -119,6 +119,8 @@ function initTheme() {
 function updateThemeIcon() {
   if (!themeButton) return;
   themeButton.innerHTML = `<i data-lucide="${root.dataset.theme === "dark" ? "sun" : "moon"}"></i>`;
+  const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  if (themeColor) themeColor.content = root.dataset.theme === "dark" ? "#121312" : "#ffffff";
   createPortalIcons();
 }
 

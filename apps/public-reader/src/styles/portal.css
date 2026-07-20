@@ -1,35 +1,37 @@
 :root {
-  --portal-bg: #151714;
-  --portal-panel: #1d211e;
-  --portal-panel-soft: #242a25;
-  --portal-text: #ecefea;
-  --portal-muted: #a1aa9f;
-  --portal-line: #333a35;
-  --portal-line-strong: #475149;
-  --portal-accent: #71d7a7;
-  --portal-accent-ink: #102018;
-  --portal-accent-soft: #23382d;
-  --portal-gold: #d5b66f;
-  --portal-blue: #82b4df;
+  --portal-bg: #ffffff;
+  --portal-panel: #ffffff;
+  --portal-panel-soft: #f4f5f2;
+  --portal-text: #000000;
+  --portal-muted: #545555;
+  --portal-line: #e2e4df;
+  --portal-line-strong: #b9bdb4;
+  --portal-accent: #97c731;
+  --portal-accent-text: #5f7f12;
+  --portal-accent-ink: #0d0f09;
+  --portal-accent-soft: #edf6da;
+  --portal-gold: #b67a13;
+  --portal-blue: #247ab3;
   --portal-max: 1180px;
-  color-scheme: dark;
+  color-scheme: light;
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
-[data-theme="light"] {
-  --portal-bg: #f6f7f4;
-  --portal-panel: #ffffff;
-  --portal-panel-soft: #eef2ed;
-  --portal-text: #20242a;
-  --portal-muted: #667085;
-  --portal-line: #e1e5df;
-  --portal-line-strong: #cbd5c8;
-  --portal-accent: #1f7a5b;
-  --portal-accent-ink: #ffffff;
-  --portal-accent-soft: #e9f5ef;
-  --portal-gold: #8a681b;
-  --portal-blue: #2f6f9f;
-  color-scheme: light;
+[data-theme="dark"] {
+  --portal-bg: #121312;
+  --portal-panel: #1b1d1a;
+  --portal-panel-soft: #23261f;
+  --portal-text: #f7f8f4;
+  --portal-muted: #a9ada5;
+  --portal-line: #343830;
+  --portal-line-strong: #50564a;
+  --portal-accent: #a7d93c;
+  --portal-accent-text: #a7d93c;
+  --portal-accent-ink: #10110f;
+  --portal-accent-soft: #2c361d;
+  --portal-gold: #e3b65f;
+  --portal-blue: #78b7e3;
+  color-scheme: dark;
 }
 
 * {
@@ -116,10 +118,10 @@ svg {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  border-radius: 8px;
+  border-radius: 4px;
   background: var(--portal-accent);
   color: var(--portal-accent-ink);
-  font-weight: 850;
+  font-weight: 900;
 }
 
 .portal-brand-copy strong,
@@ -204,7 +206,7 @@ svg {
   place-items: center;
   padding: 0;
   border: 1px solid var(--portal-line-strong);
-  border-radius: 8px;
+  border-radius: 6px;
   background: var(--portal-panel);
 }
 
@@ -283,23 +285,41 @@ svg {
 
 .portal-hero {
   position: relative;
-  min-height: 590px;
+  min-height: 610px;
   overflow: hidden;
   border-bottom: 1px solid var(--portal-line);
-  background: #10110f;
+  background: var(--portal-bg);
   isolation: isolate;
+}
+
+.portal-hero::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -2;
+  width: clamp(210px, 26vw, 430px);
+  background: var(--portal-accent);
 }
 
 .hero-media {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: url("/images/freedompost-editorial-hero.webp") center / cover no-repeat;
-  opacity: 0.88;
+  background: url("/images/freedompost-editorial-hero.webp") right bottom / auto 80% no-repeat;
+  filter: grayscale(1) contrast(1.12);
+  mix-blend-mode: multiply;
+  opacity: 0.68;
+}
+
+[data-theme="dark"] .hero-media {
+  mix-blend-mode: normal;
+  opacity: 0.52;
 }
 
 .hero-content {
-  min-height: 590px;
+  min-height: 610px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -310,7 +330,7 @@ svg {
 .eyebrow,
 .section-kicker {
   margin: 0;
-  color: var(--portal-accent);
+  color: var(--portal-accent-text);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0;
@@ -332,17 +352,18 @@ svg {
 .portal-hero h1 {
   max-width: 650px;
   margin: 22px 0 20px;
-  color: #f5f7f3;
-  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", STSong, SimSun, serif;
-  font-size: 54px;
-  line-height: 1.2;
+  color: var(--portal-text);
+  font-family: inherit;
+  font-size: 62px;
+  font-weight: 900;
+  line-height: 1.12;
   letter-spacing: 0;
 }
 
 .hero-lead {
   max-width: 570px;
   margin: 0;
-  color: #c4cbc2;
+  color: var(--portal-muted);
   font-size: 17px;
   line-height: 1.8;
 }
@@ -362,7 +383,7 @@ svg {
   gap: 8px;
   padding: 0 15px;
   border: 1px solid var(--portal-line-strong);
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 14px;
   font-weight: 700;
 }
@@ -378,9 +399,9 @@ svg {
 }
 
 .portal-hero .button.secondary {
-  color: #f0f3ee;
-  border-color: #566057;
-  background: #1b1f1c;
+  color: var(--portal-text);
+  border-color: var(--portal-text);
+  background: var(--portal-panel);
 }
 
 .button:hover {
@@ -396,7 +417,7 @@ svg {
 .hero-stats div {
   min-width: 112px;
   padding-right: 28px;
-  border-right: 1px solid #424943;
+  border-right: 1px solid var(--portal-line-strong);
 }
 
 .hero-stats div + div {
@@ -408,14 +429,14 @@ svg {
 }
 
 .hero-stats dt {
-  color: #f5f7f3;
+  color: var(--portal-text);
   font-size: 21px;
   font-weight: 800;
 }
 
 .hero-stats dd {
   margin: 1px 0 0;
-  color: #9fa89e;
+  color: var(--portal-muted);
   font-size: 12px;
 }
 
@@ -467,8 +488,9 @@ svg {
 .manifesto-layout h2,
 .service-note h2 {
   margin: 5px 0 0;
-  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", STSong, SimSun, serif;
+  font-family: inherit;
   font-size: 30px;
+  font-weight: 850;
   line-height: 1.3;
   letter-spacing: 0;
 }
@@ -534,15 +556,16 @@ svg {
 }
 
 .post-card-topline > span {
-  color: var(--portal-accent);
+  color: var(--portal-accent-text);
   font-weight: 750;
 }
 
 .post-card h2,
 .post-card h3 {
   margin: 25px 0 10px;
-  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", STSong, SimSun, serif;
+  font-family: inherit;
   font-size: 21px;
+  font-weight: 800;
   line-height: 1.45;
   letter-spacing: 0;
 }
@@ -573,7 +596,17 @@ svg {
 }
 
 .route-section {
-  background: var(--portal-panel);
+  --portal-panel: #282b26;
+  --portal-panel-soft: #30342d;
+  --portal-text: #ffffff;
+  --portal-muted: #b7bbb3;
+  --portal-line: #3a3d38;
+  --portal-line-strong: #565a52;
+  --portal-accent: #97c731;
+  --portal-accent-text: #a7d93c;
+  --portal-accent-soft: #2e371e;
+  color: var(--portal-text);
+  background: #212121;
 }
 
 .route-layout {
@@ -686,7 +719,7 @@ svg {
 }
 
 .process-list li > span {
-  color: var(--portal-accent);
+  color: var(--portal-accent-text);
   font: 700 12px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace;
 }
 
@@ -706,8 +739,9 @@ svg {
 
 .page-hero h1 {
   margin: 12px 0 8px;
-  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", STSong, SimSun, serif;
+  font-family: inherit;
   font-size: 42px;
+  font-weight: 900;
   line-height: 1.25;
   letter-spacing: 0;
 }
@@ -727,7 +761,7 @@ svg {
 }
 
 .article-count strong {
-  color: var(--portal-accent);
+  color: var(--portal-accent-text);
   font-size: 32px;
 }
 
@@ -910,8 +944,9 @@ svg {
 
 .tools-page-head h1 {
   margin: 10px 0 8px;
-  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", STSong, SimSun, serif;
+  font-family: inherit;
   font-size: 42px;
+  font-weight: 900;
   line-height: 1.25;
 }
 
@@ -1007,7 +1042,7 @@ svg {
 }
 
 .tool-card-topline > span {
-  color: var(--portal-accent);
+  color: var(--portal-accent-text);
   font-size: 12px;
   font-weight: 750;
 }
@@ -1036,8 +1071,9 @@ svg {
 
 .tool-card h2 {
   margin: 15px 0 7px;
-  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", STSong, SimSun, serif;
+  font-family: inherit;
   font-size: 21px;
+  font-weight: 800;
   line-height: 1.4;
 }
 
@@ -1101,8 +1137,8 @@ svg {
 .market-filters button.active,
 .market-filters button:hover {
   border-color: var(--portal-accent);
-  background: var(--portal-accent-soft);
-  color: var(--portal-accent);
+  background: var(--portal-accent);
+  color: var(--portal-accent-ink);
 }
 
 .market-count {
@@ -1125,7 +1161,8 @@ svg {
 }
 
 .market-product-card:hover {
-  border-color: color-mix(in srgb, var(--portal-accent) 58%, var(--portal-line));
+  border-color: var(--portal-text);
+  transform: translateY(-3px);
 }
 
 .market-product-cover {
@@ -1160,15 +1197,21 @@ svg {
 }
 
 .market-product-category {
-  color: var(--portal-accent);
+  align-self: flex-start;
+  padding: 3px 7px;
+  border: 1px solid var(--portal-accent);
+  border-radius: 4px;
+  background: var(--portal-accent-soft);
+  color: var(--portal-accent-text);
   font-size: 12px;
   font-weight: 750;
 }
 
 .market-product-body h2 {
   margin: 14px 0 7px;
-  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", STSong, SimSun, serif;
+  font-family: inherit;
   font-size: 21px;
+  font-weight: 850;
   line-height: 1.4;
 }
 
@@ -1191,7 +1234,7 @@ svg {
 }
 
 .market-product-price strong {
-  color: var(--portal-text);
+  color: var(--portal-accent-text);
   font-size: 19px;
 }
 
@@ -1211,13 +1254,14 @@ svg {
   min-height: 36px;
   display: inline-flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 8px;
   margin-top: 18px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--portal-accent);
+  padding: 0 12px;
+  border: 1px solid var(--portal-accent);
+  border-radius: 6px;
+  background: var(--portal-accent);
+  color: var(--portal-accent-ink);
   font-weight: 700;
   text-align: left;
 }
@@ -1266,8 +1310,9 @@ svg {
 
 .product-dialog h2 {
   margin: 8px 0;
-  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", STSong, SimSun, serif;
+  font-family: inherit;
   font-size: 30px;
+  font-weight: 850;
 }
 
 .product-dialog-summary {
@@ -1279,7 +1324,7 @@ svg {
   align-items: baseline;
   gap: 12px;
   margin: 22px 0;
-  color: var(--portal-accent);
+  color: var(--portal-accent-text);
   font-size: 24px;
   font-weight: 800;
 }
@@ -1352,7 +1397,7 @@ svg {
 .wechat-qr-placeholder svg {
   width: 28px;
   height: 28px;
-  color: var(--portal-accent);
+  color: var(--portal-accent-text);
 }
 
 .wechat-qr-placeholder span {
@@ -1379,8 +1424,9 @@ svg {
 
 .affiliate-intro h1 {
   margin: 10px 0 14px;
-  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", STSong, SimSun, serif;
+  font-family: inherit;
   font-size: 42px;
+  font-weight: 900;
   line-height: 1.25;
 }
 
@@ -1778,8 +1824,9 @@ svg {
 
 .market-intro h2 {
   margin: 6px 0 12px;
-  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", STSong, SimSun, serif;
+  font-family: inherit;
   font-size: 30px;
+  font-weight: 850;
   line-height: 1.3;
   letter-spacing: 0;
 }
@@ -1890,8 +1937,9 @@ svg {
 
 .about-lead p {
   margin: 0;
-  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", STSong, SimSun, serif;
+  font-family: inherit;
   font-size: 27px;
+  font-weight: 700;
   line-height: 1.8;
 }
 
@@ -1930,18 +1978,14 @@ svg {
 
 .service-note dd {
   margin: 0;
-  color: var(--portal-accent);
+  color: var(--portal-accent-text);
   font-weight: 700;
 }
 
 .portal-footer {
   margin-top: auto;
-  background: #111310;
-  color: #dfe4dd;
-}
-
-[data-theme="light"] .portal-footer {
-  background: #20251f;
+  background: #212121;
+  color: #ffffff;
 }
 
 .portal-footer-inner {
@@ -1955,14 +1999,14 @@ svg {
 }
 
 .portal-footer p {
-  color: #8f998d;
+  color: #b7bbb3;
   font-size: 13px;
 }
 
 .portal-footer nav {
   display: flex;
   gap: 18px;
-  color: #aeb7ac;
+  color: #d8dbd4;
   font-size: 13px;
 }
 
@@ -2014,9 +2058,9 @@ svg {
 }
 
 .portal-toast.portal-toast-success {
-  border-color: rgba(100, 216, 164, 0.55);
-  background: #64d8a4;
-  color: #0c2118;
+  border-color: color-mix(in srgb, var(--portal-accent) 65%, #000000);
+  background: var(--portal-accent);
+  color: var(--portal-accent-ink);
 }
 
 .portal-toast.portal-toast-success::before {
@@ -2033,6 +2077,7 @@ svg {
 
 .post-card,
 .topic-card,
+.market-product-card,
 .route-list > a,
 .button,
 .portal-toast {
@@ -2087,7 +2132,7 @@ svg {
 
   .portal-hero,
   .hero-content {
-    min-height: 540px;
+    min-height: 560px;
   }
 
   .post-card-grid,
@@ -2155,7 +2200,7 @@ svg {
 
   .portal-hero,
   .hero-content {
-    min-height: 510px;
+    min-height: 540px;
   }
 
   .reader-route {
@@ -2164,8 +2209,14 @@ svg {
   }
 
   .hero-media {
-    background-position: 58% center;
-    opacity: 0.5;
+    background-position: 72% center;
+    background-size: auto 100%;
+    opacity: 0.2;
+  }
+
+  .portal-hero::before {
+    width: 34vw;
+    min-width: 118px;
   }
 
   .hero-content {
@@ -2176,7 +2227,7 @@ svg {
   .portal-hero h1 {
     max-width: 520px;
     margin-top: 16px;
-    font-size: 38px;
+    font-size: 42px;
   }
 
   .hero-lead {
