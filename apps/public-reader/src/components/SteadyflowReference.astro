@@ -399,9 +399,11 @@ const tripledCards = [...cards, ...cards, ...cards];
   }
 
   .sf-navbar-wrap {
-    position: absolute;
-    inset: 0 0 auto;
-    z-index: 20;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 80;
     padding: 30px;
     pointer-events: none;
   }
@@ -417,17 +419,17 @@ const tripledCards = [...cards, ...cards, ...cards];
     transition: gap 0.45s cubic-bezier(0.44, 0, 0.56, 1), justify-content 0.45s cubic-bezier(0.44, 0, 0.56, 1);
   }
 
-  .sf-scrolled .sf-desktop-navbar {
-    justify-content: center;
-    gap: 12px;
-  }
-
   .sf-nav-pill {
     display: flex;
     align-items: center;
     border-radius: 20px;
     background: #fff;
     box-shadow: 0 8px 20px rgba(5, 8, 12, 0.1);
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+  }
+
+  .sf-scrolled .sf-nav-pill {
+    box-shadow: 0 12px 34px rgba(5, 8, 12, 0.14);
   }
 
   .sf-brand-pill {
