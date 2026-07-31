@@ -69,7 +69,7 @@
     });
 
     if (avatarCount) {
-      const counts = ["51+", "52+", "53+", "54+"];
+      const counts = avatarCount.dataset.sfCounts?.split(",").map((count) => count.trim()).filter(Boolean) ?? ["51+", "52+", "53+", "54+"];
       let index = 0;
       window.setInterval(() => {
         index = (index + 1) % counts.length;

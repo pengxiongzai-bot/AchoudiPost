@@ -2,6 +2,65 @@
 const heroVideo =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260728_015819_1b3ec855-d586-4018-96c8-8bf90cada037.mp4";
 
+const moduleTokens = ["图", "视", "流"];
+
+const moduleCards = [
+  {
+    name: "AI 生图 Skill",
+    job: "商品视觉",
+    stat: "6 个场景",
+    description: "主图、场景图、卖点图，先把商品视觉做成可复用框架。",
+    href: "/market/",
+    image:
+      "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_213624_40d877b4-92a9-44d3-be3c-5d3332db4402.png&w=1280&q=85"
+  },
+  {
+    name: "AI 生视频 Skill",
+    job: "短视频素材",
+    stat: "起量入口",
+    description: "从脚本、镜头到转场，围绕电商短视频先解决素材效率。",
+    href: "/market/",
+    image:
+      "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_213908_9574cadd-4c04-4380-af84-a753e484415a.png&w=1280&q=85"
+  },
+  {
+    name: "商品内容框架",
+    job: "文案卖点",
+    stat: "40+ 模板",
+    description: "标题、详情页、直播话术，把卖点讲清楚再去放大流量。",
+    href: "/articles/",
+    image:
+      "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_213950_c1686b87-f412-4878-b7fe-96ba5085ba01.png&w=1280&q=85"
+  },
+  {
+    name: "私域成交路径",
+    job: "微信承接",
+    stat: "3 步转化",
+    description: "从公开内容到加微交付，让用户知道下一步该点哪里。",
+    href: "/about/",
+    image:
+      "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_214012_f14ffda8-1f1c-48bc-893f-1ad05f6bc2d9.png&w=1280&q=85"
+  },
+  {
+    name: "电商工具流",
+    job: "资源工具",
+    stat: "常用清单",
+    description: "图片、视频、运营和内容工具，按任务快速找到对应入口。",
+    href: "/tools/",
+    image:
+      "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_214103_cadf49e5-cae8-42e2-9bec-955b7347f850.png&w=1280&q=85"
+  },
+  {
+    name: "飞书知识库",
+    job: "长期更新",
+    stat: "持续沉淀",
+    description: "课程、案例、素材和说明统一放进知识库，方便反复回来用。",
+    href: "/guide/",
+    image:
+      "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_214142_c7344da9-f597-42b7-8c31-7ca5228503fb.png&w=1280&q=85"
+  }
+];
+
 const habits = [
   { icon: "图", title: "AI 生图 Skill", detail: "商品图、卖点图、场景图", status: "整理中", tag: "Skill", progress: "88%", done: true },
   { icon: "视", title: "AI 生视频 Skill", detail: "短视频开头、转场、展示", status: "更新中", tag: "Video", progress: "72%", done: true },
@@ -17,6 +76,8 @@ const days = [
   { label: "课", height: 10, active: false },
   { label: "更", height: 10, active: false }
 ];
+
+const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
 ---
 
 <section class="sf-reference" data-steadyflow-reference aria-label="AchoudiPost 首屏参考块">
@@ -186,6 +247,49 @@ const days = [
         </defs>
         <path d="M2733.25 1264.78C706.858 1264.78 -50.5828 573.265 -177 202.5V2088.5H5865V202.5C5664.75 539.923 4759.65 1264.78 2733.25 1264.78Z" fill="rgb(247,247,247)" filter="url(#sf-curve-blur)"></path>
       </svg>
+    </section>
+
+    <section class="sf-achievements" id="sf-achievements" aria-labelledby="sfModulesHeading">
+      <div class="sf-achievements-header sf-reveal">
+        <div class="sf-achievements-title">
+          <p class="sf-section-kicker">MODULE MAP</p>
+          <h2 id="sfModulesHeading">先从这些实战模块进入</h2>
+        </div>
+        <div class="sf-avatar-strip">
+          <div class="sf-avatar-stack" aria-hidden="true">
+            {moduleTokens.map((token) => <span class="sf-module-token">{token}</span>)}
+            <div class="sf-avatar-count"><span data-sf-avatar-count data-sf-counts="6+,7+,8+,9+">6+</span></div>
+          </div>
+          <div class="sf-loved-copy">
+            <div class="sf-star-row" aria-hidden="true">★★★★★</div>
+            <span>点进去看详细内容</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sf-marquee-container sf-reveal">
+        <div class="sf-marquee-track">
+          {tripledModuleCards.map((card, index) => (
+            <a class="sf-achievement-card" href={card.href} data-portal-route aria-label={`查看 ${card.name}`}>
+              <img src={card.image} alt="" loading={index > 3 ? "lazy" : "eager"} />
+              <div class="sf-card-gradient"></div>
+              <div class="sf-card-content">
+                <div class="sf-card-person">
+                  <span>{card.name}</span>
+                  <span class="sf-card-dot">·</span>
+                  <span class="sf-card-job">{card.job}</span>
+                </div>
+                <div class="sf-card-result">
+                  <span class="sf-card-kicker">点击进入</span>
+                  <strong>{card.stat}</strong>
+                  <p>{card.description}</p>
+                </div>
+                <span class="sf-card-link-hint">查看详细内容 →</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
     </section>
 
   </div>
@@ -1071,6 +1175,7 @@ const days = [
   }
 
   .sf-avatar-stack img,
+  .sf-module-token,
   .sf-avatar-count {
     width: 40px;
     height: 40px;
@@ -1083,8 +1188,19 @@ const days = [
     object-fit: cover;
   }
 
-  .sf-avatar-stack img:first-child {
+  .sf-avatar-stack img:first-child,
+  .sf-module-token:first-child {
     margin-left: 0;
+  }
+
+  .sf-module-token {
+    display: grid;
+    margin-left: -8px;
+    place-items: center;
+    background: linear-gradient(145deg, rgba(67, 130, 188, 0.92), rgba(19, 21, 21, 0.92));
+    color: #fff;
+    font-family: var(--sf-headline);
+    font-size: 17px;
   }
 
   .sf-avatar-count {
@@ -1106,9 +1222,32 @@ const days = [
     gap: 5px;
   }
 
+  .sf-section-kicker,
+  .sf-card-kicker,
+  .sf-card-link-hint {
+    margin: 0;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-weight: 850;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .sf-section-kicker {
+    margin-bottom: 14px;
+    color: var(--sf-blue);
+    font-size: 13px;
+  }
+
   .sf-loved-copy img {
     width: auto;
     height: 16px;
+  }
+
+  .sf-star-row {
+    color: #f2a524;
+    font-size: 16px;
+    line-height: 1;
+    letter-spacing: 1px;
   }
 
   .sf-loved-copy span {
@@ -1148,6 +1287,7 @@ const days = [
 
   .sf-achievement-card {
     position: relative;
+    display: block;
     width: 380px;
     height: 480px;
     flex: 0 0 auto;
@@ -1207,10 +1347,17 @@ const days = [
     display: block;
     margin-bottom: 8px;
     font-family: var(--sf-headline);
-    font-size: 56px;
+    font-size: 50px;
     font-weight: 500;
     letter-spacing: -0.04em;
     line-height: 1;
+  }
+
+  .sf-card-kicker {
+    display: block;
+    margin-bottom: 12px;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 11px;
   }
 
   .sf-card-result p {
@@ -1220,6 +1367,14 @@ const days = [
     font-size: 24px;
     line-height: 1.22;
     text-wrap: balance;
+  }
+
+  .sf-card-link-hint {
+    position: absolute;
+    right: 34px;
+    bottom: 30px;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 11px;
   }
 
   .sf-counter {
