@@ -1,94 +1,25 @@
 ---
 const heroVideo =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260728_015819_1b3ec855-d586-4018-96c8-8bf90cada037.mp4";
-const counterVideo =
-  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260625_213350_6343fcfb-2892-4dcc-8573-1161447cacf5.mp4";
-const stars =
-  "https://framerusercontent.com/images/FfmG8vzlH3tOeU2kFU0oUxANr9Y.svg";
-
-const avatars = [
-  "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_223420_17676c11-c7c0-46d4-89f2-dc3ac2a54835.png&w=1280&q=85",
-  "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_223437_0de72ad0-bb6a-4c9e-b398-2fa61fe9ca26.png&w=1280&q=85",
-  "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_223443_0b27ccfe-9b4c-4e2d-bd00-9ff50a2daed1.png&w=1280&q=85"
-];
-
-const cards = [
-  {
-    name: "Maya",
-    job: "Student",
-    stat: "",
-    description: "Maintained 21-day streak using Steadyflow",
-    image:
-      "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_213624_40d877b4-92a9-44d3-be3c-5d3332db4402.png&w=1280&q=85"
-  },
-  {
-    name: "Daniel gray",
-    job: "Founder",
-    stat: "87%",
-    description: "Boosted his weekly follow-through",
-    image:
-      "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_213908_9574cadd-4c04-4380-af84-a753e484415a.png&w=1280&q=85"
-  },
-  {
-    name: "Aaron Lee",
-    job: "Remote Engineer",
-    stat: "",
-    description: "No longer drops routines on weekends after switching to Steadyflow",
-    image:
-      "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_213950_c1686b87-f412-4878-b7fe-96ba5085ba01.png&w=1280&q=85"
-  },
-  {
-    name: "Priya",
-    job: "Busy Parent",
-    stat: "",
-    description: "Tracked 40 deep-work sessions this month with Routine Stacks",
-    image:
-      "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_214012_f14ffda8-1f1c-48bc-893f-1ad05f6bc2d9.png&w=1280&q=85"
-  },
-  {
-    name: "Leo",
-    job: "Creative Professional",
-    stat: "10 Days",
-    description: "Nailed hydration goals",
-    image:
-      "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_214103_cadf49e5-cae8-42e2-9bec-955b7347f850.png&w=1280&q=85"
-  },
-  {
-    name: "Ramya",
-    job: "Software Developer",
-    stat: "",
-    description: "At last keeps her schedule on track with time-blocked routine groups",
-    image:
-      "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_214142_c7344da9-f597-42b7-8c31-7ca5228503fb.png&w=1280&q=85"
-  }
-];
 
 const habits = [
-  { icon: "🚶", title: "Morning walk", detail: "At least 20 minutes", percent: "85%", count: "12/14", done: true },
-  { icon: "💧", title: "Hydrate before lunch", detail: "Before 12:00 pm", percent: "100%", count: "9/9", done: true },
-  { icon: "📖", title: "Read 15 pages", detail: "Before winding down", percent: "67%", count: "6/9", done: false }
+  { icon: "图", title: "AI 生图 Skill", detail: "商品图、卖点图、场景图", status: "整理中", tag: "Skill", progress: "88%", done: true },
+  { icon: "视", title: "AI 生视频 Skill", detail: "短视频开头、转场、展示", status: "更新中", tag: "Video", progress: "72%", done: true },
+  { icon: "流", title: "电商工具流", detail: "从内容到私域成交", status: "补充中", tag: "Flow", progress: "56%", done: false }
 ];
 
 const days = [
-  { label: "M", height: 14, active: true },
-  { label: "T", height: 20, active: true },
-  { label: "W", height: 27, active: true },
-  { label: "T", height: 23, active: true, today: true },
-  { label: "F", height: 18, active: false },
-  { label: "S", height: 10, active: false },
-  { label: "S", height: 10, active: false }
+  { label: "图", height: 14, active: true },
+  { label: "视", height: 20, active: true },
+  { label: "品", height: 27, active: true },
+  { label: "私", height: 23, active: true, today: true },
+  { label: "流", height: 18, active: false },
+  { label: "课", height: 10, active: false },
+  { label: "更", height: 10, active: false }
 ];
-
-const impactStats = [
-  { value: 93, suffix: "%", label: "Of users report feeling more consistent" },
-  { value: 38, suffix: "", label: "Habits built on average per user monthly" },
-  { value: 41, suffix: "+", label: "Regions with growing Steadyflow communities" }
-];
-
-const tripledCards = [...cards, ...cards, ...cards];
 ---
 
-<section class="sf-reference" data-steadyflow-reference aria-label="Steadyflow reference block">
+<section class="sf-reference" data-steadyflow-reference aria-label="AchoudiPost 首屏参考块">
   <div class="sf-frame">
     <header class="sf-navbar-wrap">
       <nav class="sf-desktop-navbar" aria-label="AchoudiPost reference navigation">
@@ -157,32 +88,32 @@ const tripledCards = [...cards, ...cards, ...cards];
       <div class="sf-hero-content">
         <div class="sf-copy-stack">
           <div class="sf-hero-pill sf-rise" style="--delay: .1s">
-            <span>New</span>
-            <p>A gentler path to daily growth</p>
+            <span>持续更新</span>
+            <p>电商 AI · 商业实战 Skill · 飞书知识库</p>
           </div>
-          <h2 class="sf-rise" style="--delay: .2s">Daily routines that<br class="sf-desktop-break" /> never break</h2>
+          <h2 class="sf-rise" style="--delay: .2s">把电商 AI 实战方法<br class="sf-desktop-break" />整理成可复用的 Skill</h2>
           <p class="sf-hero-subtitle sf-rise" style="--delay: .3s">
-            We show each routine at its ideal moment so your schedule always feels balanced.
+            围绕 AI 生图、生视频、商品内容、私域成交和工具流，沉淀可直接落地的框架。
           </p>
         </div>
         <div class="sf-hero-ctas sf-rise" style="--delay: .4s">
-          <a class="sf-primary-cta" href="/contact">Begin your streak today</a>
-          <button class="sf-secondary-cta" type="button" data-sf-video-open>
+          <a class="sf-primary-cta" href="/market/" data-portal-route>进入 AI 实战库</a>
+          <a class="sf-secondary-cta" href="/articles/" data-portal-route>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="m8 5 11 7-11 7z"></path></svg>
-            <span>See it live</span>
-          </button>
+            <span>看最新文章</span>
+          </a>
         </div>
 
         <div class="sf-phone sf-rise" style="--delay: .6s">
           <div class="sf-phone-notch"></div>
           <div class="sf-phone-header">
             <div>
-              <h3>Good morning!</h3>
-              <p>Your daily routines are waiting.</p>
+              <h3>今日实战入口</h3>
+              <p>从一个场景开始，直接进入可复用框架。</p>
             </div>
             <div class="sf-phone-actions">
-              <button type="button" aria-label="Notifications"><span class="sf-bell"></span></button>
-              <button class="sf-blue-button" type="button" aria-label="Add a routine">+</button>
+              <button type="button" aria-label="知识库提醒"><span class="sf-bell"></span></button>
+              <button class="sf-blue-button" type="button" aria-label="新增实战内容">+</button>
             </div>
           </div>
 
@@ -190,13 +121,13 @@ const tripledCards = [...cards, ...cards, ...cards];
             <div class="sf-stat-summary">
               <div class="sf-stat-block">
                 <span class="sf-flame">◆</span>
-                <strong>18</strong>
-                <span>Day streak</span>
+                <strong>3</strong>
+                <span>内容方向</span>
               </div>
               <div class="sf-stats-divider"></div>
               <div class="sf-stat-block sf-checks">
-                <strong>21</strong>
-                <span>Check-ins this week</span>
+                <strong>持续</strong>
+                <span>更新知识库</span>
               </div>
             </div>
             <div class="sf-weekday-chart">
@@ -212,37 +143,37 @@ const tripledCards = [...cards, ...cards, ...cards];
           </div>
 
           <div class="sf-habits-heading">
-            <h4>Today's Habits</h4>
-            <span>3 of 4 completed</span>
+            <h4>当前整理</h4>
+            <span>持续补充中</span>
           </div>
           <div class="sf-habit-list">
             {habits.map((habit, index) => (
-              <div class="sf-habit-row" style={`--delay: ${0.8 + index * 0.12}s; --progress: ${habit.percent};`}>
+              <div class="sf-habit-row" style={`--delay: ${0.8 + index * 0.12}s; --progress: ${habit.progress};`}>
                 <div class="sf-habit-emoji">{habit.icon}</div>
                 <div class="sf-habit-copy">
                   <strong>{habit.title}</strong>
                   <span>{habit.detail}</span>
                 </div>
                 <div class="sf-habit-progress">
-                  <strong>{habit.percent}</strong>
+                  <strong>{habit.status}</strong>
                   <div class="sf-mini-progress"><span></span></div>
-                  <span>{habit.count}</span>
+                  <span>{habit.tag}</span>
                 </div>
                 <div class:list={["sf-habit-check", { "sf-complete": habit.done }]}>{habit.done ? "✓" : ""}</div>
               </div>
             ))}
           </div>
 
-          <button class="sf-create-routine" type="button">
+          <a class="sf-create-routine" href="/market/" data-portal-route>
             <span class="sf-create-plus">+</span>
-            <span><strong>Create a routine</strong><small>Start something new</small></span>
-          </button>
+            <span><strong>进入 AI 实战库</strong><small>查看课程、资料和飞书入口</small></span>
+          </a>
 
           <div class="sf-phone-bottom-nav">
-            <div class="sf-active"><span>⌂</span><small>Today</small></div>
-            <div><span>☷</span><small>Habits</small></div>
-            <div><span>▥</span><small>Stats</small></div>
-            <div><span>○</span><small>Profile</small></div>
+            <div class="sf-active"><span>⌂</span><small>Skill</small></div>
+            <div><span>☷</span><small>图像</small></div>
+            <div><span>▥</span><small>视频</small></div>
+            <div><span>○</span><small>私域</small></div>
           </div>
         </div>
       </div>
@@ -257,90 +188,6 @@ const tripledCards = [...cards, ...cards, ...cards];
       </svg>
     </section>
 
-    <section class="sf-achievements" id="sf-achievements">
-      <div class="sf-achievements-header sf-reveal">
-        <div class="sf-achievements-title">
-          <h2>What people are building with Steadyflow</h2>
-        </div>
-        <div class="sf-avatar-strip">
-          <div class="sf-avatar-stack">
-            {avatars.map((avatar) => <img src={avatar} alt="" loading="lazy" />)}
-            <div class="sf-avatar-count"><span data-sf-avatar-count>51+</span></div>
-          </div>
-          <div class="sf-loved-copy">
-            <img src={stars} alt="Five stars" loading="lazy" />
-            <span>Loved everywhere</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="sf-marquee-container sf-reveal">
-        <div class="sf-marquee-track">
-          {tripledCards.map((card, index) => (
-            <article class="sf-achievement-card">
-              <img src={card.image} alt={`${card.name}, ${card.job}`} loading={index > 3 ? "lazy" : "eager"} />
-              <div class="sf-card-gradient"></div>
-              <div class="sf-card-content">
-                <div class="sf-card-person">
-                  <span>{card.name}</span>
-                  <span class="sf-card-dot">·</span>
-                  <span class="sf-card-job">{card.job}</span>
-                </div>
-                <div class="sf-card-result">
-                  {card.stat && <strong>{card.stat}</strong>}
-                  <p>{card.description}</p>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-
-    <section class="sf-counter sf-reveal" id="sf-counter">
-      <div class="sf-counter-copy">
-        <div class="sf-counter-pill">Real streaks, real progress</div>
-        <h2>How people stay on track every single day</h2>
-        <strong class="sf-giant-number">84,000+</strong>
-        <p>Habits completed this quarter</p>
-      </div>
-
-      <div class="sf-counter-visual">
-        <div class="sf-earth-stage">
-          <div class="sf-counter-video-frame">
-            <video src={counterVideo} autoplay muted loop playsinline aria-hidden="true"></video>
-            <div class="sf-counter-fade"></div>
-            <div class="sf-cloud-overlay" aria-hidden="true"></div>
-          </div>
-          <div class="sf-blur-slab"></div>
-        </div>
-
-        <div class="sf-impact-stats" aria-label="Steadyflow community results">
-          {impactStats.map((stat) => (
-            <div class="sf-impact-stat">
-              <strong data-sf-count={stat.value} data-sf-suffix={stat.suffix}>0{stat.suffix}</strong>
-              <p>{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <div class="sf-video-overlay" data-sf-video-overlay hidden>
-    <button class="sf-modal-close" type="button" data-sf-video-close aria-label="Close video">
-      <span></span>
-      <span></span>
-    </button>
-    <div class="sf-video-panel">
-      <iframe
-        src=""
-        data-sf-video-frame
-        title="Habitline Demo"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen
-      ></iframe>
-    </div>
   </div>
 </section>
 
