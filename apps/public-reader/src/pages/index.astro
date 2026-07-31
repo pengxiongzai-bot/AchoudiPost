@@ -1,5 +1,6 @@
 ---
 import PortalShell from "../layouts/PortalShell.astro";
+import SteadyflowReference from "../components/SteadyflowReference.astro";
 import { articles, toPostListItem } from "../lib/articles";
 
 const initialPosts = articles.slice(0, 4).map(toPostListItem);
@@ -16,6 +17,8 @@ const formatDate = (value: string) => new Intl.DateTimeFormat("zh-CN", {
   title="AchoudiPost"
   description="阿臭弟的小站，整理电商 AI 赋能框架、实战课程和长期更新的飞书知识库。"
 >
+  <SteadyflowReference />
+
   <section class="portal-hero" aria-labelledby="heroTitle">
     <div class="hero-media" aria-hidden="true"></div>
     <div class="hero-content portal-container">

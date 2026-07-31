@@ -1,0 +1,2012 @@
+---
+const heroVideo =
+  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260728_015819_1b3ec855-d586-4018-96c8-8bf90cada037.mp4";
+const counterVideo =
+  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260625_213350_6343fcfb-2892-4dcc-8573-1161447cacf5.mp4";
+const stars =
+  "https://framerusercontent.com/images/FfmG8vzlH3tOeU2kFU0oUxANr9Y.svg";
+
+const avatars = [
+  "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_223420_17676c11-c7c0-46d4-89f2-dc3ac2a54835.png&w=1280&q=85",
+  "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_223437_0de72ad0-bb6a-4c9e-b398-2fa61fe9ca26.png&w=1280&q=85",
+  "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_223443_0b27ccfe-9b4c-4e2d-bd00-9ff50a2daed1.png&w=1280&q=85"
+];
+
+const cards = [
+  {
+    name: "Maya",
+    job: "Student",
+    stat: "",
+    description: "Maintained 21-day streak using Steadyflow",
+    image:
+      "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_213624_40d877b4-92a9-44d3-be3c-5d3332db4402.png&w=1280&q=85"
+  },
+  {
+    name: "Daniel gray",
+    job: "Founder",
+    stat: "87%",
+    description: "Boosted his weekly follow-through",
+    image:
+      "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_213908_9574cadd-4c04-4380-af84-a753e484415a.png&w=1280&q=85"
+  },
+  {
+    name: "Aaron Lee",
+    job: "Remote Engineer",
+    stat: "",
+    description: "No longer drops routines on weekends after switching to Steadyflow",
+    image:
+      "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_213950_c1686b87-f412-4878-b7fe-96ba5085ba01.png&w=1280&q=85"
+  },
+  {
+    name: "Priya",
+    job: "Busy Parent",
+    stat: "",
+    description: "Tracked 40 deep-work sessions this month with Routine Stacks",
+    image:
+      "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_214012_f14ffda8-1f1c-48bc-893f-1ad05f6bc2d9.png&w=1280&q=85"
+  },
+  {
+    name: "Leo",
+    job: "Creative Professional",
+    stat: "10 Days",
+    description: "Nailed hydration goals",
+    image:
+      "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_214103_cadf49e5-cae8-42e2-9bec-955b7347f850.png&w=1280&q=85"
+  },
+  {
+    name: "Ramya",
+    job: "Software Developer",
+    stat: "",
+    description: "At last keeps her schedule on track with time-blocked routine groups",
+    image:
+      "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_214142_c7344da9-f597-42b7-8c31-7ca5228503fb.png&w=1280&q=85"
+  }
+];
+
+const habits = [
+  { icon: "🚶", title: "Morning walk", detail: "At least 20 minutes", percent: "85%", count: "12/14", done: true },
+  { icon: "💧", title: "Hydrate before lunch", detail: "Before 12:00 pm", percent: "100%", count: "9/9", done: true },
+  { icon: "📖", title: "Read 15 pages", detail: "Before winding down", percent: "67%", count: "6/9", done: false }
+];
+
+const days = [
+  { label: "M", height: 14, active: true },
+  { label: "T", height: 20, active: true },
+  { label: "W", height: 27, active: true },
+  { label: "T", height: 23, active: true, today: true },
+  { label: "F", height: 18, active: false },
+  { label: "S", height: 10, active: false },
+  { label: "S", height: 10, active: false }
+];
+
+const impactStats = [
+  { value: 93, suffix: "%", label: "Of users report feeling more consistent" },
+  { value: 38, suffix: "", label: "Habits built on average per user monthly" },
+  { value: 41, suffix: "+", label: "Regions with growing Steadyflow communities" }
+];
+
+const tripledCards = [...cards, ...cards, ...cards];
+---
+
+<section class="sf-reference" data-steadyflow-reference aria-label="Steadyflow reference block">
+  <div class="sf-frame">
+    <header class="sf-navbar-wrap">
+      <nav class="sf-desktop-navbar" aria-label="Steadyflow navigation">
+        <a class="sf-nav-pill sf-brand-pill" href="#sf-hero" aria-label="Steadyflow home">
+          <svg class="sf-brand-logo" viewBox="0 0 256 256" aria-hidden="true">
+            <path fill="#5BB8F0" d="M 228 0 C 172.772 0 128 44.772 128 100 L 128 0 L 0 0 L 0 28 C 0 83.228 44.772 128 100 128 L 0 128 L 0 256 L 28 256 C 83.228 256 128 211.228 128 156 L 128 256 L 256 256 L 256 228 C 256 172.772 211.228 128 156 128 L 256 128 L 256 0 Z"></path>
+          </svg>
+          <span>Steadyflow</span>
+        </a>
+        <div class="sf-nav-pill sf-nav-menu">
+          <a href="#sf-hero">How it works</a>
+          <a href="#sf-achievements">Features</a>
+          <a href="#sf-achievements">Results</a>
+          <a href="#sf-counter">AI Coaching</a>
+        </div>
+        <div class="sf-nav-pill sf-store-pill">
+          <a class="sf-store-button" href="https://www.apple.com/in/app-store/" target="_blank" rel="noreferrer" aria-label="Download on the Apple App Store">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.31.03-1.73-.79-3.23-.79-1.5 0-1.97.76-3.21.82-1.29.05-2.27-1.32-3.1-2.56-1.69-2.45-2.98-6.93-1.25-9.95.86-1.5 2.39-2.45 4.05-2.48 1.26-.02 2.46.86 3.23.86.77 0 2.22-1.06 3.74-.9.64.03 2.43.26 3.58 1.94-.09.06-2.14 1.25-2.12 3.73.03 2.96 2.6 3.95 2.63 3.96-.03.08-.41 1.45-1.35 2.83M14.5 3.5c.7-.8 1.86-1.4 2.89-1.44.13 1.2-.35 2.43-1.03 3.29-.68.86-1.8 1.52-2.9 1.43-.15-1.18.4-2.43 1.04-3.28z"></path>
+            </svg>
+          </a>
+          <a class="sf-store-button" href="https://play.google.com/store/" target="_blank" rel="noreferrer" aria-label="Get it on Google Play">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#34A853" d="M3.1 2.35 14.05 12 3.1 21.65a2 2 0 0 1-.35-1.15v-17a2 2 0 0 1 .35-1.15Z"></path>
+              <path fill="#4285F4" d="m14.05 12 3.2-2.82L5.32 2.47a2.05 2.05 0 0 0-2.22-.12L14.05 12Z"></path>
+              <path fill="#EA4335" d="m14.05 12-10.95 9.65c.64.4 1.46.42 2.22.12l11.93-6.71L14.05 12Z"></path>
+              <path fill="#FBBC05" d="m21 11.3-3.75-2.12L14.05 12l3.2 3.06L21 12.95a.95.95 0 0 0 0-1.65Z"></path>
+            </svg>
+          </a>
+        </div>
+      </nav>
+
+      <nav class="sf-mobile-navbar" aria-label="Steadyflow mobile navigation">
+        <a class="sf-mobile-brand" href="#sf-hero" aria-label="Steadyflow home">
+          <svg class="sf-brand-logo sf-compact" viewBox="0 0 256 256" aria-hidden="true">
+            <path fill="#5BB8F0" d="M 228 0 C 172.772 0 128 44.772 128 100 L 128 0 L 0 0 L 0 28 C 0 83.228 44.772 128 100 128 L 0 128 L 0 256 L 28 256 C 83.228 256 128 211.228 128 156 L 128 256 L 256 256 L 256 228 C 256 172.772 211.228 128 156 128 L 256 128 L 256 0 Z"></path>
+          </svg>
+          <span>Steadyflow</span>
+        </a>
+        <div class="sf-mobile-actions">
+          <a class="sf-store-button sf-small-store" href="https://www.apple.com/in/app-store/" target="_blank" rel="noreferrer" aria-label="Download on the Apple App Store">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.31.03-1.73-.79-3.23-.79-1.5 0-1.97.76-3.21.82-1.29.05-2.27-1.32-3.1-2.56-1.69-2.45-2.98-6.93-1.25-9.95.86-1.5 2.39-2.45 4.05-2.48 1.26-.02 2.46.86 3.23.86.77 0 2.22-1.06 3.74-.9.64.03 2.43.26 3.58 1.94-.09.06-2.14 1.25-2.12 3.73.03 2.96 2.6 3.95 2.63 3.96-.03.08-.41 1.45-1.35 2.83M14.5 3.5c.7-.8 1.86-1.4 2.89-1.44.13 1.2-.35 2.43-1.03 3.29-.68.86-1.8 1.52-2.9 1.43-.15-1.18.4-2.43 1.04-3.28z"></path></svg>
+          </a>
+          <a class="sf-store-button sf-small-store" href="https://play.google.com/store/" target="_blank" rel="noreferrer" aria-label="Get it on Google Play">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#34A853" d="M3.1 2.35 14.05 12 3.1 21.65a2 2 0 0 1-.35-1.15v-17a2 2 0 0 1 .35-1.15Z"></path><path fill="#4285F4" d="m14.05 12 3.2-2.82L5.32 2.47a2.05 2.05 0 0 0-2.22-.12L14.05 12Z"></path><path fill="#EA4335" d="m14.05 12-10.95 9.65c.64.4 1.46.42 2.22.12l11.93-6.71L14.05 12Z"></path><path fill="#FBBC05" d="m21 11.3-3.75-2.12L14.05 12l3.2 3.06L21 12.95a.95.95 0 0 0 0-1.65Z"></path></svg>
+          </a>
+          <button class="sf-hamburger" type="button" aria-expanded="false" aria-label="Open menu" data-sf-menu-toggle>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <div class="sf-mobile-menu-backdrop" data-sf-menu-backdrop hidden>
+      <div class="sf-mobile-menu-panel">
+        <a href="#sf-hero">How it works</a>
+        <a href="#sf-achievements">Features</a>
+        <a href="#sf-achievements">Results</a>
+        <a href="#sf-counter">AI Coaching</a>
+      </div>
+    </div>
+
+    <section class="sf-hero" id="sf-hero">
+      <video class="sf-hero-video" src={heroVideo} autoplay muted loop playsinline aria-hidden="true"></video>
+      <div class="sf-hero-shade"></div>
+      <div class="sf-hero-content">
+        <div class="sf-copy-stack">
+          <div class="sf-hero-pill sf-rise" style="--delay: .1s">
+            <span>New</span>
+            <p>A gentler path to daily growth</p>
+          </div>
+          <h2 class="sf-rise" style="--delay: .2s">Daily routines that<br class="sf-desktop-break" /> never break</h2>
+          <p class="sf-hero-subtitle sf-rise" style="--delay: .3s">
+            We show each routine at its ideal moment so your schedule always feels balanced.
+          </p>
+        </div>
+        <div class="sf-hero-ctas sf-rise" style="--delay: .4s">
+          <a class="sf-primary-cta" href="/contact">Begin your streak today</a>
+          <button class="sf-secondary-cta" type="button" data-sf-video-open>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="m8 5 11 7-11 7z"></path></svg>
+            <span>See it live</span>
+          </button>
+        </div>
+
+        <div class="sf-phone sf-rise" style="--delay: .6s">
+          <div class="sf-phone-notch"></div>
+          <div class="sf-phone-header">
+            <div>
+              <h3>Good morning!</h3>
+              <p>Your daily routines are waiting.</p>
+            </div>
+            <div class="sf-phone-actions">
+              <button type="button" aria-label="Notifications"><span class="sf-bell"></span></button>
+              <button class="sf-blue-button" type="button" aria-label="Add a routine">+</button>
+            </div>
+          </div>
+
+          <div class="sf-stats-card">
+            <div class="sf-stat-summary">
+              <div class="sf-stat-block">
+                <span class="sf-flame">◆</span>
+                <strong>18</strong>
+                <span>Day streak</span>
+              </div>
+              <div class="sf-stats-divider"></div>
+              <div class="sf-stat-block sf-checks">
+                <strong>21</strong>
+                <span>Check-ins this week</span>
+              </div>
+            </div>
+            <div class="sf-weekday-chart">
+              {days.map((day) => (
+                <div class:list={["sf-weekday", { "sf-today": day.today }]}>
+                  <div class="sf-bar-track">
+                    <span class:list={["sf-bar", { "sf-active": day.active }]} style={`height: ${day.height}px`}></span>
+                  </div>
+                  <span>{day.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div class="sf-habits-heading">
+            <h4>Today's Habits</h4>
+            <span>3 of 4 completed</span>
+          </div>
+          <div class="sf-habit-list">
+            {habits.map((habit, index) => (
+              <div class="sf-habit-row" style={`--delay: ${0.8 + index * 0.12}s; --progress: ${habit.percent};`}>
+                <div class="sf-habit-emoji">{habit.icon}</div>
+                <div class="sf-habit-copy">
+                  <strong>{habit.title}</strong>
+                  <span>{habit.detail}</span>
+                </div>
+                <div class="sf-habit-progress">
+                  <strong>{habit.percent}</strong>
+                  <div class="sf-mini-progress"><span></span></div>
+                  <span>{habit.count}</span>
+                </div>
+                <div class:list={["sf-habit-check", { "sf-complete": habit.done }]}>{habit.done ? "✓" : ""}</div>
+              </div>
+            ))}
+          </div>
+
+          <button class="sf-create-routine" type="button">
+            <span class="sf-create-plus">+</span>
+            <span><strong>Create a routine</strong><small>Start something new</small></span>
+          </button>
+
+          <div class="sf-phone-bottom-nav">
+            <div class="sf-active"><span>⌂</span><small>Today</small></div>
+            <div><span>☷</span><small>Habits</small></div>
+            <div><span>▥</span><small>Stats</small></div>
+            <div><span>○</span><small>Profile</small></div>
+          </div>
+        </div>
+      </div>
+
+      <svg class="sf-hero-curve" viewBox="0 0 5688 1886" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <filter id="sf-curve-blur" x="-10%" y="-20%" width="120%" height="140%">
+            <feGaussianBlur stdDeviation="125"></feGaussianBlur>
+          </filter>
+        </defs>
+        <path d="M2733.25 1264.78C706.858 1264.78 -50.5828 573.265 -177 202.5V2088.5H5865V202.5C5664.75 539.923 4759.65 1264.78 2733.25 1264.78Z" fill="rgb(247,247,247)" filter="url(#sf-curve-blur)"></path>
+      </svg>
+    </section>
+
+    <section class="sf-achievements" id="sf-achievements">
+      <div class="sf-achievements-header sf-reveal">
+        <div class="sf-achievements-title">
+          <h2>What people are building with Steadyflow</h2>
+        </div>
+        <div class="sf-avatar-strip">
+          <div class="sf-avatar-stack">
+            {avatars.map((avatar) => <img src={avatar} alt="" loading="lazy" />)}
+            <div class="sf-avatar-count"><span data-sf-avatar-count>51+</span></div>
+          </div>
+          <div class="sf-loved-copy">
+            <img src={stars} alt="Five stars" loading="lazy" />
+            <span>Loved everywhere</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sf-marquee-container sf-reveal">
+        <div class="sf-marquee-track">
+          {tripledCards.map((card, index) => (
+            <article class="sf-achievement-card">
+              <img src={card.image} alt={`${card.name}, ${card.job}`} loading={index > 3 ? "lazy" : "eager"} />
+              <div class="sf-card-gradient"></div>
+              <div class="sf-card-content">
+                <div class="sf-card-person">
+                  <span>{card.name}</span>
+                  <span class="sf-card-dot">·</span>
+                  <span class="sf-card-job">{card.job}</span>
+                </div>
+                <div class="sf-card-result">
+                  {card.stat && <strong>{card.stat}</strong>}
+                  <p>{card.description}</p>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="sf-counter sf-reveal" id="sf-counter">
+      <div class="sf-counter-copy">
+        <div class="sf-counter-pill">Real streaks, real progress</div>
+        <h2>How people stay on track every single day</h2>
+        <strong class="sf-giant-number">84,000+</strong>
+        <p>Habits completed this quarter</p>
+      </div>
+
+      <div class="sf-counter-visual">
+        <div class="sf-earth-stage">
+          <div class="sf-counter-video-frame">
+            <video src={counterVideo} autoplay muted loop playsinline aria-hidden="true"></video>
+            <div class="sf-counter-fade"></div>
+            <div class="sf-cloud-overlay" aria-hidden="true"></div>
+          </div>
+          <div class="sf-blur-slab"></div>
+        </div>
+
+        <div class="sf-impact-stats" aria-label="Steadyflow community results">
+          {impactStats.map((stat) => (
+            <div class="sf-impact-stat">
+              <strong data-sf-count={stat.value} data-sf-suffix={stat.suffix}>0{stat.suffix}</strong>
+              <p>{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="sf-video-overlay" data-sf-video-overlay hidden>
+    <button class="sf-modal-close" type="button" data-sf-video-close aria-label="Close video">
+      <span></span>
+      <span></span>
+    </button>
+    <div class="sf-video-panel">
+      <iframe
+        src=""
+        data-sf-video-frame
+        title="Habitline Demo"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+      ></iframe>
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+  (() => {
+    const root = document.querySelector("[data-steadyflow-reference]");
+    if (!root) return;
+
+    const toggle = root.querySelector("[data-sf-menu-toggle]");
+    const backdrop = root.querySelector("[data-sf-menu-backdrop]");
+    const avatarCount = root.querySelector("[data-sf-avatar-count]");
+    const videoOverlay = root.querySelector("[data-sf-video-overlay]");
+    const videoFrame = root.querySelector("[data-sf-video-frame]");
+    const videoOpen = root.querySelector("[data-sf-video-open]");
+    const videoClose = root.querySelector("[data-sf-video-close]");
+    const demoUrl = "https://www.youtube.com/embed/b-jRHsYdomY?autoplay=0&mute=1";
+
+    const setScrolled = () => {
+      const top = root.getBoundingClientRect().top + window.scrollY;
+      root.classList.toggle("sf-scrolled", window.scrollY > top + 50);
+    };
+
+    const closeMenu = () => {
+      if (!toggle || !backdrop) return;
+      root.classList.remove("sf-menu-open");
+      backdrop.hidden = true;
+      toggle.setAttribute("aria-expanded", "false");
+      toggle.setAttribute("aria-label", "Open menu");
+      document.body.style.overflow = "";
+    };
+
+    const openMenu = () => {
+      if (!toggle || !backdrop) return;
+      root.classList.add("sf-menu-open");
+      backdrop.hidden = false;
+      toggle.setAttribute("aria-expanded", "true");
+      toggle.setAttribute("aria-label", "Close menu");
+      document.body.style.overflow = "hidden";
+    };
+
+    toggle?.addEventListener("click", () => {
+      root.classList.contains("sf-menu-open") ? closeMenu() : openMenu();
+    });
+    backdrop?.addEventListener("click", (event) => {
+      if (event.target === backdrop) closeMenu();
+    });
+    backdrop?.querySelectorAll("a").forEach((link) => link.addEventListener("click", closeMenu));
+
+    const closeVideo = () => {
+      if (!videoOverlay || !videoFrame) return;
+      videoOverlay.hidden = true;
+      videoFrame.setAttribute("src", "");
+      document.body.style.overflow = "";
+    };
+
+    videoOpen?.addEventListener("click", () => {
+      if (!videoOverlay || !videoFrame) return;
+      videoFrame.setAttribute("src", demoUrl);
+      videoOverlay.hidden = false;
+      document.body.style.overflow = "hidden";
+    });
+    videoClose?.addEventListener("click", closeVideo);
+    videoOverlay?.addEventListener("click", (event) => {
+      if (event.target === videoOverlay) closeVideo();
+    });
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeMenu();
+        closeVideo();
+      }
+    });
+
+    if (avatarCount) {
+      const counts = ["51+", "52+", "53+", "54+"];
+      let index = 0;
+      window.setInterval(() => {
+        index = (index + 1) % counts.length;
+        avatarCount.textContent = counts[index];
+        avatarCount.animate(
+          [{ opacity: 0, transform: "scale(.65)" }, { opacity: 1, transform: "scale(1)" }],
+          { duration: 450, easing: "cubic-bezier(.25,.46,.45,.94)" }
+        );
+      }, 2000);
+    }
+
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("sf-in-view");
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { rootMargin: "0px 0px -100px 0px", threshold: 0.1 }
+    );
+    root.querySelectorAll(".sf-reveal").forEach((item) => revealObserver.observe(item));
+
+    const counter = root.querySelector(".sf-counter");
+    const countObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          root.querySelectorAll("[data-sf-count]").forEach((node) => {
+            const target = Number(node.getAttribute("data-sf-count") || 0);
+            const suffix = node.getAttribute("data-sf-suffix") || "";
+            const start = performance.now();
+            const tick = (now) => {
+              const progress = Math.min(1, (now - start) / 1000);
+              const eased = 1 - Math.pow(1 - progress, 3);
+              node.textContent = `${Math.round(target * eased)}${suffix}`;
+              if (progress < 1) requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+          });
+          countObserver.disconnect();
+        });
+      },
+      { threshold: 0.35 }
+    );
+    if (counter) countObserver.observe(counter);
+
+    setScrolled();
+    window.addEventListener("scroll", setScrolled, { passive: true });
+  })();
+</script>
+
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@500&display=swap");
+
+  @font-face {
+    font-family: "Stack Sans Headline";
+    src: url("https://framerusercontent.com/modules/VqG9xS8K2qN3B8RHWMKb/UQYzREmGJ3JWCi77B0rN/StackSans-Medium.woff2")
+      format("woff2");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  .sf-reference {
+    --sf-page-bg: rgb(247, 247, 247);
+    --sf-ink: rgb(19, 21, 21);
+    --sf-blue: #4382bc;
+    --sf-logo: #5bb8f0;
+    --sf-muted: rgb(73, 77, 77);
+    --sf-headline: "Stack Sans Headline", sans-serif;
+    --sf-ui: "Google Sans Flex", sans-serif;
+    position: relative;
+    overflow: hidden;
+    background: var(--sf-page-bg);
+    color: var(--sf-ink);
+    font-family: var(--sf-ui);
+    font-weight: 500;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .sf-reference *,
+  .sf-reference *::before,
+  .sf-reference *::after {
+    box-sizing: border-box;
+  }
+
+  .sf-reference a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .sf-reference button {
+    color: inherit;
+    font: inherit;
+  }
+
+  .sf-frame {
+    position: relative;
+    overflow: hidden;
+    background: var(--sf-page-bg);
+  }
+
+  .sf-navbar-wrap {
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: 20;
+    padding: 30px;
+    pointer-events: none;
+  }
+
+  .sf-desktop-navbar {
+    display: flex;
+    width: 100%;
+    max-width: 1260px;
+    justify-content: space-between;
+    gap: 0;
+    margin: 0 auto;
+    pointer-events: auto;
+    transition: gap 0.45s cubic-bezier(0.44, 0, 0.56, 1), justify-content 0.45s cubic-bezier(0.44, 0, 0.56, 1);
+  }
+
+  .sf-scrolled .sf-desktop-navbar {
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .sf-nav-pill {
+    display: flex;
+    align-items: center;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 8px 20px rgba(5, 8, 12, 0.1);
+  }
+
+  .sf-brand-pill {
+    gap: 10px;
+    padding: 16px;
+    color: var(--sf-ink);
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .sf-brand-logo {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 auto;
+  }
+
+  .sf-brand-logo.sf-compact {
+    width: 24px;
+    height: 24px;
+  }
+
+  .sf-nav-menu {
+    height: 64px;
+    gap: 32px;
+    padding: 0 32px;
+    font-size: 14px;
+  }
+
+  .sf-nav-menu a {
+    transition: opacity 0.2s ease;
+  }
+
+  .sf-nav-menu a:hover {
+    opacity: 0.7;
+  }
+
+  .sf-store-pill {
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .sf-store-button {
+    display: grid;
+    width: 52px;
+    height: 52px;
+    place-items: center;
+    border-radius: 14px;
+    background: var(--sf-ink);
+    color: #fff;
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .sf-store-button:hover,
+  .sf-primary-cta:hover,
+  .sf-secondary-cta:hover {
+    transform: scale(0.95);
+  }
+
+  .sf-store-button svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .sf-mobile-navbar,
+  .sf-mobile-menu-backdrop {
+    display: none;
+  }
+
+  .sf-hero {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-height: 1180px;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--sf-ink);
+  }
+
+  .sf-hero-video,
+  .sf-hero-shade {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .sf-hero-video {
+    object-fit: cover;
+  }
+
+  .sf-hero-shade {
+    background:
+      linear-gradient(180deg, rgba(5, 8, 12, 0.22) 0%, rgba(5, 8, 12, 0.03) 46%, rgba(5, 8, 12, 0.16) 100%),
+      radial-gradient(circle at 50% 8%, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.2));
+  }
+
+  .sf-hero-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    width: 100%;
+    max-width: 980px;
+    flex-direction: column;
+    align-items: center;
+    gap: 80px;
+    padding: clamp(160px, 15vw, 200px) 30px 120px;
+    color: #fff;
+    text-align: center;
+  }
+
+  .sf-copy-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .sf-rise {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: sf-rise 0.6s var(--delay, 0s) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @keyframes sf-rise {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .sf-hero-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 18px 6px 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px);
+  }
+
+  .sf-hero-pill span {
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--sf-ink);
+    color: #fff;
+    font-size: 14px;
+  }
+
+  .sf-hero-pill p,
+  .sf-hero-subtitle,
+  .sf-counter-copy > p,
+  .sf-impact-stat p {
+    margin: 0;
+  }
+
+  .sf-hero-pill p {
+    font-size: 14px;
+  }
+
+  .sf-hero h2 {
+    max-width: 960px;
+    margin: 0;
+    font-family: var(--sf-headline);
+    font-size: 90px;
+    font-weight: 500;
+    letter-spacing: -0.045em;
+    line-height: 1;
+    text-wrap: balance;
+  }
+
+  .sf-hero-subtitle {
+    max-width: 500px;
+    font-size: 22px;
+    line-height: 1.4;
+    text-wrap: balance;
+  }
+
+  .sf-hero-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    margin-top: -40px;
+  }
+
+  .sf-primary-cta,
+  .sf-secondary-cta {
+    display: inline-flex;
+    height: 54px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 999px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .sf-primary-cta {
+    padding: 16px 34px;
+    background: #fff;
+    color: var(--sf-ink);
+  }
+
+  .sf-secondary-cta {
+    gap: 9px;
+    padding: 0 28px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    backdrop-filter: blur(16px);
+  }
+
+  .sf-secondary-cta svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .sf-phone {
+    position: relative;
+    width: 340px;
+    padding: 20px 16px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 44px;
+    background: rgba(13, 17, 23, 0.55);
+    box-shadow:
+      0 0 0 8px rgba(255, 255, 255, 0.05),
+      0 60px 120px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(24px);
+    color: #fff;
+    text-align: left;
+  }
+
+  .sf-phone-notch {
+    width: 90px;
+    height: 26px;
+    margin: -12px auto 10px;
+    border-radius: 999px;
+    background: #020303;
+  }
+
+  .sf-phone-header,
+  .sf-stat-summary,
+  .sf-habits-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .sf-phone-header {
+    padding: 0 2px 13px;
+  }
+
+  .sf-phone-header h3 {
+    margin: 0 0 3px;
+    font-family: var(--sf-headline);
+    font-size: 20px;
+    font-weight: 500;
+  }
+
+  .sf-phone-header p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 11px;
+  }
+
+  .sf-phone-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .sf-phone-actions button,
+  .sf-blue-button {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.07);
+    color: #fff;
+  }
+
+  .sf-blue-button {
+    border-color: transparent;
+    background: var(--sf-blue);
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .sf-bell {
+    width: 12px;
+    height: 14px;
+    border: 1.8px solid currentColor;
+    border-bottom: 0;
+    border-radius: 8px 8px 3px 3px;
+  }
+
+  .sf-stats-card {
+    padding: 13px 13px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 16px;
+    background: rgba(0, 0, 0, 0.35);
+  }
+
+  .sf-stat-block {
+    display: grid;
+    flex: 1;
+    grid-template-columns: auto auto;
+    align-items: center;
+    justify-content: center;
+    gap: 0 6px;
+  }
+
+  .sf-stat-block strong {
+    font-family: var(--sf-headline);
+    font-size: 22px;
+    font-weight: 500;
+  }
+
+  .sf-stat-block span:last-child {
+    grid-column: 1 / -1;
+    margin-top: 1px;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 9px;
+    text-align: center;
+  }
+
+  .sf-stat-block.sf-checks {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .sf-flame {
+    color: var(--sf-blue);
+    font-size: 12px;
+  }
+
+  .sf-stats-divider {
+    width: 1px;
+    height: 27px;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .sf-weekday-chart {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-top: 11px;
+  }
+
+  .sf-weekday {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 8px;
+  }
+
+  .sf-bar-track {
+    display: flex;
+    width: 100%;
+    height: 30px;
+    align-items: flex-end;
+    justify-content: center;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .sf-bar {
+    display: block;
+    width: 8px;
+    min-height: 4px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .sf-bar.sf-active {
+    background: rgba(67, 130, 188, 0.62);
+  }
+
+  .sf-weekday.sf-today {
+    color: #76b6ef;
+  }
+
+  .sf-weekday.sf-today .sf-bar {
+    background: var(--sf-blue);
+    box-shadow: 0 0 10px rgba(67, 130, 188, 0.65);
+  }
+
+  .sf-habits-heading {
+    padding: 16px 2px 9px;
+  }
+
+  .sf-habits-heading h4 {
+    margin: 0;
+    font-family: var(--sf-headline);
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .sf-habits-heading span {
+    color: rgba(255, 255, 255, 0.36);
+    font-size: 9px;
+  }
+
+  .sf-habit-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .sf-habit-row {
+    display: grid;
+    grid-template-columns: 32px 1fr auto 22px;
+    align-items: center;
+    gap: 8px;
+    min-height: 54px;
+    padding: 7px 9px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.055);
+    opacity: 0;
+    transform: translateX(-18px);
+    animation: sf-habit-in 0.4s var(--delay) ease forwards;
+  }
+
+  @keyframes sf-habit-in {
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .sf-habit-emoji {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.07);
+    font-size: 15px;
+  }
+
+  .sf-habit-copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .sf-habit-copy strong,
+  .sf-habit-copy span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .sf-habit-copy strong {
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  .sf-habit-copy span {
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 8px;
+  }
+
+  .sf-habit-progress {
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: center;
+    gap: 3px 6px;
+  }
+
+  .sf-habit-progress strong,
+  .sf-habit-progress > span {
+    font-size: 8px;
+    font-weight: 500;
+  }
+
+  .sf-habit-progress > span {
+    color: rgba(255, 255, 255, 0.32);
+    text-align: right;
+  }
+
+  .sf-mini-progress {
+    grid-column: 1 / -1;
+    width: 40px;
+    height: 3px;
+    overflow: hidden;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .sf-mini-progress span {
+    display: block;
+    width: var(--progress);
+    height: 100%;
+    border-radius: inherit;
+    background: var(--sf-blue);
+  }
+
+  .sf-habit-check {
+    display: grid;
+    width: 20px;
+    height: 20px;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    color: #fff;
+    font-size: 12px;
+  }
+
+  .sf-habit-check.sf-complete {
+    border-color: var(--sf-blue);
+    background: var(--sf-blue);
+  }
+
+  .sf-create-routine {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 9px;
+    margin-top: 7px;
+    padding: 8px 10px;
+    border: 1px dashed rgba(255, 255, 255, 0.18);
+    border-radius: 13px;
+    background: transparent;
+    color: #fff;
+    text-align: left;
+  }
+
+  .sf-create-plus {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    border-radius: 9px;
+    background: rgba(67, 130, 188, 0.18);
+    color: #6bb1ef;
+    font-size: 18px;
+  }
+
+  .sf-create-routine > span:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .sf-create-routine strong {
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  .sf-create-routine small {
+    color: rgba(255, 255, 255, 0.33);
+    font-size: 8px;
+  }
+
+  .sf-phone-bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: 9px;
+    padding: 8px 2px 2px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  .sf-phone-bottom-nav > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    color: rgba(255, 255, 255, 0.25);
+    font-size: 8px;
+  }
+
+  .sf-phone-bottom-nav .sf-active {
+    color: #63a9e8;
+  }
+
+  .sf-hero-curve {
+    position: absolute;
+    z-index: 2;
+    right: -250px;
+    bottom: -10px;
+    left: -250px;
+    width: calc(100% + 500px);
+    height: 390px;
+    pointer-events: none;
+  }
+
+  .sf-video-overlay {
+    position: fixed;
+    z-index: 100;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 30px;
+    background: rgba(19, 21, 21, 0.9);
+  }
+
+  .sf-video-overlay[hidden],
+  .sf-mobile-menu-backdrop[hidden] {
+    display: none;
+  }
+
+  .sf-modal-close {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 8px;
+    background: rgb(247, 247, 247);
+    cursor: pointer;
+  }
+
+  .sf-modal-close span {
+    position: absolute;
+    top: 19px;
+    left: 10px;
+    width: 20px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--sf-ink);
+    transform: rotate(45deg);
+  }
+
+  .sf-modal-close span:last-child {
+    transform: rotate(-45deg);
+  }
+
+  .sf-video-panel {
+    width: min(800px, 100%);
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 20px;
+    background: #000;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+  }
+
+  .sf-video-panel iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .sf-achievements {
+    overflow: hidden;
+    padding-top: 200px;
+    background: var(--sf-page-bg);
+  }
+
+  .sf-achievements-header {
+    display: flex;
+    max-width: 1260px;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 60px;
+    margin: 0 auto;
+    padding: 0 30px;
+  }
+
+  .sf-achievements-title {
+    flex: 0.7;
+  }
+
+  .sf-achievements h2,
+  .sf-counter h2 {
+    margin: 0;
+    font-family: var(--sf-headline);
+    font-size: 48px;
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+
+  .sf-avatar-strip {
+    display: flex;
+    width: 320px;
+    flex: 0 0 320px;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .sf-avatar-stack {
+    display: flex;
+    align-items: center;
+  }
+
+  .sf-avatar-stack img,
+  .sf-avatar-count {
+    width: 40px;
+    height: 40px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+  }
+
+  .sf-avatar-stack img {
+    margin-left: -8px;
+    object-fit: cover;
+  }
+
+  .sf-avatar-stack img:first-child {
+    margin-left: 0;
+  }
+
+  .sf-avatar-count {
+    position: relative;
+    z-index: 5;
+    display: grid;
+    margin-left: -8px;
+    place-items: center;
+    overflow: hidden;
+    background: var(--sf-ink);
+    color: #fff;
+    font-size: 11px;
+  }
+
+  .sf-loved-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .sf-loved-copy img {
+    width: auto;
+    height: 16px;
+  }
+
+  .sf-loved-copy span {
+    color: var(--sf-muted);
+    font-size: 18px;
+    white-space: nowrap;
+  }
+
+  .sf-marquee-container {
+    width: 100%;
+    margin-top: 50px;
+    overflow: hidden;
+    cursor: ew-resize;
+  }
+
+  .sf-marquee-track {
+    display: flex;
+    width: max-content;
+    gap: 30px;
+    padding: 0 15px;
+    animation: sf-marquee 60s linear infinite;
+  }
+
+  .sf-marquee-container:hover .sf-marquee-track {
+    animation-play-state: paused;
+  }
+
+  @keyframes sf-marquee {
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(-33.3333%);
+    }
+  }
+
+  .sf-achievement-card {
+    position: relative;
+    width: 380px;
+    height: 480px;
+    flex: 0 0 auto;
+    overflow: hidden;
+    border-radius: 20px;
+    background: var(--sf-ink);
+    color: #fff;
+  }
+
+  .sf-achievement-card > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+
+  .sf-achievement-card:hover > img {
+    transform: scale(1.025);
+  }
+
+  .sf-card-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgb(19, 21, 21) 0%, rgba(255, 255, 255, 0) 50%, rgb(19, 21, 21) 100%);
+    opacity: 0.86;
+  }
+
+  .sf-card-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 40px;
+  }
+
+  .sf-card-person {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+    font-size: 15px;
+  }
+
+  .sf-card-job {
+    color: rgb(184, 184, 184);
+  }
+
+  .sf-card-dot {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .sf-card-result strong {
+    display: block;
+    margin-bottom: 8px;
+    font-family: var(--sf-headline);
+    font-size: 56px;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  .sf-card-result p {
+    max-width: 285px;
+    margin: 0;
+    font-family: var(--sf-headline);
+    font-size: 24px;
+    line-height: 1.22;
+    text-wrap: balance;
+  }
+
+  .sf-counter {
+    display: flex;
+    max-width: 1260px;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin: 0 auto;
+    padding: 200px 30px 180px;
+    background: var(--sf-page-bg);
+    text-align: center;
+  }
+
+  .sf-counter-copy {
+    display: flex;
+    max-width: 570px;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .sf-counter-pill {
+    margin-bottom: 24px;
+    padding: 10px 17px;
+    border: 1px solid rgba(19, 21, 21, 0.1);
+    border-radius: 999px;
+    background: #fff;
+    font-size: 14px;
+  }
+
+  .sf-counter h2 {
+    max-width: 540px;
+  }
+
+  .sf-giant-number {
+    display: block;
+    margin-top: 30px;
+    color: var(--sf-blue);
+    font-family: var(--sf-headline);
+    font-size: 112px;
+    font-weight: 500;
+    letter-spacing: -0.055em;
+    line-height: 1;
+  }
+
+  .sf-counter-copy > p {
+    margin-top: 8px;
+    color: var(--sf-muted);
+    font-size: 16px;
+  }
+
+  .sf-counter-visual {
+    position: relative;
+    width: 100%;
+    max-width: 1080px;
+    margin-top: 42px;
+  }
+
+  .sf-earth-stage {
+    position: relative;
+    width: 100%;
+    height: 328px;
+  }
+
+  .sf-counter-video-frame {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 328px;
+    aspect-ratio: 2.45;
+    overflow: hidden;
+  }
+
+  .sf-counter-video-frame video {
+    position: absolute;
+    top: 68%;
+    left: 50%;
+    width: 100%;
+    min-width: 100%;
+    height: 620px;
+    object-fit: cover;
+    object-position: center center;
+    mix-blend-mode: darken;
+    transform: translate(-50%, -50%);
+  }
+
+  .sf-counter-fade {
+    position: absolute;
+    z-index: 2;
+    inset: auto 0 0;
+    height: 48%;
+    background: linear-gradient(to bottom, rgba(247, 247, 247, 0) 0%, rgba(247, 247, 247, 0.74) 50%, var(--sf-page-bg) 84%);
+    pointer-events: none;
+  }
+
+  .sf-cloud-overlay {
+    position: absolute;
+    z-index: 3;
+    right: -5%;
+    bottom: -48px;
+    left: -5%;
+    height: 132px;
+    background:
+      radial-gradient(ellipse at 8% 62%, rgba(255, 255, 255, 0.98) 0 22%, transparent 54%),
+      radial-gradient(ellipse at 30% 46%, rgba(255, 255, 255, 0.94) 0 24%, transparent 58%),
+      radial-gradient(ellipse at 54% 62%, rgba(255, 255, 255, 0.96) 0 28%, transparent 62%),
+      radial-gradient(ellipse at 78% 44%, rgba(255, 255, 255, 0.94) 0 23%, transparent 56%),
+      radial-gradient(ellipse at 96% 62%, rgba(255, 255, 255, 0.98) 0 24%, transparent 58%);
+    filter: blur(13px);
+    opacity: 0.9;
+    pointer-events: none;
+  }
+
+  .sf-blur-slab {
+    position: absolute;
+    z-index: 1;
+    bottom: -178px;
+    left: 50%;
+    width: 1600px;
+    height: 260px;
+    background: var(--sf-page-bg);
+    filter: blur(12px);
+    transform: translateX(-50%);
+  }
+
+  .sf-impact-stats {
+    position: relative;
+    z-index: 4;
+    display: grid;
+    width: min(880px, 100%);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 64px;
+    margin: -2px auto 0;
+  }
+
+  .sf-impact-stat {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .sf-impact-stat strong {
+    color: var(--sf-ink);
+    font-family: var(--sf-headline);
+    font-size: 54px;
+    font-weight: 500;
+    letter-spacing: -0.045em;
+    line-height: 1;
+  }
+
+  .sf-impact-stat strong::first-letter,
+  .sf-impact-stat strong span {
+    color: var(--sf-blue);
+  }
+
+  .sf-impact-stat p {
+    max-width: 190px;
+    margin-top: 10px;
+    color: var(--sf-muted);
+    font-size: 14px;
+    line-height: 1.28;
+    text-wrap: balance;
+  }
+
+  .sf-reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .sf-reveal.sf-in-view {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (max-width: 1023px) {
+    .sf-navbar-wrap {
+      padding: 20px 30px;
+    }
+
+    .sf-desktop-navbar {
+      display: none;
+    }
+
+    .sf-mobile-navbar {
+      display: flex;
+      width: 100%;
+      max-width: 760px;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 auto;
+      padding: 10px;
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 8px 20px rgba(5, 8, 12, 0.1);
+      pointer-events: auto;
+    }
+
+    .sf-mobile-brand,
+    .sf-mobile-actions {
+      display: flex;
+      align-items: center;
+    }
+
+    .sf-mobile-brand {
+      gap: 9px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .sf-mobile-actions {
+      gap: 5px;
+    }
+
+    .sf-small-store {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+    }
+
+    .sf-small-store svg {
+      width: 21px;
+      height: 21px;
+    }
+
+    .sf-hamburger {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      margin-left: 1px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--sf-ink);
+    }
+
+    .sf-hamburger span {
+      position: absolute;
+      top: 16px;
+      left: 10px;
+      width: 20px;
+      height: 2px;
+      border-radius: 2px;
+      background: #fff;
+      transition: transform 0.3s ease, top 0.3s ease;
+    }
+
+    .sf-hamburger span:last-child {
+      top: 23px;
+    }
+
+    .sf-menu-open .sf-hamburger span {
+      top: 19px;
+      transform: rotate(45deg);
+    }
+
+    .sf-menu-open .sf-hamburger span:last-child {
+      transform: rotate(-45deg);
+    }
+
+    .sf-mobile-menu-backdrop {
+      position: fixed;
+      z-index: 70;
+      inset: 0;
+      display: block;
+      padding: 0 30px;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(12px);
+    }
+
+    .sf-mobile-menu-panel {
+      position: relative;
+      top: 100px;
+      display: flex;
+      width: 100%;
+      max-width: 760px;
+      flex-direction: column;
+      gap: 4px;
+      margin: 0 auto;
+      padding: 24px;
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 24px 70px rgba(5, 8, 12, 0.22);
+    }
+
+    .sf-mobile-menu-panel a {
+      padding: 13px 4px;
+      border-bottom: 1px solid rgba(19, 21, 21, 0.08);
+      font-size: 16px;
+    }
+
+    .sf-mobile-menu-panel a:last-child {
+      border-bottom: 0;
+    }
+
+    .sf-hero h2 {
+      font-size: 60px;
+    }
+
+    .sf-hero-subtitle {
+      font-size: 20px;
+    }
+
+    .sf-hero-curve {
+      right: -180px;
+      left: -180px;
+      width: calc(100% + 360px);
+    }
+
+    .sf-achievements h2,
+    .sf-counter h2 {
+      font-size: 42px;
+    }
+
+    .sf-giant-number {
+      font-size: 92px;
+    }
+
+    .sf-earth-stage,
+    .sf-counter-video-frame {
+      height: 300px;
+    }
+
+    .sf-counter-video-frame video {
+      top: 66%;
+      height: 560px;
+    }
+
+    .sf-impact-stats {
+      width: min(760px, 100%);
+      gap: 36px;
+    }
+
+    .sf-impact-stat strong {
+      font-size: 48px;
+    }
+  }
+
+  @media (max-width: 810px) {
+    .sf-achievements,
+    .sf-counter {
+      padding-top: 130px;
+    }
+
+    .sf-achievements-header {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .sf-achievements-title,
+    .sf-avatar-strip {
+      width: 100%;
+      flex: none;
+    }
+
+    .sf-achievement-card {
+      width: 320px;
+      height: 450px;
+    }
+
+    .sf-card-content {
+      padding: 20px;
+    }
+
+    .sf-card-result p {
+      max-width: 260px;
+    }
+
+    .sf-counter {
+      padding-bottom: 140px;
+    }
+
+    .sf-counter-visual {
+      margin-top: 36px;
+    }
+
+    .sf-earth-stage,
+    .sf-counter-video-frame {
+      height: 270px;
+    }
+
+    .sf-counter-video-frame video {
+      top: 66%;
+      height: 510px;
+    }
+
+    .sf-impact-stats {
+      gap: 20px;
+    }
+
+    .sf-impact-stat strong {
+      font-size: 42px;
+    }
+
+    .sf-impact-stat p {
+      max-width: 165px;
+      font-size: 12px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .sf-navbar-wrap {
+      padding: 14px 16px;
+    }
+
+    .sf-mobile-navbar,
+    .sf-mobile-menu-panel {
+      max-width: 360px;
+    }
+
+    .sf-mobile-menu-backdrop {
+      padding: 0 16px;
+    }
+
+    .sf-mobile-menu-panel {
+      top: 80px;
+    }
+
+    .sf-small-store {
+      width: 40px;
+      height: 40px;
+    }
+
+    .sf-hamburger {
+      width: 32px;
+      height: 32px;
+    }
+
+    .sf-hamburger span {
+      top: 12px;
+      left: 8px;
+      width: 16px;
+    }
+
+    .sf-hamburger span:last-child {
+      top: 19px;
+    }
+
+    .sf-menu-open .sf-hamburger span {
+      top: 15px;
+    }
+
+    .sf-hero {
+      min-height: 1050px;
+    }
+
+    .sf-hero-content {
+      gap: 64px;
+      padding: 140px 20px 100px;
+    }
+
+    .sf-hero h2 {
+      font-size: 44px;
+    }
+
+    .sf-desktop-break {
+      display: none;
+    }
+
+    .sf-hero-subtitle {
+      font-size: 18px;
+    }
+
+    .sf-hero-pill {
+      gap: 7px;
+      padding-right: 14px;
+    }
+
+    .sf-hero-pill p,
+    .sf-hero-pill span {
+      font-size: 12px;
+    }
+
+    .sf-hero-ctas {
+      width: 100%;
+      gap: 12px;
+      margin-top: -28px;
+    }
+
+    .sf-primary-cta,
+    .sf-secondary-cta {
+      width: 100%;
+      max-width: 310px;
+    }
+
+    .sf-phone {
+      width: 300px;
+      border-radius: 40px;
+    }
+
+    .sf-habit-row {
+      grid-template-columns: 30px 1fr auto 20px;
+      gap: 6px;
+      padding-right: 7px;
+    }
+
+    .sf-habit-emoji {
+      width: 30px;
+      height: 30px;
+    }
+
+    .sf-hero-curve {
+      right: -100px;
+      left: -100px;
+      width: calc(100% + 200px);
+      height: 300px;
+    }
+
+    .sf-video-overlay {
+      padding: 18px;
+    }
+
+    .sf-modal-close {
+      top: 18px;
+      right: 18px;
+    }
+
+    .sf-achievements-header {
+      padding: 0 20px;
+    }
+
+    .sf-achievements h2,
+    .sf-counter h2 {
+      font-size: 38px;
+    }
+
+    .sf-avatar-strip {
+      gap: 12px;
+    }
+
+    .sf-loved-copy span {
+      font-size: 16px;
+    }
+
+    .sf-counter {
+      padding-right: 20px;
+      padding-left: 20px;
+    }
+
+    .sf-giant-number {
+      margin-top: 28px;
+      font-size: 60px;
+    }
+
+    .sf-counter-visual {
+      margin-top: 28px;
+    }
+
+    .sf-earth-stage,
+    .sf-counter-video-frame {
+      height: 220px;
+    }
+
+    .sf-counter-video-frame video {
+      top: 66%;
+      width: 118%;
+      min-width: 118%;
+      height: 360px;
+    }
+
+    .sf-cloud-overlay {
+      bottom: -42px;
+      height: 112px;
+      filter: blur(11px);
+    }
+
+    .sf-counter-fade {
+      height: 52%;
+    }
+
+    .sf-blur-slab {
+      bottom: -150px;
+      height: 220px;
+    }
+
+    .sf-impact-stats {
+      gap: 10px;
+      margin-top: 2px;
+    }
+
+    .sf-impact-stat strong {
+      font-size: 34px;
+    }
+
+    .sf-impact-stat p {
+      max-width: 110px;
+      margin-top: 8px;
+      font-size: 10px;
+      line-height: 1.25;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sf-reference {
+      scroll-behavior: auto;
+    }
+
+    .sf-rise,
+    .sf-habit-row,
+    .sf-reveal {
+      animation: none;
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    .sf-marquee-track {
+      animation-play-state: paused;
+    }
+  }
+</style>
