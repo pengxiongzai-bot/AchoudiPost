@@ -117,6 +117,10 @@ svg {
   backdrop-filter: blur(14px);
 }
 
+body[data-page="home"] > .site-header {
+  display: none;
+}
+
 .site-header-inner {
   width: min(var(--portal-max), calc(100% - 40px));
   min-height: 68px;

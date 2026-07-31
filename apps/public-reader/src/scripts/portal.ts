@@ -84,14 +84,14 @@ const themeKey = "achoudi_theme_v1";
 const root = document.documentElement;
 const navToggle = document.querySelector<HTMLButtonElement>("#navToggle");
 const primaryNav = document.querySelector<HTMLElement>("#primaryNav");
-const themeButton = document.querySelector<HTMLButtonElement>("#portalThemeBtn");
-const servicePulse = document.querySelector<HTMLElement>("#servicePulse");
 let postGrid = document.querySelector<HTMLElement>("#portalPostGrid");
 let searchInput = document.querySelector<HTMLInputElement>("#portalSearchInput");
 let searchMeta = document.querySelector<HTMLElement>("#articleSearchMeta");
 let emptyState = document.querySelector<HTMLElement>("#emptyArticles");
 let routeLoading = false;
 let portalToastTimer = 0;
+let currentServiceStatus: "checking" | "online" | "offline" = "checking";
+let currentServiceLabel = "服务检测中";
 
 let posts: PostListItem[] = [];
 let searchDocuments: SearchDocument[] = [];
@@ -102,14 +102,16 @@ bindRouteNavigation();
 bindArticleReaderMessages();
 bindPageInteractions();
 createPortalIcons();
-void checkService();
 
 function initTheme() {
   const saved = localStorage.getItem(themeKey);
   root.dataset.theme = saved === "dark" ? "dark" : "light";
   updateThemeIcon();
 
-  themeButton?.addEventListener("click", () => {
+  document.addEventListener("click", (event) => {
+    const target = event.target as Element | null;
+    const themeButton = target?.closest<HTMLButtonElement>("[data-portal-theme-button]");
+    if (!themeButton) return;
     root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
     localStorage.setItem(themeKey, root.dataset.theme);
     updateThemeIcon();
@@ -123,8 +125,10 @@ function initTheme() {
 }
 
 function updateThemeIcon() {
-  if (!themeButton) return;
-  themeButton.innerHTML = `<i data-lucide="${root.dataset.theme === "dark" ? "sun" : "moon"}"></i>`;
+  const iconName = root.dataset.theme === "dark" ? "sun" : "moon";
+  document.querySelectorAll<HTMLButtonElement>("[data-portal-theme-button]").forEach((themeButton) => {
+    themeButton.innerHTML = `<i data-lucide="${iconName}"></i>`;
+  });
   const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
   if (themeColor) themeColor.content = root.dataset.theme === "dark" ? "#0b0b08" : "#f7f7f4";
   createPortalIcons();
@@ -149,6 +153,9 @@ function bindNavigation() {
 }
 
 function bindPageInteractions() {
+  window.initSteadyflowReference?.();
+  updateThemeIcon();
+  updateServicePulses(currentServiceStatus, currentServiceLabel);
   postGrid = document.querySelector<HTMLElement>("#portalPostGrid");
   searchInput = document.querySelector<HTMLInputElement>("#portalSearchInput");
   searchMeta = document.querySelector<HTMLElement>("#articleSearchMeta");
@@ -166,6 +173,7 @@ function bindPageInteractions() {
   void hydrateTools();
   void hydrateAffiliateDashboard();
   propagateReferralLinks();
+  void checkService();
 }
 
 function syncArticleReader() {
@@ -290,18 +298,25 @@ function updateActiveNavigation(pathname: string) {
 }
 
 async function checkService() {
-  if (!servicePulse) return;
+  if (!document.querySelector("[data-service-pulse]")) return;
   try {
     const response = await fetch("/health", { headers: { Accept: "application/json" } });
     if (!response.ok) throw new Error("health check failed");
-    servicePulse.dataset.status = "online";
-    const label = servicePulse.querySelector("b");
-    if (label) label.textContent = "服务正常";
+    updateServicePulses("online", "服务正常");
   } catch {
-    servicePulse.dataset.status = "offline";
-    const label = servicePulse.querySelector("b");
-    if (label) label.textContent = "服务暂不可用";
+    updateServicePulses("offline", "服务暂不可用");
   }
+}
+
+function updateServicePulses(status: "checking" | "online" | "offline", label: string) {
+  currentServiceStatus = status;
+  currentServiceLabel = label;
+  document.querySelectorAll<HTMLElement>("[data-service-pulse]").forEach((servicePulse) => {
+    servicePulse.dataset.status = status;
+    servicePulse.setAttribute("aria-label", label);
+    const labelElement = servicePulse.querySelector("b");
+    if (labelElement) labelElement.textContent = label;
+  });
 }
 
 async function hydratePosts() {

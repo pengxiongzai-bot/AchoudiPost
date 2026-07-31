@@ -91,51 +91,49 @@ const tripledCards = [...cards, ...cards, ...cards];
 <section class="sf-reference" data-steadyflow-reference aria-label="Steadyflow reference block">
   <div class="sf-frame">
     <header class="sf-navbar-wrap">
-      <nav class="sf-desktop-navbar" aria-label="Steadyflow navigation">
-        <a class="sf-nav-pill sf-brand-pill" href="#sf-hero" aria-label="Steadyflow home">
-          <svg class="sf-brand-logo" viewBox="0 0 256 256" aria-hidden="true">
-            <path fill="#5BB8F0" d="M 228 0 C 172.772 0 128 44.772 128 100 L 128 0 L 0 0 L 0 28 C 0 83.228 44.772 128 100 128 L 0 128 L 0 256 L 28 256 C 83.228 256 128 211.228 128 156 L 128 256 L 256 256 L 256 228 C 256 172.772 211.228 128 156 128 L 256 128 L 256 0 Z"></path>
-          </svg>
-          <span>Steadyflow</span>
+      <nav class="sf-desktop-navbar" aria-label="AchoudiPost reference navigation">
+        <a class="sf-nav-pill sf-brand-pill" href="/" aria-label="AchoudiPost 首页" data-portal-route>
+          <span class="sf-achoudi-mark">A</span>
+          <span class="sf-brand-copy">
+            <strong>AchoudiPost</strong>
+            <small>阿臭弟的小站</small>
+          </span>
         </a>
         <div class="sf-nav-pill sf-nav-menu">
-          <a href="#sf-hero">How it works</a>
-          <a href="#sf-achievements">Features</a>
-          <a href="#sf-achievements">Results</a>
-          <a href="#sf-counter">AI Coaching</a>
+          <a class="nav-link active" href="/" aria-current="page" data-portal-route>首页</a>
+          <a class="nav-link" href="/market/" data-portal-route>AI实战库</a>
+          <a class="nav-link" href="/articles/" data-portal-route>文章</a>
+          <a class="nav-link" href="/tools/" data-portal-route>资源工具</a>
+          <a class="nav-link" href="/about/" data-portal-route>关于</a>
         </div>
-        <div class="sf-nav-pill sf-store-pill">
-          <a class="sf-store-button" href="https://www.apple.com/in/app-store/" target="_blank" rel="noreferrer" aria-label="Download on the Apple App Store">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="currentColor" d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.31.03-1.73-.79-3.23-.79-1.5 0-1.97.76-3.21.82-1.29.05-2.27-1.32-3.1-2.56-1.69-2.45-2.98-6.93-1.25-9.95.86-1.5 2.39-2.45 4.05-2.48 1.26-.02 2.46.86 3.23.86.77 0 2.22-1.06 3.74-.9.64.03 2.43.26 3.58 1.94-.09.06-2.14 1.25-2.12 3.73.03 2.96 2.6 3.95 2.63 3.96-.03.08-.41 1.45-1.35 2.83M14.5 3.5c.7-.8 1.86-1.4 2.89-1.44.13 1.2-.35 2.43-1.03 3.29-.68.86-1.8 1.52-2.9 1.43-.15-1.18.4-2.43 1.04-3.28z"></path>
-            </svg>
-          </a>
-          <a class="sf-store-button" href="https://play.google.com/store/" target="_blank" rel="noreferrer" aria-label="Get it on Google Play">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="#34A853" d="M3.1 2.35 14.05 12 3.1 21.65a2 2 0 0 1-.35-1.15v-17a2 2 0 0 1 .35-1.15Z"></path>
-              <path fill="#4285F4" d="m14.05 12 3.2-2.82L5.32 2.47a2.05 2.05 0 0 0-2.22-.12L14.05 12Z"></path>
-              <path fill="#EA4335" d="m14.05 12-10.95 9.65c.64.4 1.46.42 2.22.12l11.93-6.71L14.05 12Z"></path>
-              <path fill="#FBBC05" d="m21 11.3-3.75-2.12L14.05 12l3.2 3.06L21 12.95a.95.95 0 0 0 0-1.65Z"></path>
-            </svg>
-          </a>
+        <div class="sf-nav-pill sf-action-pill">
+          <span class="sf-service-pulse" data-service-pulse data-status="checking">
+            <span></span>
+            <b>服务检测中</b>
+          </span>
+          <button class="sf-icon-button sf-theme-button" type="button" aria-label="切换主题" title="切换主题" data-portal-theme-button>
+            <i data-lucide="sun"></i>
+          </button>
         </div>
       </nav>
 
-      <nav class="sf-mobile-navbar" aria-label="Steadyflow mobile navigation">
-        <a class="sf-mobile-brand" href="#sf-hero" aria-label="Steadyflow home">
-          <svg class="sf-brand-logo sf-compact" viewBox="0 0 256 256" aria-hidden="true">
-            <path fill="#5BB8F0" d="M 228 0 C 172.772 0 128 44.772 128 100 L 128 0 L 0 0 L 0 28 C 0 83.228 44.772 128 100 128 L 0 128 L 0 256 L 28 256 C 83.228 256 128 211.228 128 156 L 128 256 L 256 256 L 256 228 C 256 172.772 211.228 128 156 128 L 256 128 L 256 0 Z"></path>
-          </svg>
-          <span>Steadyflow</span>
+      <nav class="sf-mobile-navbar" aria-label="AchoudiPost mobile navigation">
+        <a class="sf-mobile-brand" href="/" aria-label="AchoudiPost 首页" data-portal-route>
+          <span class="sf-achoudi-mark sf-compact-mark">A</span>
+          <span class="sf-brand-copy">
+            <strong>AchoudiPost</strong>
+            <small>阿臭弟的小站</small>
+          </span>
         </a>
         <div class="sf-mobile-actions">
-          <a class="sf-store-button sf-small-store" href="https://www.apple.com/in/app-store/" target="_blank" rel="noreferrer" aria-label="Download on the Apple App Store">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.31.03-1.73-.79-3.23-.79-1.5 0-1.97.76-3.21.82-1.29.05-2.27-1.32-3.1-2.56-1.69-2.45-2.98-6.93-1.25-9.95.86-1.5 2.39-2.45 4.05-2.48 1.26-.02 2.46.86 3.23.86.77 0 2.22-1.06 3.74-.9.64.03 2.43.26 3.58 1.94-.09.06-2.14 1.25-2.12 3.73.03 2.96 2.6 3.95 2.63 3.96-.03.08-.41 1.45-1.35 2.83M14.5 3.5c.7-.8 1.86-1.4 2.89-1.44.13 1.2-.35 2.43-1.03 3.29-.68.86-1.8 1.52-2.9 1.43-.15-1.18.4-2.43 1.04-3.28z"></path></svg>
-          </a>
-          <a class="sf-store-button sf-small-store" href="https://play.google.com/store/" target="_blank" rel="noreferrer" aria-label="Get it on Google Play">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#34A853" d="M3.1 2.35 14.05 12 3.1 21.65a2 2 0 0 1-.35-1.15v-17a2 2 0 0 1 .35-1.15Z"></path><path fill="#4285F4" d="m14.05 12 3.2-2.82L5.32 2.47a2.05 2.05 0 0 0-2.22-.12L14.05 12Z"></path><path fill="#EA4335" d="m14.05 12-10.95 9.65c.64.4 1.46.42 2.22.12l11.93-6.71L14.05 12Z"></path><path fill="#FBBC05" d="m21 11.3-3.75-2.12L14.05 12l3.2 3.06L21 12.95a.95.95 0 0 0 0-1.65Z"></path></svg>
-          </a>
-          <button class="sf-hamburger" type="button" aria-expanded="false" aria-label="Open menu" data-sf-menu-toggle>
+          <span class="sf-service-pulse sf-mobile-status" data-service-pulse data-status="checking" aria-label="服务检测中">
+            <span></span>
+            <b>服务检测中</b>
+          </span>
+          <button class="sf-icon-button sf-mobile-theme" type="button" aria-label="切换主题" title="切换主题" data-portal-theme-button>
+            <i data-lucide="sun"></i>
+          </button>
+          <button class="sf-hamburger" type="button" aria-expanded="false" aria-label="打开导航" data-sf-menu-toggle>
             <span></span>
             <span></span>
           </button>
@@ -145,10 +143,11 @@ const tripledCards = [...cards, ...cards, ...cards];
 
     <div class="sf-mobile-menu-backdrop" data-sf-menu-backdrop hidden>
       <div class="sf-mobile-menu-panel">
-        <a href="#sf-hero">How it works</a>
-        <a href="#sf-achievements">Features</a>
-        <a href="#sf-achievements">Results</a>
-        <a href="#sf-counter">AI Coaching</a>
+        <a class="nav-link active" href="/" aria-current="page" data-portal-route>首页</a>
+        <a class="nav-link" href="/market/" data-portal-route>AI实战库</a>
+        <a class="nav-link" href="/articles/" data-portal-route>文章</a>
+        <a class="nav-link" href="/tools/" data-portal-route>资源工具</a>
+        <a class="nav-link" href="/about/" data-portal-route>关于</a>
       </div>
     </div>
 
@@ -432,22 +431,66 @@ const tripledCards = [...cards, ...cards, ...cards];
   }
 
   .sf-brand-pill {
-    gap: 10px;
-    padding: 16px;
+    min-width: 216px;
+    gap: 12px;
+    padding: 12px 18px 12px 12px;
     color: var(--sf-ink);
-    font-size: 18px;
-    font-weight: 600;
   }
 
-  .sf-brand-logo {
-    width: 28px;
-    height: 28px;
+  .sf-achoudi-mark {
+    position: relative;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
     flex: 0 0 auto;
+    border: 1px solid var(--sf-ink);
+    border-radius: 50%;
+    background: var(--sf-ink);
+    color: #fff;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 17px;
+    font-weight: 900;
+    letter-spacing: -0.04em;
   }
 
-  .sf-brand-logo.sf-compact {
-    width: 24px;
-    height: 24px;
+  .sf-achoudi-mark::after {
+    content: "";
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    width: 8px;
+    height: 8px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: #97c731;
+  }
+
+  .sf-compact-mark {
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
+  }
+
+  .sf-brand-copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .sf-brand-copy strong {
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 17px;
+    font-weight: 850;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .sf-brand-copy small {
+    color: var(--sf-muted);
+    font-size: 11px;
+    line-height: 1.1;
   }
 
   .sf-nav-menu {
@@ -457,39 +500,91 @@ const tripledCards = [...cards, ...cards, ...cards];
     font-size: 14px;
   }
 
-  .sf-nav-menu a {
-    transition: opacity 0.2s ease;
+  .sf-nav-menu .nav-link {
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    padding: 0;
+    color: color-mix(in srgb, var(--sf-ink) 72%, transparent);
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    transition: color 0.2s ease, opacity 0.2s ease;
   }
 
-  .sf-nav-menu a:hover {
-    opacity: 0.7;
+  .sf-nav-menu .nav-link::after,
+  .sf-mobile-menu-panel .nav-link::after {
+    display: none;
   }
 
-  .sf-store-pill {
-    gap: 6px;
-    padding: 6px;
+  .sf-nav-menu .nav-link:hover,
+  .sf-nav-menu .nav-link.active {
+    color: var(--sf-ink);
   }
 
-  .sf-store-button {
+  .sf-action-pill {
+    min-width: 216px;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 6px 6px 6px 16px;
+  }
+
+  .sf-service-pulse {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--sf-muted);
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 12px;
+    font-weight: 750;
+    white-space: nowrap;
+  }
+
+  .sf-service-pulse span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #b8b8b8;
+    box-shadow: 0 0 0 0 rgba(151, 199, 49, 0);
+  }
+
+  .sf-service-pulse[data-status="online"] span {
+    background: #97c731;
+    box-shadow: 0 0 0 6px rgba(151, 199, 49, 0.12);
+  }
+
+  .sf-service-pulse[data-status="offline"] span {
+    background: #e17a71;
+    box-shadow: 0 0 0 6px rgba(225, 122, 113, 0.12);
+  }
+
+  .sf-service-pulse b {
+    font-weight: 750;
+  }
+
+  .sf-icon-button {
     display: grid;
     width: 52px;
     height: 52px;
     place-items: center;
+    padding: 0;
+    border: 0;
     border-radius: 14px;
     background: var(--sf-ink);
     color: #fff;
     transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  .sf-store-button:hover,
+  .sf-icon-button:hover,
   .sf-primary-cta:hover,
   .sf-secondary-cta:hover {
     transform: scale(0.95);
   }
 
-  .sf-store-button svg {
-    width: 24px;
-    height: 24px;
+  .sf-icon-button svg {
+    width: 21px;
+    height: 21px;
+    stroke-width: 1.8;
   }
 
   .sf-mobile-navbar,
@@ -1483,21 +1578,29 @@ const tripledCards = [...cards, ...cards, ...cards];
 
     .sf-mobile-brand {
       gap: 9px;
-      font-size: 16px;
-      font-weight: 600;
+      min-width: 0;
+      color: var(--sf-ink);
     }
 
     .sf-mobile-actions {
       gap: 5px;
     }
 
-    .sf-small-store {
+    .sf-mobile-status {
+      height: 44px;
+      padding: 0 12px;
+      border: 1px solid rgba(19, 21, 21, 0.08);
+      border-radius: 12px;
+      background: rgba(19, 21, 21, 0.03);
+    }
+
+    .sf-mobile-theme {
       width: 44px;
       height: 44px;
       border-radius: 12px;
     }
 
-    .sf-small-store svg {
+    .sf-mobile-theme svg {
       width: 21px;
       height: 21px;
     }
@@ -1564,7 +1667,14 @@ const tripledCards = [...cards, ...cards, ...cards];
     .sf-mobile-menu-panel a {
       padding: 13px 4px;
       border-bottom: 1px solid rgba(19, 21, 21, 0.08);
+      color: var(--sf-muted);
       font-size: 16px;
+      font-weight: 750;
+    }
+
+    .sf-mobile-menu-panel a:hover,
+    .sf-mobile-menu-panel a.active {
+      color: var(--sf-ink);
     }
 
     .sf-mobile-menu-panel a:last-child {
@@ -1695,9 +1805,21 @@ const tripledCards = [...cards, ...cards, ...cards];
       top: 80px;
     }
 
-    .sf-small-store {
-      width: 40px;
-      height: 40px;
+    .sf-mobile-status {
+      width: 32px;
+      height: 32px;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .sf-mobile-status b {
+      display: none;
+    }
+
+    .sf-mobile-theme {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
     }
 
     .sf-hamburger {

@@ -1,6 +1,7 @@
 /// <reference types="astro/client" />
 
 interface Window {
+  initSteadyflowReference?: () => void;
   __FREEDOMPOST_INITIAL__?: {
     slug: string;
     meta: {
