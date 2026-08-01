@@ -451,6 +451,13 @@ const impactStats = [
   .sf-hero {
     position: relative;
     display: flex;
+    --sf-hero-content-top: clamp(122px, 15.6svh, 160px);
+    --sf-hero-content-gap: clamp(34px, 5svh, 52px);
+    --sf-hero-title-size: clamp(56px, min(4.2vw, 7.8svh), 80px);
+    --sf-hero-title-width: min(920px, calc(100vw - 48px));
+    --sf-hero-marquee-card-width: clamp(240px, min(15.65vw, 31.25svh), 320px);
+    --sf-hero-marquee-radius: clamp(14px, 1vw, 16px);
+    --sf-hero-curve-height: clamp(74px, 9.8svh, 100px);
     width: 100%;
     min-height: 100svh;
     justify-content: center;
@@ -466,8 +473,8 @@ const impactStats = [
     max-width: 980px;
     flex-direction: column;
     align-items: center;
-    gap: 52px;
-    padding: clamp(138px, 9.2vw, 160px) 30px 158px;
+    gap: var(--sf-hero-content-gap);
+    padding: var(--sf-hero-content-top) 30px 158px;
     color: #fff;
     text-align: center;
   }
@@ -500,14 +507,14 @@ const impactStats = [
 
   .sf-kinetic-title {
     display: flex;
-    max-width: 920px;
+    max-width: var(--sf-hero-title-width);
     flex-direction: column;
     align-items: center;
     gap: 2px;
     margin: 0;
     color: rgba(255, 255, 255, 0.98);
     font-family: var(--sf-serif-display);
-    font-size: clamp(58px, 4.2vw, 80px);
+    font-size: var(--sf-hero-title-size);
     font-weight: 400;
     letter-spacing: -0.035em;
     line-height: 1.02;
@@ -697,7 +704,7 @@ const impactStats = [
     right: 0;
     left: 0;
     z-index: 10;
-    height: 100px;
+    height: var(--sf-hero-curve-height);
     pointer-events: none;
   }
 
@@ -733,11 +740,11 @@ const impactStats = [
   .sf-hero-marquee-card {
     position: relative;
     display: block;
-    width: 320px;
-    height: 512px;
+    width: var(--sf-hero-marquee-card-width);
+    height: calc(var(--sf-hero-marquee-card-width) * 1.6);
     flex: 0 0 auto;
     overflow: hidden;
-    border-radius: 16px;
+    border-radius: var(--sf-hero-marquee-radius);
   }
 
   .sf-hero-marquee-card img {
@@ -751,6 +758,20 @@ const impactStats = [
   @media (prefers-reduced-motion: reduce) {
     .sf-hero-marquee-track {
       transform: translate3d(-12%, 0, 0);
+    }
+  }
+
+  @media (max-height: 760px) and (min-width: 900px) {
+    .sf-hero {
+      --sf-hero-content-top: clamp(98px, 14.5svh, 112px);
+      --sf-hero-content-gap: 32px;
+      --sf-hero-title-size: clamp(50px, min(3.9vw, 7.2svh), 66px);
+      --sf-hero-marquee-card-width: clamp(216px, min(14vw, 29svh), 280px);
+      --sf-hero-curve-height: 72px;
+    }
+
+    .sf-hero-ctas {
+      margin-top: -20px;
     }
   }
 
@@ -1160,6 +1181,15 @@ const impactStats = [
   }
 
   @media (max-width: 1023px) {
+    .sf-hero {
+      --sf-hero-content-top: clamp(112px, 14svh, 136px);
+      --sf-hero-content-gap: clamp(30px, 4.6svh, 44px);
+      --sf-hero-title-size: clamp(44px, min(5.8vw, 7svh), 58px);
+      --sf-hero-title-width: min(760px, calc(100vw - 42px));
+      --sf-hero-marquee-card-width: clamp(230px, min(30vw, 31svh), 300px);
+      --sf-hero-curve-height: clamp(66px, 8.8svh, 88px);
+    }
+
     .sf-navbar-wrap {
       padding: 20px 30px;
     }
@@ -1283,7 +1313,7 @@ const impactStats = [
     }
 
     .sf-kinetic-title {
-      font-size: 52px;
+      font-size: var(--sf-hero-title-size);
     }
 
     .sf-hero-subtitle {
@@ -1295,9 +1325,9 @@ const impactStats = [
     }
 
     .sf-hero-marquee-card {
-      width: 320px;
-      height: 512px;
-      border-radius: 16px;
+      width: var(--sf-hero-marquee-card-width);
+      height: calc(var(--sf-hero-marquee-card-width) * 1.6);
+      border-radius: var(--sf-hero-marquee-radius);
     }
 
     .sf-achievements h2,
@@ -1396,6 +1426,16 @@ const impactStats = [
   }
 
   @media (max-width: 640px) {
+    .sf-hero {
+      --sf-hero-content-top: clamp(108px, 17svh, 132px);
+      --sf-hero-content-gap: clamp(28px, 4.8svh, 40px);
+      --sf-hero-title-size: clamp(34px, min(10.8vw, 6.3svh), 46px);
+      --sf-hero-title-width: min(100%, calc(100vw - 32px));
+      --sf-hero-marquee-card-width: clamp(190px, 58vw, 236px);
+      --sf-hero-marquee-radius: 14px;
+      --sf-hero-curve-height: clamp(56px, 8svh, 72px);
+    }
+
     .sf-navbar-wrap {
       padding: 14px 16px;
     }
@@ -1444,17 +1484,17 @@ const impactStats = [
     }
 
     .sf-hero {
-      min-height: 760px;
+      min-height: max(720px, 100svh);
     }
 
     .sf-hero-content {
-      gap: 42px;
-      padding: 136px 20px 126px;
+      gap: var(--sf-hero-content-gap);
+      padding: var(--sf-hero-content-top) 20px 126px;
     }
 
     .sf-kinetic-title {
       width: 100%;
-      font-size: clamp(36px, 10.2vw, 46px);
+      font-size: var(--sf-hero-title-size);
       letter-spacing: -0.055em;
     }
 
@@ -1488,7 +1528,7 @@ const impactStats = [
     }
 
     .sf-marquee-curve {
-      height: 80px;
+      height: var(--sf-hero-curve-height);
     }
 
     .sf-hero-marquee-track {
@@ -1496,9 +1536,9 @@ const impactStats = [
     }
 
     .sf-hero-marquee-card {
-      width: 240px;
-      height: 320px;
-      border-radius: 16px;
+      width: var(--sf-hero-marquee-card-width);
+      height: calc(var(--sf-hero-marquee-card-width) * 1.6);
+      border-radius: var(--sf-hero-marquee-radius);
     }
 
     .sf-video-overlay {
