@@ -25,30 +25,6 @@
   color-scheme: light;
 }
 
-[data-theme="dark"] {
-  --bg: #0b0b08;
-  --panel: #151513;
-  --panel-soft: #1d1d1a;
-  --text: #f4f3ee;
-  --muted: #9f9f97;
-  --line: #292925;
-  --line-strong: #44443e;
-  --accent: #f4f3ee;
-  --accent-text: #f4f3ee;
-  --accent-ink: #0b0b08;
-  --accent-soft: #242421;
-  --action: #f4f3ee;
-  --action-hover: #fffef9;
-  --action-text: #0b0b08;
-  --action-border: #f4f3ee;
-  --action-shadow: rgba(244, 243, 238, 0.16);
-  --signal: #f4f3ee;
-  --danger: #f4f3ee;
-  --code-bg: #080806;
-  --code-text: #f4f3ee;
-  color-scheme: dark;
-}
-
 * {
   box-sizing: border-box;
 }
@@ -547,14 +523,6 @@ mark {
 
 .article-body .fp-color-gold {
   color: #9a6700;
-}
-
-[data-theme="dark"] .article-body .fp-color-red,
-[data-theme="dark"] .article-body .fp-color-green,
-[data-theme="dark"] .article-body .fp-color-blue,
-[data-theme="dark"] .article-body .fp-color-purple,
-[data-theme="dark"] .article-body .fp-color-gold {
-  color: var(--text);
 }
 
 .article-body a {

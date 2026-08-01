@@ -27,30 +27,6 @@
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
-[data-theme="dark"] {
-  --portal-bg: #0b0b08;
-  --portal-panel: #151513;
-  --portal-panel-soft: #1d1d1a;
-  --portal-text: #f4f3ee;
-  --portal-muted: #9f9f97;
-  --portal-line: #292925;
-  --portal-line-strong: #44443e;
-  --portal-accent: #f4f3ee;
-  --portal-accent-text: #f4f3ee;
-  --portal-accent-ink: #0b0b08;
-  --portal-accent-soft: #242421;
-  --portal-action: #f4f3ee;
-  --portal-action-hover: #fffef9;
-  --portal-action-text: #0b0b08;
-  --portal-action-border: #f4f3ee;
-  --portal-action-shadow: rgba(244, 243, 238, 0.16);
-  --portal-signal: #f4f3ee;
-  --portal-danger: #f4f3ee;
-  --portal-gold: var(--portal-muted);
-  --portal-blue: var(--portal-muted);
-  color-scheme: dark;
-}
-
 * {
   box-sizing: border-box;
 }
@@ -274,9 +250,8 @@ body:not([data-page="home"]) #portalContent {
   height: var(--portal-floating-nav-height);
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 6px 6px 6px 16px;
+  justify-content: center;
+  padding: 6px 16px;
 }
 
 .portal-icon-button {
@@ -407,11 +382,6 @@ body:not([data-page="home"]) #portalContent {
   filter: grayscale(1) contrast(1.12);
   mix-blend-mode: multiply;
   opacity: 0.68;
-}
-
-[data-theme="dark"] .hero-media {
-  mix-blend-mode: normal;
-  opacity: 0.52;
 }
 
 .hero-content {
@@ -2372,10 +2342,6 @@ body:not([data-page="home"]) #portalContent {
 
   .hero-media {
     opacity: 0.2;
-  }
-
-  [data-theme="dark"] .hero-media {
-    opacity: 0.32;
   }
 
   .post-card-grid,

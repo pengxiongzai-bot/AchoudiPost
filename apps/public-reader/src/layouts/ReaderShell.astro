@@ -42,7 +42,7 @@ const canonicalUrl = new URL(`/p/${encodeURIComponent(article.slug)}`, Astro.sit
 ---
 
 <!doctype html>
-<html lang="zh-CN" data-theme="light" class={readerBootPendingClass}>
+<html lang="zh-CN" class={readerBootPendingClass}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -66,9 +66,6 @@ const canonicalUrl = new URL(`/p/${encodeURIComponent(article.slug)}`, Astro.sit
               <small>阿臭弟的小站</small>
             </span>
           </a>
-          <button id="themeBtn" class="icon-button" type="button" aria-label="切换主题" title="切换主题">
-            <i data-lucide="sun"></i>
-          </button>
         </div>
         <div class="search-row">
           <i data-lucide="search"></i>

@@ -82,7 +82,6 @@ type StoredComment = {
 };
 
 const storageKeys = {
-  theme: "achoudi_theme_v1",
   listWidth: "fp_list_width_v1",
   user: "fp_comment_user_v1",
   device: "fp_device_id_v1",
@@ -110,7 +109,6 @@ const tocBody = mustGet<HTMLElement>("tocBody");
 const tocToggle = mustGet<HTMLButtonElement>("tocToggle");
 const readerScroll = mustGet<HTMLElement>("readerScroll");
 const shareBtn = mustGet<HTMLButtonElement>("shareBtn");
-const themeBtn = mustGet<HTMLButtonElement>("themeBtn");
 const toast = mustGet<HTMLElement>("toast");
 const commentForm = mustGet<HTMLFormElement>("commentForm");
 const commentText = mustGet<HTMLTextAreaElement>("commentText");
@@ -155,7 +153,6 @@ void init();
 
 async function init() {
   createIcons({ icons });
-  applyStoredTheme();
   applyStoredListWidth();
   applyStoredTocState();
   enhanceCodeBlocks();
@@ -224,21 +221,6 @@ function bindEvents() {
     const url = publicArticleUrl(activeSlug);
     await navigator.clipboard.writeText(url).catch(() => undefined);
     showToast("文章链接已复制");
-  });
-
-  themeBtn.addEventListener("click", () => {
-    const current = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-    document.documentElement.dataset.theme = current;
-    localStorage.setItem(storageKeys.theme, current);
-    updateThemeControls(current);
-    createIcons({ icons });
-  });
-
-  window.addEventListener("storage", (event) => {
-    if (event.key !== storageKeys.theme || (event.newValue !== "light" && event.newValue !== "dark")) return;
-    document.documentElement.dataset.theme = event.newValue;
-    updateThemeControls(event.newValue);
-    createIcons({ icons });
   });
 
   commentForm.addEventListener("submit", submitComment);
@@ -999,19 +981,6 @@ function initResizer() {
     resizer.releasePointerCapture(event.pointerId);
     document.body.style.userSelect = "";
   });
-}
-
-function applyStoredTheme() {
-  const saved = localStorage.getItem(storageKeys.theme);
-  const theme = saved === "dark" ? "dark" : "light";
-  document.documentElement.dataset.theme = theme;
-  updateThemeControls(theme);
-}
-
-function updateThemeControls(theme: "light" | "dark") {
-  themeBtn.innerHTML = theme === "dark" ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>';
-  const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-  if (themeColor) themeColor.content = theme === "dark" ? "#0b0b08" : "#f7f7f4";
 }
 
 function applyStoredListWidth() {

@@ -80,8 +80,6 @@ type AffiliateProduct = StoreProduct & {
   customerPriceCents: number;
 };
 
-const themeKey = "achoudi_theme_v1";
-const root = document.documentElement;
 const navToggle = document.querySelector<HTMLButtonElement>("#navToggle");
 const primaryNav = document.querySelector<HTMLElement>("#primaryNav");
 let postGrid = document.querySelector<HTMLElement>("#portalPostGrid");
@@ -96,43 +94,11 @@ let currentServiceLabel = "服务检测中";
 let posts: PostListItem[] = [];
 let searchDocuments: SearchDocument[] = [];
 
-initTheme();
 bindNavigation();
 bindRouteNavigation();
 bindArticleReaderMessages();
 bindPageInteractions();
 createPortalIcons();
-
-function initTheme() {
-  const saved = localStorage.getItem(themeKey);
-  root.dataset.theme = saved === "dark" ? "dark" : "light";
-  updateThemeIcon();
-
-  document.addEventListener("click", (event) => {
-    const target = event.target as Element | null;
-    const themeButton = target?.closest<HTMLButtonElement>("[data-portal-theme-button]");
-    if (!themeButton) return;
-    root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
-    localStorage.setItem(themeKey, root.dataset.theme);
-    updateThemeIcon();
-  });
-
-  window.addEventListener("storage", (event) => {
-    if (event.key !== themeKey || (event.newValue !== "light" && event.newValue !== "dark")) return;
-    root.dataset.theme = event.newValue;
-    updateThemeIcon();
-  });
-}
-
-function updateThemeIcon() {
-  const iconName = root.dataset.theme === "dark" ? "sun" : "moon";
-  document.querySelectorAll<HTMLButtonElement>("[data-portal-theme-button]").forEach((themeButton) => {
-    themeButton.innerHTML = `<i data-lucide="${iconName}"></i>`;
-  });
-  const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-  if (themeColor) themeColor.content = root.dataset.theme === "dark" ? "#0b0b08" : "#f7f7f4";
-  createPortalIcons();
-}
 
 function setPrimaryNavigation(open: boolean) {
   if (!primaryNav || !navToggle) return;
@@ -158,7 +124,6 @@ function bindNavigation() {
 
 function bindPageInteractions() {
   window.initSteadyflowReference?.();
-  updateThemeIcon();
   updateServicePulses(currentServiceStatus, currentServiceLabel);
   postGrid = document.querySelector<HTMLElement>("#portalPostGrid");
   searchInput = document.querySelector<HTMLInputElement>("#portalSearchInput");
