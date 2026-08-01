@@ -90,6 +90,8 @@ let routeLoading = false;
 let portalToastTimer = 0;
 let currentServiceStatus: "checking" | "online" | "offline" = "checking";
 let currentServiceLabel = "服务检测中";
+let headerSurfaceBound = false;
+let headerSurfaceFrame = 0;
 
 let posts: PostListItem[] = [];
 let searchDocuments: SearchDocument[] = [];
@@ -97,6 +99,7 @@ let searchDocuments: SearchDocument[] = [];
 bindNavigation();
 bindRouteNavigation();
 bindArticleReaderMessages();
+bindHeaderSurfaceSync();
 bindPageInteractions();
 createPortalIcons();
 
@@ -122,8 +125,76 @@ function bindNavigation() {
   });
 }
 
+function bindHeaderSurfaceSync() {
+  if (headerSurfaceBound) return;
+  headerSurfaceBound = true;
+  window.addEventListener("scroll", scheduleHeaderSurfaceSync, { passive: true });
+  window.addEventListener("resize", scheduleHeaderSurfaceSync);
+  scheduleHeaderSurfaceSync();
+}
+
+function scheduleHeaderSurfaceSync() {
+  if (headerSurfaceFrame) return;
+  headerSurfaceFrame = window.requestAnimationFrame(() => {
+    headerSurfaceFrame = 0;
+    syncHeaderSurface();
+  });
+}
+
+function syncHeaderSurface() {
+  const header = document.querySelector<HTMLElement>(".site-header");
+  if (!header) return;
+
+  const isHome = document.body.dataset.page === "home";
+  const achievements = document.querySelector<HTMLElement>("#sf-achievements");
+  const desktopNav = window.matchMedia("(min-width: 901px)").matches;
+  if (!isHome || !achievements || !desktopNav) {
+    resetHeaderSurface(header);
+    return;
+  }
+
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 1;
+  const sectionTop = achievements.getBoundingClientRect().top + window.scrollY;
+  const start = sectionTop - Math.max(440, viewportHeight * 0.5);
+  const distance = Math.max(360, viewportHeight * 0.42);
+  const rawProgress = (window.scrollY - start) / distance;
+  const progress = Math.max(0, Math.min(1, rawProgress));
+
+  header.style.setProperty("--portal-header-strip-alpha", String(roundTo(1 - progress * 0.96)));
+  header.style.setProperty("--portal-header-strip-border-alpha", String(roundTo(0.08 * (1 - progress))));
+  header.style.setProperty("--portal-header-shell-alpha", String(roundTo(progress * 0.96)));
+  header.style.setProperty("--portal-header-border-alpha", String(roundTo(progress * 0.1)));
+  header.style.setProperty("--portal-header-shadow-alpha", String(roundTo(progress * 0.22)));
+  header.style.setProperty("--portal-header-inner-x", `${Math.round(progress * 22)}px`);
+  header.style.setProperty("--portal-header-radius", `${Math.round(progress * 999)}px`);
+  header.style.setProperty("--portal-header-max", `${Math.round(1260 - progress * 260)}px`);
+  header.style.setProperty("--portal-header-y", `${Math.round(progress * 10)}px`);
+  header.classList.toggle("site-header-section-mode", progress > 0.08);
+}
+
+function resetHeaderSurface(header: HTMLElement) {
+  [
+    "--portal-header-strip-alpha",
+    "--portal-header-strip-border-alpha",
+    "--portal-header-shell-alpha",
+    "--portal-header-border-alpha",
+    "--portal-header-shadow-alpha",
+    "--portal-header-inner-x",
+    "--portal-header-radius",
+    "--portal-header-max",
+    "--portal-header-y"
+  ].forEach((name) => header.style.removeProperty(name));
+  header.classList.remove("site-header-section-mode");
+}
+
+function roundTo(value: number, precision = 3) {
+  const base = 10 ** precision;
+  return Math.round(value * base) / base;
+}
+
 function bindPageInteractions() {
   window.initSteadyflowReference?.();
+  scheduleHeaderSurfaceSync();
   updateServicePulses(currentServiceStatus, currentServiceLabel);
   postGrid = document.querySelector<HTMLElement>("#portalPostGrid");
   searchInput = document.querySelector<HTMLInputElement>("#portalSearchInput");
