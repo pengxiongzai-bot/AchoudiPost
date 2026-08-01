@@ -79,12 +79,19 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
       <div class="sf-hero-shade"></div>
       <div class="sf-hero-content">
         <div class="sf-copy-stack">
-          <h2 class="sf-rise" style="--delay: .2s">把电商 AI 实战方法<br class="sf-desktop-break" />整理成可复用的 Skill</h2>
-          <p class="sf-hero-subtitle sf-rise" style="--delay: .3s">
+          <h2 class="sf-hero-title" aria-label="把电商 AI 实战方法整理成可复用的 Skill">
+            <span class="sf-title-line" style="--delay: .16s">
+              <span>把电商 AI 实战方法</span>
+            </span>
+            <span class="sf-title-line" style="--delay: .38s">
+              <span>整理成可复用的 Skill</span>
+            </span>
+          </h2>
+          <p class="sf-hero-subtitle sf-rise" style="--delay: .68s">
             围绕 AI 生图、生视频、商品内容、私域成交和工具流，沉淀可直接落地的框架。
           </p>
         </div>
-        <div class="sf-hero-ctas sf-rise" style="--delay: .4s">
+        <div class="sf-hero-ctas sf-rise" style="--delay: .86s">
           <a class="sf-primary-cta" href="/market/" data-portal-route>进入 AI 实战库</a>
         </div>
       </div>
@@ -491,7 +498,9 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     margin: 0;
   }
 
-  .sf-hero h2 {
+  .sf-hero-title {
+    display: grid;
+    gap: 8px;
     max-width: 960px;
     margin: 0;
     font-family: var(--sf-headline);
@@ -500,6 +509,47 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     letter-spacing: -0.045em;
     line-height: 1;
     text-wrap: balance;
+  }
+
+  .sf-title-line {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.04em;
+  }
+
+  .sf-title-line > span {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(110%);
+    animation: sf-title-clip-in 0.9s var(--delay, 0s) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    will-change: transform, opacity;
+  }
+
+  .sf-title-line::after {
+    position: absolute;
+    right: 0.05em;
+    bottom: 0.02em;
+    left: 0.05em;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.72);
+    transform: scaleX(0);
+    transform-origin: left center;
+    animation: sf-title-line-in 0.72s calc(var(--delay, 0s) + 0.18s) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    content: "";
+  }
+
+  @keyframes sf-title-clip-in {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes sf-title-line-in {
+    to {
+      transform: scaleX(1);
+    }
   }
 
   .sf-hero-subtitle {
@@ -1147,7 +1197,7 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
       border-bottom: 0;
     }
 
-    .sf-hero h2 {
+    .sf-hero-title {
       font-size: 60px;
     }
 
@@ -1310,12 +1360,8 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
       padding: 158px 20px 126px;
     }
 
-    .sf-hero h2 {
+    .sf-hero-title {
       font-size: 44px;
-    }
-
-    .sf-desktop-break {
-      display: none;
     }
 
     .sf-hero-subtitle {
@@ -1430,11 +1476,17 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     }
 
     .sf-rise,
+    .sf-title-line > span,
     .sf-reveal {
       animation: none;
       opacity: 1;
       transform: none;
       transition: none;
+    }
+
+    .sf-title-line::after {
+      animation: none;
+      transform: scaleX(1);
     }
 
     .sf-marquee-track {
