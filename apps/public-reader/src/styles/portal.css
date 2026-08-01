@@ -95,9 +95,8 @@ svg {
   z-index: 90;
   padding: var(--portal-floating-nav-top) 30px 0;
   border-bottom: 1px solid rgba(247, 247, 244, 0.08);
-  background: rgba(8, 9, 6, 0.96);
-  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.18);
-  backdrop-filter: blur(20px);
+  background: rgb(7, 8, 6);
+  box-shadow: none;
   pointer-events: none;
 }
 
@@ -2342,7 +2341,7 @@ body:not([data-page="home"]) #portalContent {
     padding: 20px;
     border: 1px solid rgba(247, 247, 244, 0.1);
     border-radius: 18px;
-    background: rgba(8, 9, 6, 0.96);
+    background: rgb(7, 8, 6);
     box-shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
     backdrop-filter: blur(18px);
   }

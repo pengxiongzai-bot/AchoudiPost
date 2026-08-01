@@ -73,8 +73,6 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
 <section class="sf-reference" data-steadyflow-reference aria-label="AchoudiPost 首屏参考块">
   <div class="sf-frame">
     <section class="sf-hero" id="sf-hero">
-      <div class="sf-hero-field" aria-hidden="true"></div>
-      <div class="sf-hero-shade"></div>
       <div class="sf-hero-content">
         <div class="sf-copy-stack">
           <h2 class="sf-kinetic-title" aria-label="把电商 AI 实战方法，整理成可复用的 Skill">
@@ -102,14 +100,6 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
         </div>
       </div>
 
-      <svg class="sf-hero-curve" viewBox="0 0 5688 1886" preserveAspectRatio="none" aria-hidden="true">
-        <defs>
-          <filter id="sf-curve-blur" x="-10%" y="-20%" width="120%" height="140%">
-            <feGaussianBlur stdDeviation="125"></feGaussianBlur>
-          </filter>
-        </defs>
-        <path d="M2733.25 1264.78C706.858 1264.78 -50.5828 573.265 -177 202.5V2088.5H5865V202.5C5664.75 539.923 4759.65 1264.78 2733.25 1264.78Z" fill="rgb(18,19,15)" filter="url(#sf-curve-blur)"></path>
-      </svg>
     </section>
 
     <section class="sf-achievements" id="sf-achievements" aria-labelledby="sfModulesHeading">
@@ -445,31 +435,10 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     position: relative;
     display: flex;
     width: 100%;
-    min-height: clamp(800px, 92vh, 930px);
+    min-height: 100svh;
     justify-content: center;
     overflow: hidden;
     background: var(--sf-hero-bg);
-  }
-
-  .sf-hero-field,
-  .sf-hero-shade {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  .sf-hero-field {
-    background:
-      radial-gradient(circle at 50% 22%, rgba(255, 255, 255, 0.04), transparent 34%),
-      radial-gradient(circle at 18% 70%, rgba(255, 255, 255, 0.025), transparent 30%),
-      linear-gradient(180deg, rgb(9, 10, 8) 0%, rgb(7, 8, 6) 58%, rgb(11, 12, 9) 100%);
-  }
-
-  .sf-hero-shade {
-    background:
-      linear-gradient(180deg, rgba(247, 247, 241, 0.035) 0%, rgba(7, 8, 6, 0) 38%, rgba(7, 8, 6, 0.54) 100%),
-      radial-gradient(circle at 50% 38%, rgba(247, 247, 241, 0.05), rgba(7, 8, 6, 0) 43%);
   }
 
   .sf-hero-content {
@@ -690,17 +659,6 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     background: var(--sf-light);
     color: var(--sf-ink) !important;
     text-shadow: none;
-  }
-
-  .sf-hero-curve {
-    position: absolute;
-    z-index: 2;
-    right: -250px;
-    bottom: -30px;
-    left: -250px;
-    width: calc(100% + 500px);
-    height: 330px;
-    pointer-events: none;
   }
 
   .sf-video-overlay {
@@ -1318,12 +1276,6 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
       font-size: 20px;
     }
 
-    .sf-hero-curve {
-      right: -180px;
-      left: -180px;
-      width: calc(100% + 360px);
-    }
-
     .sf-achievements h2,
     .sf-counter h2 {
       font-size: 42px;
@@ -1501,13 +1453,6 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     .sf-primary-cta {
       width: 100%;
       max-width: 310px;
-    }
-
-    .sf-hero-curve {
-      right: -100px;
-      left: -100px;
-      width: calc(100% + 200px);
-      height: 250px;
     }
 
     .sf-video-overlay {
