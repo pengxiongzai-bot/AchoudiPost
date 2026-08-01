@@ -13,6 +13,12 @@
     const videoClose = root.querySelector("[data-sf-video-close]");
     const demoUrl = "https://www.youtube.com/embed/b-jRHsYdomY?autoplay=0&mute=1";
     const marqueeTrack = root.querySelector("[data-sf-hero-marquee-track]");
+    const imagePreviewOverlay = root.querySelector("[data-sf-image-preview-overlay]");
+    const imagePreviewImage = root.querySelector("[data-sf-image-preview-image]");
+    const imagePreviewClose = root.querySelector(".sf-image-preview-close");
+    const imagePreviewCloseButtons = root.querySelectorAll("[data-sf-image-preview-close]");
+    const imagePreviewTriggers = root.querySelectorAll("[data-sf-image-preview-trigger]");
+    let lastFocusedPreviewTrigger = null;
 
     const setScrolled = () => {
       const top = root.getBoundingClientRect().top + window.scrollY;
@@ -62,10 +68,47 @@
     videoOverlay?.addEventListener("click", (event) => {
       if (event.target === videoOverlay) closeVideo();
     });
+
+    const closeImagePreview = () => {
+      if (!imagePreviewOverlay || !imagePreviewImage) return;
+      imagePreviewOverlay.hidden = true;
+      imagePreviewImage.removeAttribute("src");
+      imagePreviewImage.setAttribute("alt", "");
+      document.body.style.overflow = "";
+
+      if (lastFocusedPreviewTrigger?.getAttribute("aria-hidden") !== "true") {
+        lastFocusedPreviewTrigger.focus({ preventScroll: true });
+      }
+      lastFocusedPreviewTrigger = null;
+    };
+
+    const openImagePreview = (trigger, options = {}) => {
+      if (!imagePreviewOverlay || !imagePreviewImage || !(trigger instanceof HTMLElement)) return;
+      const src = trigger.getAttribute("data-sf-preview-src");
+      if (!src) return;
+
+      lastFocusedPreviewTrigger = trigger;
+      imagePreviewImage.setAttribute("src", src);
+      imagePreviewImage.setAttribute("alt", trigger.getAttribute("aria-label") || "图片预览");
+      imagePreviewOverlay.hidden = false;
+      document.body.style.overflow = "hidden";
+      if (options.focusClose) imagePreviewClose?.focus({ preventScroll: true });
+    };
+
+    imagePreviewCloseButtons.forEach((button) => button.addEventListener("click", closeImagePreview));
+    imagePreviewTriggers.forEach((trigger) => {
+      trigger.addEventListener("click", (event) => {
+        if (event.detail !== 0) return;
+        event.preventDefault();
+        openImagePreview(trigger, { focusClose: true });
+      });
+    });
+
     window.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         closeMenu();
         closeVideo();
+        closeImagePreview();
       }
     });
 
@@ -126,10 +169,13 @@
       let velocity = 0;
       let isDragging = false;
       let dragStartX = 0;
+      let dragStartY = 0;
+      let dragDistance = 0;
       let dragStartOffset = 0;
       let lastX = 0;
       let lastTime = 0;
       let activePointerId = null;
+      let activePreviewTrigger = null;
 
       const getHalfWidth = () => marqueeTrack.scrollWidth / 2;
 
@@ -174,14 +220,18 @@
       };
 
       const handlePointerDown = (event) => {
+        if (event.button !== 0) return;
         event.preventDefault();
         isDragging = true;
         activePointerId = event.pointerId;
         velocity = 0;
         dragStartX = event.clientX;
+        dragStartY = event.clientY;
+        dragDistance = 0;
         dragStartOffset = offset;
         lastX = event.clientX;
         lastTime = event.timeStamp;
+        activePreviewTrigger = event.target instanceof Element ? event.target.closest("[data-sf-image-preview-trigger]") : null;
         marqueeTrack.classList.add("sf-is-dragging");
         marqueeTrack.setPointerCapture?.(event.pointerId);
       };
@@ -195,18 +245,32 @@
         velocity = (dx / dt) * 16;
         lastX = event.clientX;
         lastTime = event.timeStamp;
+        dragDistance = Math.max(
+          dragDistance,
+          Math.abs(event.clientX - dragStartX),
+          Math.abs(event.clientY - dragStartY)
+        );
         setOffset(dragStartOffset + (event.clientX - dragStartX), true);
       };
 
       const stopDragging = (event) => {
         if (!isDragging || activePointerId !== event.pointerId) return;
 
+        const wasTap = dragDistance < 8 && Math.abs(event.clientX - dragStartX) < 8 && Math.abs(event.clientY - dragStartY) < 8;
+        const targetAtPoint = document.elementFromPoint(event.clientX, event.clientY);
+        const previewTrigger = activePreviewTrigger || targetAtPoint?.closest?.("[data-sf-image-preview-trigger]");
+
         isDragging = false;
         activePointerId = null;
+        activePreviewTrigger = null;
         marqueeTrack.classList.remove("sf-is-dragging");
 
         if (marqueeTrack.hasPointerCapture?.(event.pointerId)) {
           marqueeTrack.releasePointerCapture(event.pointerId);
+        }
+
+        if (wasTap && previewTrigger) {
+          openImagePreview(previewTrigger);
         }
       };
 
