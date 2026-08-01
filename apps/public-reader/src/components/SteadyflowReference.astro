@@ -106,6 +106,16 @@ const impactStats = [
       </div>
 
       <div class="sf-hero-marquee sf-rise" style="--delay: .66s" aria-label="建筑参考图片轮播">
+        <div class="sf-marquee-curve sf-marquee-curve-top" aria-hidden="true">
+          <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
+            <path fill="currentColor" d="M0 0H1440V50C1440 50 1200 100 720 100C240 100 0 50 0 50V0Z"></path>
+          </svg>
+        </div>
+        <div class="sf-marquee-curve sf-marquee-curve-bottom" aria-hidden="true">
+          <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
+            <path fill="currentColor" d="M0 100H1440V50C1440 50 1200 0 720 0C240 0 0 50 0 50V100Z"></path>
+          </svg>
+        </div>
         <div class="sf-hero-marquee-track" data-sf-hero-marquee-track>
           {heroMarqueeImages.map((src, index) => (
             <div class="sf-hero-marquee-card" aria-hidden={index >= bespokeMarqueeImages.length ? "true" : undefined}>
@@ -671,21 +681,45 @@ const impactStats = [
   .sf-hero-marquee {
     position: absolute;
     right: 0;
-    bottom: clamp(12px, 2.2vh, 24px);
+    bottom: 0;
     left: 0;
     z-index: 0;
+    color: var(--sf-hero-bg);
     overflow: hidden;
-    padding: 0;
+    padding: 16px 0;
     background: transparent;
     -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 3.5%, #000 96.5%, transparent 100%);
     mask-image: linear-gradient(90deg, transparent 0%, #000 3.5%, #000 96.5%, transparent 100%);
+  }
+
+  .sf-marquee-curve {
+    position: absolute;
+    right: 0;
+    left: 0;
+    z-index: 10;
+    height: 100px;
+    pointer-events: none;
+  }
+
+  .sf-marquee-curve svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .sf-marquee-curve-top {
+    top: 0;
+  }
+
+  .sf-marquee-curve-bottom {
+    bottom: 0;
   }
 
   .sf-hero-marquee-track {
     display: flex;
     width: max-content;
     gap: 16px;
-    padding: 0;
+    padding: 16px 0;
     user-select: none;
     cursor: grab;
     touch-action: none;
@@ -699,8 +733,8 @@ const impactStats = [
   .sf-hero-marquee-card {
     position: relative;
     display: block;
-    width: clamp(260px, 14.7vw, 300px);
-    aspect-ratio: 5 / 8;
+    width: 320px;
+    height: 512px;
     flex: 0 0 auto;
     overflow: hidden;
     border-radius: 16px;
@@ -1257,11 +1291,12 @@ const impactStats = [
     }
 
     .sf-hero-marquee {
-      bottom: 18px;
+      bottom: 0;
     }
 
     .sf-hero-marquee-card {
-      width: 280px;
+      width: 320px;
+      height: 512px;
       border-radius: 16px;
     }
 
@@ -1448,7 +1483,12 @@ const impactStats = [
     }
 
     .sf-hero-marquee {
-      bottom: 18px;
+      bottom: 0;
+      padding: 16px 0;
+    }
+
+    .sf-marquee-curve {
+      height: 80px;
     }
 
     .sf-hero-marquee-track {
@@ -1456,7 +1496,8 @@ const impactStats = [
     }
 
     .sf-hero-marquee-card {
-      width: 210px;
+      width: 240px;
+      height: 320px;
       border-radius: 16px;
     }
 
