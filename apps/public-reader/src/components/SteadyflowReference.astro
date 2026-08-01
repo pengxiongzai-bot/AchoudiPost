@@ -1,6 +1,4 @@
 ---
-const heroVideo =
-  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260728_015819_1b3ec855-d586-4018-96c8-8bf90cada037.mp4";
 const counterVideo =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260625_213350_6343fcfb-2892-4dcc-8573-1161447cacf5.mp4";
 
@@ -75,7 +73,7 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
 <section class="sf-reference" data-steadyflow-reference aria-label="AchoudiPost 首屏参考块">
   <div class="sf-frame">
     <section class="sf-hero" id="sf-hero">
-      <video class="sf-hero-video" src={heroVideo} autoplay muted loop playsinline aria-hidden="true"></video>
+      <div class="sf-hero-field" aria-hidden="true"></div>
       <div class="sf-hero-shade"></div>
       <div class="sf-hero-content">
         <div class="sf-copy-stack">
@@ -110,7 +108,7 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
             <feGaussianBlur stdDeviation="125"></feGaussianBlur>
           </filter>
         </defs>
-        <path d="M2733.25 1264.78C706.858 1264.78 -50.5828 573.265 -177 202.5V2088.5H5865V202.5C5664.75 539.923 4759.65 1264.78 2733.25 1264.78Z" fill="rgb(247,247,247)" filter="url(#sf-curve-blur)"></path>
+        <path d="M2733.25 1264.78C706.858 1264.78 -50.5828 573.265 -177 202.5V2088.5H5865V202.5C5664.75 539.923 4759.65 1264.78 2733.25 1264.78Z" fill="rgb(18,19,15)" filter="url(#sf-curve-blur)"></path>
       </svg>
     </section>
 
@@ -204,11 +202,15 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
   }
 
   .sf-reference {
-    --sf-page-bg: rgb(247, 247, 247);
+    --sf-page-bg: rgb(18, 19, 15);
+    --sf-hero-bg: rgb(7, 8, 6);
+    --sf-surface: rgb(22, 23, 19);
+    --sf-surface-soft: rgb(28, 29, 25);
     --sf-ink: rgb(19, 21, 21);
+    --sf-light: rgb(247, 247, 241);
     --sf-blue: #4382bc;
     --sf-logo: #5bb8f0;
-    --sf-muted: rgb(73, 77, 77);
+    --sf-muted: rgba(247, 247, 241, 0.58);
     --sf-headline: "Stack Sans Headline", sans-serif;
     --sf-serif-display: "Noto Serif SC", "Songti SC", "STSong", "SimSun", ui-serif, Georgia, "Times New Roman", serif;
     --sf-ui: "Google Sans Flex", sans-serif;
@@ -446,10 +448,10 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     min-height: clamp(800px, 92vh, 930px);
     justify-content: center;
     overflow: hidden;
-    background: var(--sf-ink);
+    background: var(--sf-hero-bg);
   }
 
-  .sf-hero-video,
+  .sf-hero-field,
   .sf-hero-shade {
     position: absolute;
     inset: 0;
@@ -457,14 +459,17 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     height: 100%;
   }
 
-  .sf-hero-video {
-    object-fit: cover;
+  .sf-hero-field {
+    background:
+      radial-gradient(circle at 50% 22%, rgba(255, 255, 255, 0.04), transparent 34%),
+      radial-gradient(circle at 18% 70%, rgba(255, 255, 255, 0.025), transparent 30%),
+      linear-gradient(180deg, rgb(9, 10, 8) 0%, rgb(7, 8, 6) 58%, rgb(11, 12, 9) 100%);
   }
 
   .sf-hero-shade {
     background:
-      linear-gradient(180deg, rgba(5, 8, 12, 0.22) 0%, rgba(5, 8, 12, 0.03) 46%, rgba(5, 8, 12, 0.16) 100%),
-      radial-gradient(circle at 50% 8%, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.2));
+      linear-gradient(180deg, rgba(247, 247, 241, 0.035) 0%, rgba(7, 8, 6, 0) 38%, rgba(7, 8, 6, 0.54) 100%),
+      radial-gradient(circle at 50% 38%, rgba(247, 247, 241, 0.05), rgba(7, 8, 6, 0) 43%);
   }
 
   .sf-hero-content {
@@ -654,6 +659,7 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
 
   .sf-hero-subtitle {
     max-width: 500px;
+    color: rgba(247, 247, 241, 0.78);
     font-size: 22px;
     line-height: 1.4;
     text-wrap: balance;
@@ -681,7 +687,7 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
 
   .sf-primary-cta {
     padding: 16px 34px;
-    background: #fff;
+    background: var(--sf-light);
     color: var(--sf-ink) !important;
     text-shadow: none;
   }
@@ -758,6 +764,7 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     overflow: hidden;
     padding-top: 110px;
     background: var(--sf-page-bg);
+    color: var(--sf-light);
   }
 
   .sf-achievements-header {
@@ -803,7 +810,7 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
   .sf-avatar-count {
     width: 40px;
     height: 40px;
-    border: 2px solid #fff;
+    border: 2px solid var(--sf-page-bg);
     border-radius: 50%;
   }
 
@@ -821,8 +828,8 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     display: grid;
     margin-left: -8px;
     place-items: center;
-    background: linear-gradient(145deg, rgba(67, 130, 188, 0.92), rgba(19, 21, 21, 0.92));
-    color: #fff;
+    background: var(--sf-light);
+    color: var(--sf-ink);
     font-family: var(--sf-headline);
     font-size: 17px;
   }
@@ -834,8 +841,8 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     margin-left: -8px;
     place-items: center;
     overflow: hidden;
-    background: var(--sf-ink);
-    color: #fff;
+    background: var(--sf-surface-soft);
+    color: var(--sf-light);
     font-size: 11px;
   }
 
@@ -858,7 +865,7 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
 
   .sf-section-kicker {
     margin-bottom: 14px;
-    color: var(--sf-blue);
+    color: rgba(247, 247, 241, 0.52);
     font-size: 13px;
   }
 
@@ -868,7 +875,7 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
   }
 
   .sf-star-row {
-    color: #f2a524;
+    color: rgba(247, 247, 241, 0.78);
     font-size: 16px;
     line-height: 1;
     letter-spacing: 1px;
@@ -917,8 +924,10 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     flex: 0 0 auto;
     overflow: hidden;
     border-radius: 20px;
-    background: var(--sf-ink);
-    color: #fff;
+    border: 1px solid rgba(247, 247, 241, 0.08);
+    background: var(--sf-surface);
+    color: var(--sf-light);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.26);
   }
 
   .sf-achievement-card > img {
@@ -937,7 +946,7 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
   .sf-card-gradient {
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgb(19, 21, 21) 0%, rgba(255, 255, 255, 0) 50%, rgb(19, 21, 21) 100%);
+    background: linear-gradient(180deg, rgba(7, 8, 6, 0.96) 0%, rgba(7, 8, 6, 0.18) 48%, rgba(7, 8, 6, 0.96) 100%);
     opacity: 0.86;
   }
 
@@ -960,7 +969,7 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
   }
 
   .sf-card-job {
-    color: rgb(184, 184, 184);
+    color: rgba(247, 247, 241, 0.6);
   }
 
   .sf-card-dot {
@@ -1010,6 +1019,7 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     margin: 0 auto;
     padding: 200px 30px 180px;
     background: var(--sf-page-bg);
+    color: var(--sf-light);
     text-align: center;
   }
 
@@ -1023,9 +1033,10 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
   .sf-counter-pill {
     margin-bottom: 24px;
     padding: 10px 17px;
-    border: 1px solid rgba(19, 21, 21, 0.1);
+    border: 1px solid rgba(247, 247, 241, 0.12);
     border-radius: 999px;
-    background: #fff;
+    background: rgba(247, 247, 241, 0.06);
+    color: rgba(247, 247, 241, 0.74);
     font-size: 14px;
   }
 
@@ -1036,7 +1047,7 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
   .sf-giant-number {
     display: block;
     margin-top: 30px;
-    color: var(--sf-blue);
+    color: var(--sf-light);
     font-family: var(--sf-headline);
     font-size: 112px;
     font-weight: 500;
@@ -1081,7 +1092,8 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     height: 620px;
     object-fit: cover;
     object-position: center center;
-    mix-blend-mode: darken;
+    mix-blend-mode: screen;
+    opacity: 0.44;
     transform: translate(-50%, -50%);
   }
 
@@ -1090,7 +1102,7 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     z-index: 2;
     inset: auto 0 0;
     height: 48%;
-    background: linear-gradient(to bottom, rgba(247, 247, 247, 0) 0%, rgba(247, 247, 247, 0.74) 50%, var(--sf-page-bg) 84%);
+    background: linear-gradient(to bottom, rgba(18, 19, 15, 0) 0%, rgba(18, 19, 15, 0.72) 50%, var(--sf-page-bg) 84%);
     pointer-events: none;
   }
 
@@ -1102,11 +1114,11 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     left: -5%;
     height: 132px;
     background:
-      radial-gradient(ellipse at 8% 62%, rgba(255, 255, 255, 0.98) 0 22%, transparent 54%),
-      radial-gradient(ellipse at 30% 46%, rgba(255, 255, 255, 0.94) 0 24%, transparent 58%),
-      radial-gradient(ellipse at 54% 62%, rgba(255, 255, 255, 0.96) 0 28%, transparent 62%),
-      radial-gradient(ellipse at 78% 44%, rgba(255, 255, 255, 0.94) 0 23%, transparent 56%),
-      radial-gradient(ellipse at 96% 62%, rgba(255, 255, 255, 0.98) 0 24%, transparent 58%);
+      radial-gradient(ellipse at 8% 62%, rgba(18, 19, 15, 0.98) 0 22%, transparent 54%),
+      radial-gradient(ellipse at 30% 46%, rgba(18, 19, 15, 0.94) 0 24%, transparent 58%),
+      radial-gradient(ellipse at 54% 62%, rgba(18, 19, 15, 0.96) 0 28%, transparent 62%),
+      radial-gradient(ellipse at 78% 44%, rgba(18, 19, 15, 0.94) 0 23%, transparent 56%),
+      radial-gradient(ellipse at 96% 62%, rgba(18, 19, 15, 0.98) 0 24%, transparent 58%);
     filter: blur(13px);
     opacity: 0.9;
     pointer-events: none;
@@ -1142,7 +1154,7 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
   }
 
   .sf-impact-stat strong {
-    color: var(--sf-ink);
+    color: var(--sf-light);
     font-family: var(--sf-headline);
     font-size: 54px;
     font-weight: 500;
@@ -1152,7 +1164,7 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
 
   .sf-impact-stat strong::first-letter,
   .sf-impact-stat strong span {
-    color: var(--sf-blue);
+    color: rgba(247, 247, 241, 0.68);
   }
 
   .sf-impact-stat p {
