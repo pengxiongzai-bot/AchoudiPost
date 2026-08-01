@@ -5,10 +5,11 @@ interface Props {
   activePage: "home" | "articles" | "tools" | "topics" | "market" | "earn" | "guide" | "about";
   title: string;
   description: string;
+  hideHeader?: boolean;
   hideFooter?: boolean;
 }
 
-const { activePage, title, description, hideFooter = false } = Astro.props;
+const { activePage, title, description, hideHeader = false, hideFooter = false } = Astro.props;
 const siteName = "AchoudiPost";
 const pageTitle = activePage === "home" ? siteName : `${title} - ${siteName}`;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://example.com").toString();
@@ -39,38 +40,40 @@ const navItems = [
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   </head>
   <body class="portal-page" data-page={activePage}>
-    <header class="site-header">
-      <div class="site-header-inner">
-        <a class="portal-brand" href="/" data-portal-route aria-label="AchoudiPost 首页">
-          <span class="portal-brand-mark">A</span>
-          <span class="portal-brand-copy">
-            <strong>AchoudiPost</strong>
-            <small>阿臭弟的小站</small>
-          </span>
-        </a>
+    {!hideHeader && (
+      <header class="site-header">
+        <div class="site-header-inner">
+          <a class="portal-brand" href="/" data-portal-route aria-label="AchoudiPost 首页">
+            <span class="portal-brand-mark">A</span>
+            <span class="portal-brand-copy">
+              <strong>AchoudiPost</strong>
+              <small>阿臭弟的小站</small>
+            </span>
+          </a>
 
-        <button id="navToggle" class="portal-icon-button nav-toggle" type="button" aria-label="打开导航" aria-expanded="false">
-          <i data-lucide="menu"></i>
-        </button>
+          <button id="navToggle" class="portal-icon-button nav-toggle" type="button" aria-label="打开导航" aria-expanded="false">
+            <i data-lucide="menu"></i>
+          </button>
 
-        <nav id="primaryNav" class="primary-nav" aria-label="主导航">
-          {
-            navItems.map((item) => (
-              <a class:list={["nav-link", "className" in item ? item.className : undefined, { active: activePage === item.id }]} href={item.href} data-portal-route aria-current={activePage === item.id ? "page" : undefined}>
-                {item.label}
-              </a>
-            ))
-          }
-        </nav>
+          <nav id="primaryNav" class="primary-nav" aria-label="主导航">
+            {
+              navItems.map((item) => (
+                <a class:list={["nav-link", "className" in item ? item.className : undefined, { active: activePage === item.id }]} href={item.href} data-portal-route aria-current={activePage === item.id ? "page" : undefined}>
+                  {item.label}
+                </a>
+              ))
+            }
+          </nav>
 
-        <div class="header-actions">
-          <span id="servicePulse" class="service-pulse" data-service-pulse data-status="checking">
-            <span></span>
-            <b>服务检测中</b>
-          </span>
+          <div class="header-actions">
+            <span id="servicePulse" class="service-pulse" data-service-pulse data-status="checking">
+              <span></span>
+              <b>服务检测中</b>
+            </span>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+    )}
 
     <main id="portalContent" data-portal-content>
       <slot />
