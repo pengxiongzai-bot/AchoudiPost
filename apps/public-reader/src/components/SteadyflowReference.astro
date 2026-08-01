@@ -80,11 +80,13 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
       <div class="sf-hero-content">
         <div class="sf-copy-stack">
           <h2 class="sf-hero-title" aria-label="把电商 AI 实战方法整理成可复用的 Skill">
-            <span class="sf-title-line" style="--delay: .16s">
-              <span>把电商 AI 实战方法</span>
+            <span class="sf-title-row" style="--delay: .1s">
+              <span class="sf-title-text" data-text="把电商 AI 实战方法">把电商 AI 实战方法</span>
+              <span class="sf-title-rule" aria-hidden="true"></span>
             </span>
-            <span class="sf-title-line" style="--delay: .38s">
-              <span>整理成可复用的 Skill</span>
+            <span class="sf-title-row" style="--delay: .34s">
+              <span class="sf-title-text" data-text="整理成可复用的 Skill">整理成可复用的 Skill</span>
+              <span class="sf-title-rule" aria-hidden="true"></span>
             </span>
           </h2>
           <p class="sf-hero-subtitle sf-rise" style="--delay: .68s">
@@ -500,55 +502,155 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
 
   .sf-hero-title {
     display: grid;
-    gap: 8px;
-    max-width: 960px;
+    gap: 4px;
+    width: min(100%, 1080px);
     margin: 0;
-    font-family: var(--sf-headline);
+    font-family: "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", STSong, Georgia, serif;
     font-size: 90px;
-    font-weight: 500;
-    letter-spacing: -0.045em;
-    line-height: 1;
-    text-wrap: balance;
+    font-weight: 400;
+    letter-spacing: -0.035em;
+    line-height: 0.98;
   }
 
-  .sf-title-line {
+  .sf-title-row {
     position: relative;
-    display: block;
-    overflow: hidden;
-    padding-bottom: 0.04em;
+    display: inline-flex;
+    min-width: 0;
+    align-items: baseline;
+    justify-content: center;
+    padding-bottom: 0.08em;
   }
 
-  .sf-title-line > span {
+  .sf-title-text {
+    position: relative;
     display: inline-block;
+    flex: 0 1 auto;
+    max-width: min-content;
+    color: rgba(255, 255, 255, 0.18);
+    white-space: nowrap;
+    transform: translateY(0.18em);
+    animation: sf-title-body-in 0.7s var(--delay, 0s) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    will-change: transform;
+  }
+
+  .sf-title-text::after {
+    position: absolute;
+    inset: 0;
+    color: #fff;
+    clip-path: inset(0 100% 0 0);
+    content: attr(data-text);
+    text-shadow: 0 4px 26px rgba(0, 0, 0, 0.24);
+    animation: sf-title-scan 4.8s calc(var(--delay, 0s) + 0.12s) linear infinite;
+    will-change: clip-path;
+  }
+
+  .sf-title-rule {
+    position: relative;
+    display: inline-block;
+    flex: 0 0 clamp(120px, 15vw, 240px);
+    height: 1px;
+    margin-left: 0.28em;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.28);
+  }
+
+  .sf-title-row:nth-child(2) .sf-title-rule {
+    flex-basis: clamp(150px, 20vw, 300px);
+  }
+
+  .sf-title-row::before {
+    position: absolute;
+    right: 50%;
+    bottom: 0;
+    width: min(74%, 820px);
+    height: 42%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
     opacity: 0;
-    transform: translateY(110%);
-    animation: sf-title-clip-in 0.9s var(--delay, 0s) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    transform: translateX(-10%);
+    animation: sf-title-glow-scan 4.8s calc(var(--delay, 0s) + 0.08s) ease-out infinite;
+    content: "";
+    pointer-events: none;
+  }
+
+  .sf-title-rule::after {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.84);
+    transform: scaleX(0);
+    transform-origin: left center;
+    animation: sf-title-rule-scan 4.8s calc(var(--delay, 0s) + 0.26s) cubic-bezier(0.76, 0, 0.24, 1) infinite;
+    content: "";
     will-change: transform, opacity;
   }
 
-  .sf-title-line::after {
-    position: absolute;
-    right: 0.05em;
-    bottom: 0.02em;
-    left: 0.05em;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.72);
-    transform: scaleX(0);
-    transform-origin: left center;
-    animation: sf-title-line-in 0.72s calc(var(--delay, 0s) + 0.18s) cubic-bezier(0.22, 1, 0.36, 1) forwards;
-    content: "";
-  }
-
-  @keyframes sf-title-clip-in {
+  @keyframes sf-title-body-in {
     to {
-      opacity: 1;
       transform: translateY(0);
     }
   }
 
-  @keyframes sf-title-line-in {
-    to {
+  @keyframes sf-title-scan {
+    0% {
+      clip-path: inset(0 100% 0 0);
+    }
+
+    8% {
+      clip-path: inset(0 100% 0 0);
+    }
+
+    56% {
+      clip-path: inset(0 0 0 0);
+    }
+
+    68% {
+      clip-path: inset(0 0 0 0);
+    }
+
+    86%,
+    100% {
+      clip-path: inset(0 100% 0 0);
+    }
+  }
+
+  @keyframes sf-title-rule-scan {
+    0%,
+    10% {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+
+    54% {
+      opacity: 1;
       transform: scaleX(1);
+    }
+
+    68% {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+
+    88%,
+    100% {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+  }
+
+  @keyframes sf-title-glow-scan {
+    0%,
+    16% {
+      opacity: 0;
+      transform: translateX(-18%);
+    }
+
+    30% {
+      opacity: 0.8;
+    }
+
+    45%,
+    100% {
+      opacity: 0;
+      transform: translateX(58%);
     }
   }
 
@@ -1201,6 +1303,14 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
       font-size: 60px;
     }
 
+    .sf-title-rule {
+      flex-basis: clamp(70px, 12vw, 150px);
+    }
+
+    .sf-title-row:nth-child(2) .sf-title-rule {
+      flex-basis: clamp(82px, 14vw, 180px);
+    }
+
     .sf-hero-subtitle {
       font-size: 20px;
     }
@@ -1362,6 +1472,19 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
 
     .sf-hero-title {
       font-size: 44px;
+      gap: 0;
+      letter-spacing: -0.055em;
+    }
+
+    .sf-title-row {
+      justify-content: center;
+      overflow: visible;
+    }
+
+    .sf-title-rule,
+    .sf-title-row:nth-child(2) .sf-title-rule {
+      flex-basis: clamp(28px, 9vw, 44px);
+      margin-left: 0.16em;
     }
 
     .sf-hero-subtitle {
@@ -1476,7 +1599,7 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     }
 
     .sf-rise,
-    .sf-title-line > span,
+    .sf-title-text,
     .sf-reveal {
       animation: none;
       opacity: 1;
@@ -1484,9 +1607,30 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
       transition: none;
     }
 
-    .sf-title-line::after {
+    .sf-title-text {
+      color: #fff;
+    }
+
+    .sf-title-text::after {
       animation: none;
+      clip-path: inset(0 0 0 0);
+    }
+
+    .sf-title-rule {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+
+    .sf-title-rule::after {
+      animation: none;
+      opacity: 1;
       transform: scaleX(1);
+    }
+
+    .sf-title-row::before {
+      animation: none;
+      opacity: 0;
     }
 
     .sf-marquee-track {
