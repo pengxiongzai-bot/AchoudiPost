@@ -95,10 +95,6 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
       <div class="sf-hero-shade"></div>
       <div class="sf-hero-content">
         <div class="sf-copy-stack">
-          <div class="sf-hero-pill sf-rise" style="--delay: .1s">
-            <span>持续更新</span>
-            <p>电商 AI · 商业实战 Skill · 飞书知识库</p>
-          </div>
           <h2 class="sf-rise" style="--delay: .2s">把电商 AI 实战方法<br class="sf-desktop-break" />整理成可复用的 Skill</h2>
           <p class="sf-hero-subtitle sf-rise" style="--delay: .3s">
             围绕 AI 生图、生视频、商品内容、私域成交和工具流，沉淀可直接落地的框架。
@@ -106,10 +102,6 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
         </div>
         <div class="sf-hero-ctas sf-rise" style="--delay: .4s">
           <a class="sf-primary-cta" href="/market/" data-portal-route>进入 AI 实战库</a>
-          <a class="sf-secondary-cta" href="/articles/" data-portal-route>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="m8 5 11 7-11 7z"></path></svg>
-            <span>看最新文章</span>
-          </a>
         </div>
 
         <div class="sf-phone sf-rise" style="--delay: .6s">
@@ -505,8 +497,7 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
   }
 
   .sf-icon-button:hover,
-  .sf-primary-cta:hover,
-  .sf-secondary-cta:hover {
+  .sf-primary-cta:hover {
     transform: scale(0.95);
   }
 
@@ -583,35 +574,10 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     }
   }
 
-  .sf-hero-pill {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 18px 6px 6px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.1);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(16px);
-  }
-
-  .sf-hero-pill span {
-    padding: 6px 12px;
-    border-radius: 999px;
-    background: var(--sf-ink);
-    color: #fff;
-    font-size: 14px;
-  }
-
-  .sf-hero-pill p,
   .sf-hero-subtitle,
   .sf-counter-copy > p,
   .sf-impact-stat p {
     margin: 0;
-  }
-
-  .sf-hero-pill p {
-    font-size: 14px;
   }
 
   .sf-hero h2 {
@@ -640,8 +606,7 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     margin-top: -40px;
   }
 
-  .sf-primary-cta,
-  .sf-secondary-cta {
+  .sf-primary-cta {
     display: inline-flex;
     height: 54px;
     align-items: center;
@@ -657,20 +622,6 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     padding: 16px 34px;
     background: #fff;
     color: var(--sf-ink);
-  }
-
-  .sf-secondary-cta {
-    gap: 9px;
-    padding: 0 28px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    backdrop-filter: blur(16px);
-  }
-
-  .sf-secondary-cta svg {
-    width: 16px;
-    height: 16px;
   }
 
   .sf-phone {
@@ -1842,24 +1793,13 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
       font-size: 18px;
     }
 
-    .sf-hero-pill {
-      gap: 7px;
-      padding-right: 14px;
-    }
-
-    .sf-hero-pill p,
-    .sf-hero-pill span {
-      font-size: 12px;
-    }
-
     .sf-hero-ctas {
       width: 100%;
       gap: 12px;
       margin-top: -28px;
     }
 
-    .sf-primary-cta,
-    .sf-secondary-cta {
+    .sf-primary-cta {
       width: 100%;
       max-width: 310px;
     }
