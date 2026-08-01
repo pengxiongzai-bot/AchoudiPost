@@ -19,6 +19,9 @@
   --portal-gold: var(--portal-muted);
   --portal-blue: var(--portal-muted);
   --portal-max: 1180px;
+  --portal-floating-nav-top: 30px;
+  --portal-floating-nav-height: 64px;
+  --portal-floating-nav-clearance: 126px;
   color-scheme: light;
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
@@ -109,26 +112,28 @@ svg {
 }
 
 .site-header {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  border-bottom: 1px solid var(--portal-line);
-  background: color-mix(in srgb, var(--portal-bg) 94%, transparent);
-  backdrop-filter: blur(14px);
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 90;
+  padding: var(--portal-floating-nav-top) 30px 0;
+  background: transparent;
+  pointer-events: none;
 }
 
-body[data-page="home"] > .site-header {
-  display: none;
+body:not([data-page="home"]) #portalContent {
+  padding-top: var(--portal-floating-nav-clearance);
 }
 
 .site-header-inner {
-  width: min(var(--portal-max), calc(100% - 40px));
-  min-height: 68px;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  width: 100%;
+  max-width: 1260px;
+  min-height: var(--portal-floating-nav-height);
+  display: flex;
   align-items: center;
-  gap: 28px;
+  justify-content: space-between;
+  gap: 0;
   margin-inline: auto;
+  pointer-events: auto;
 }
 
 .portal-brand {
@@ -136,6 +141,22 @@ body[data-page="home"] > .site-header {
   display: inline-flex;
   align-items: center;
   gap: 10px;
+}
+
+.site-header .portal-brand,
+.site-header .primary-nav,
+.site-header .header-actions {
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--portal-panel) 97%, transparent);
+  box-shadow: 0 8px 20px rgba(5, 8, 12, 0.1);
+  backdrop-filter: blur(18px);
+}
+
+.site-header .portal-brand {
+  min-width: 216px;
+  min-height: var(--portal-floating-nav-height);
+  gap: 12px;
+  padding: 12px 18px 12px 12px;
 }
 
 .portal-brand-mark {
@@ -150,6 +171,12 @@ body[data-page="home"] > .site-header {
   background: var(--portal-text);
   color: var(--portal-bg);
   font-weight: 900;
+}
+
+.site-header .portal-brand-mark {
+  width: 38px;
+  height: 38px;
+  font-size: 17px;
 }
 
 .portal-brand-mark::after {
@@ -175,6 +202,13 @@ body[data-page="home"] > .site-header {
   line-height: 1.2;
 }
 
+.site-header .portal-brand-copy strong {
+  font-size: 17px;
+  font-weight: 850;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
 .portal-brand-copy small {
   margin-top: 2px;
   color: var(--portal-muted);
@@ -183,27 +217,28 @@ body[data-page="home"] > .site-header {
 }
 
 .primary-nav {
+  height: var(--portal-floating-nav-height);
   display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 32px;
+  padding: 0 32px;
 }
 
 .nav-link {
   position: relative;
-  padding: 8px 12px;
+  display: inline-flex;
+  height: 100%;
+  align-items: center;
+  padding: 0;
   color: var(--portal-muted);
   font-size: 14px;
-  font-weight: 650;
+  font-weight: 750;
+  white-space: nowrap;
 }
 
 .nav-link::after {
-  content: "";
-  position: absolute;
-  right: 12px;
-  bottom: 2px;
-  left: 12px;
-  height: 2px;
-  background: transparent;
+  display: none;
 }
 
 .nav-link:hover,
@@ -212,7 +247,7 @@ body[data-page="home"] > .site-header {
 }
 
 .nav-link.active::after {
-  background: var(--portal-signal);
+  background: transparent;
 }
 
 .earn-nav-link {
@@ -233,10 +268,13 @@ body[data-page="home"] > .site-header {
 }
 
 .header-actions {
+  min-width: 216px;
+  height: var(--portal-floating-nav-height);
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 12px;
+  padding: 6px 6px 6px 16px;
 }
 
 .portal-icon-button {
@@ -253,6 +291,22 @@ body[data-page="home"] > .site-header {
 .portal-icon-button:hover {
   border-color: var(--portal-accent);
   background: var(--portal-accent-soft);
+}
+
+.site-header .portal-icon-button {
+  width: 52px;
+  height: 52px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--portal-text);
+  color: var(--portal-bg);
+  transition: transform 0.28s ease, background-color 0.16s ease, color 0.16s ease;
+}
+
+.site-header .portal-icon-button:hover {
+  border-color: transparent;
+  background: var(--portal-text);
+  transform: scale(0.95);
 }
 
 .nav-toggle {
@@ -513,7 +567,7 @@ body[data-page="home"] > .site-header {
 }
 
 .reader-route {
-  height: calc(100vh - 68px);
+  height: calc(100vh - var(--portal-floating-nav-clearance));
   min-height: 620px;
   background: var(--portal-bg);
 }
@@ -1986,7 +2040,7 @@ body[data-page="home"] > .site-header {
 
 .guide-index {
   position: sticky;
-  top: 126px;
+  top: calc(var(--portal-floating-nav-clearance) + 20px);
   align-self: start;
   display: flex;
   flex-direction: column;
@@ -2209,27 +2263,84 @@ body[data-page="home"] > .site-header {
 }
 
 @media (max-width: 900px) {
+  :root {
+    --portal-floating-nav-top: 20px;
+    --portal-floating-nav-height: 64px;
+    --portal-floating-nav-clearance: 104px;
+  }
+
+  .site-header {
+    padding: var(--portal-floating-nav-top) 30px 0;
+  }
+
   .site-header-inner {
-    grid-template-columns: auto auto minmax(0, 1fr);
-    gap: 10px;
+    position: relative;
+    max-width: 760px;
+    min-height: var(--portal-floating-nav-height);
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--portal-panel) 97%, transparent);
+    box-shadow: 0 8px 20px rgba(5, 8, 12, 0.1);
+    backdrop-filter: blur(18px);
+  }
+
+  .site-header .portal-brand {
+    min-width: 0;
+    min-height: 0;
+    gap: 9px;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  .site-header .portal-brand-mark {
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
+  }
+
+  .site-header .portal-brand-copy strong {
+    font-size: 15px;
+    line-height: 1.1;
+  }
+
+  .site-header .header-actions {
+    min-width: 0;
+    height: auto;
+    gap: 6px;
+    margin-left: auto;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
   }
 
   .nav-toggle {
     display: inline-grid;
+    order: 3;
   }
 
   .primary-nav {
-    position: absolute;
-    top: calc(100% + 1px);
-    right: 20px;
-    left: 20px;
+    position: fixed;
+    top: calc(var(--portal-floating-nav-top) + var(--portal-floating-nav-height) + 14px);
+    right: 30px;
+    left: 30px;
     display: none;
     flex-direction: column;
-    padding: 8px;
-    border: 1px solid var(--portal-line-strong);
-    border-radius: 8px;
-    background: var(--portal-panel);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+    gap: 4px;
+    width: min(100% - 60px, 760px);
+    height: auto;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--portal-panel) 98%, transparent);
+    box-shadow: 0 24px 70px rgba(5, 8, 12, 0.22);
+    backdrop-filter: blur(18px);
   }
 
   .primary-nav.open {
@@ -2241,14 +2352,10 @@ body[data-page="home"] > .site-header {
   }
 
   .nav-link.active {
-    border-radius: 6px;
+    border-radius: 10px;
     background: var(--portal-accent-soft);
     color: var(--portal-accent);
     box-shadow: inset 2px 0 0 var(--portal-signal);
-  }
-
-  .header-actions {
-    margin-left: auto;
   }
 
   .service-pulse {
@@ -2308,19 +2415,38 @@ body[data-page="home"] > .site-header {
 }
 
 @media (max-width: 680px) {
+  :root {
+    --portal-floating-nav-top: 14px;
+    --portal-floating-nav-height: 52px;
+    --portal-floating-nav-clearance: 82px;
+  }
+
+  .site-header {
+    padding: var(--portal-floating-nav-top) 16px 0;
+  }
+
   .portal-container,
-  .site-header-inner,
   .service-strip-inner,
   .portal-footer-inner {
     width: min(100% - 28px, var(--portal-max));
   }
 
   .site-header-inner {
-    min-height: 60px;
+    width: 100%;
+    max-width: 360px;
+    min-height: var(--portal-floating-nav-height);
+    padding: 10px;
   }
 
   .portal-brand-copy small {
     display: none;
+  }
+
+  .primary-nav {
+    top: calc(var(--portal-floating-nav-top) + var(--portal-floating-nav-height) + 12px);
+    right: 16px;
+    left: 16px;
+    width: min(100% - 32px, 360px);
   }
 
   .service-strip-inner {

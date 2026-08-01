@@ -134,21 +134,25 @@ function updateThemeIcon() {
   createPortalIcons();
 }
 
+function setPrimaryNavigation(open: boolean) {
+  if (!primaryNav || !navToggle) return;
+  primaryNav.classList.toggle("open", open);
+  navToggle.setAttribute("aria-expanded", String(open));
+  navToggle.setAttribute("aria-label", open ? "关闭导航" : "打开导航");
+  navToggle.innerHTML = `<i data-lucide="${open ? "x" : "menu"}"></i>`;
+  createPortalIcons();
+}
+
 function bindNavigation() {
   navToggle?.addEventListener("click", () => {
-    const open = primaryNav?.classList.toggle("open") ?? false;
-    navToggle.setAttribute("aria-expanded", String(open));
-    navToggle.setAttribute("aria-label", open ? "关闭导航" : "打开导航");
-    navToggle.innerHTML = `<i data-lucide="${open ? "x" : "menu"}"></i>`;
-    createPortalIcons();
+    setPrimaryNavigation(!primaryNav?.classList.contains("open"));
   });
 
   document.addEventListener("click", (event) => {
     if (!primaryNav?.classList.contains("open")) return;
     const target = event.target as Node;
     if (primaryNav.contains(target) || navToggle?.contains(target)) return;
-    primaryNav.classList.remove("open");
-    navToggle?.setAttribute("aria-expanded", "false");
+    setPrimaryNavigation(false);
   });
 }
 
@@ -273,8 +277,7 @@ async function loadRoute(destination: URL, push: boolean) {
     document.body.dataset.page = nextDocument.body.dataset.page ?? "";
     if (push) history.pushState({}, "", `${destination.pathname}${destination.search}${destination.hash}`);
     updateActiveNavigation(destination.pathname);
-    primaryNav?.classList.remove("open");
-    navToggle?.setAttribute("aria-expanded", "false");
+    setPrimaryNavigation(false);
     window.scrollTo(0, 0);
     bindPageInteractions();
     createPortalIcons();
