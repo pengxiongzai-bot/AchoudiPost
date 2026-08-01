@@ -2,8 +2,6 @@
 const counterVideo =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260625_213350_6343fcfb-2892-4dcc-8573-1161447cacf5.mp4";
 
-const moduleTokens = ["图", "视", "流"];
-
 const moduleCards = [
   {
     name: "AI 生图 Skill",
@@ -61,13 +59,14 @@ const moduleCards = [
   }
 ];
 
+const featuredModuleCards = moduleCards.slice(0, 4);
+
 const impactStats = [
   { value: "生图框架", label: "商品主图、场景图、卖点图" },
   { value: "生视频框架", label: "短视频开头、镜头转场、产品展示" },
   { value: "成交流程", label: "内容种草、私域承接、交付路径" }
 ];
 
-const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
 ---
 
 <section class="sf-reference" data-steadyflow-reference aria-label="AchoudiPost 首屏参考块">
@@ -102,43 +101,34 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     <section class="sf-achievements" id="sf-achievements" aria-labelledby="sfModulesHeading">
       <div class="sf-achievements-header sf-reveal">
         <div class="sf-achievements-title">
-          <p class="sf-section-kicker">MODULE MAP</p>
-          <h2 id="sfModulesHeading">先从这些实战模块进入</h2>
-        </div>
-        <div class="sf-avatar-strip">
-          <div class="sf-avatar-stack" aria-hidden="true">
-            {moduleTokens.map((token) => <span class="sf-module-token">{token}</span>)}
-            <div class="sf-avatar-count"><span data-sf-avatar-count data-sf-counts="6+,7+,8+,9+">6+</span></div>
-          </div>
-          <div class="sf-loved-copy">
-            <div class="sf-star-row" aria-hidden="true">★★★★★</div>
-            <span>点进去看详细内容</span>
-          </div>
+          <p class="sf-section-kicker">自主智能</p>
+          <h2 id="sfModulesHeading">以系统思维设计</h2>
+          <p class="sf-section-copy">
+            把生图、生视频、商品内容和私域成交整理成稳定模块。
+            从一个入口进入，再按场景继续深入。
+          </p>
         </div>
       </div>
 
-      <div class="sf-marquee-container sf-reveal">
-        <div class="sf-marquee-track">
-          {tripledModuleCards.map((card, index) => (
-            <a class="sf-achievement-card" href={card.href} data-portal-route aria-label={`查看 ${card.name}`}>
-              <img src={card.image} alt="" loading={index > 3 ? "lazy" : "eager"} />
-              <div class="sf-card-gradient"></div>
-              <div class="sf-card-content">
-                <div class="sf-card-person">
-                  <span>{card.name}</span>
-                  <span class="sf-card-dot">·</span>
-                  <span class="sf-card-job">{card.job}</span>
-                </div>
-                <div class="sf-card-result">
-                  <span class="sf-card-kicker">点击进入</span>
-                  <strong>{card.stat}</strong>
-                  <p>{card.description}</p>
-                </div>
-                <span class="sf-card-link-hint">查看详细内容 →</span>
+      <div class="sf-poster-grid sf-reveal">
+        {featuredModuleCards.map((card, index) => (
+          <a class="sf-poster-card" href={card.href} data-portal-route aria-label={`查看 ${card.name}`}>
+            <div class="sf-poster-meta" aria-hidden="true">
+              <span>▧ Image</span>
+              <span>720 × 960</span>
+            </div>
+            <div class="sf-poster-frame">
+              <img src={card.image} alt="" loading={index > 1 ? "lazy" : "eager"} />
+              <div class="sf-poster-shade"></div>
+              <div class="sf-poster-copy">
+                <span>{card.job}</span>
+                <strong>{card.name}</strong>
+                <p>{card.description}</p>
+                <em>查看详细内容</em>
               </div>
-            </a>
-          ))}
-        </div>
+            </div>
+          </a>
+        ))}
       </div>
     </section>
 
@@ -717,26 +707,38 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
 
   .sf-achievements {
     overflow: hidden;
-    padding-top: 110px;
+    min-height: 100svh;
+    padding: clamp(150px, 17vh, 190px) 30px 118px;
     background: var(--sf-page-bg);
     color: var(--sf-light);
   }
 
   .sf-achievements-header {
     display: flex;
-    max-width: 1260px;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 60px;
+    max-width: 760px;
+    align-items: center;
+    justify-content: center;
     margin: 0 auto;
-    padding: 0 30px;
+    text-align: center;
   }
 
   .sf-achievements-title {
-    flex: 0.7;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
-  .sf-achievements h2,
+  .sf-achievements h2 {
+    margin: 0;
+    color: rgba(247, 247, 241, 0.96);
+    font-family: var(--sf-serif-display);
+    font-size: clamp(46px, 4.1vw, 76px);
+    font-weight: 400;
+    letter-spacing: -0.045em;
+    line-height: 1.04;
+    text-wrap: balance;
+  }
+
   .sf-counter h2 {
     margin: 0;
     font-family: var(--sf-headline);
@@ -747,223 +749,124 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     text-wrap: balance;
   }
 
-  .sf-avatar-strip {
-    display: flex;
-    width: 320px;
-    flex: 0 0 320px;
-    align-items: center;
-    gap: 18px;
-  }
-
-  .sf-avatar-stack {
-    display: flex;
-    align-items: center;
-  }
-
-  .sf-avatar-stack img,
-  .sf-module-token,
-  .sf-avatar-count {
-    width: 40px;
-    height: 40px;
-    border: 2px solid var(--sf-page-bg);
-    border-radius: 50%;
-  }
-
-  .sf-avatar-stack img {
-    margin-left: -8px;
-    object-fit: cover;
-  }
-
-  .sf-avatar-stack img:first-child,
-  .sf-module-token:first-child {
-    margin-left: 0;
-  }
-
-  .sf-module-token {
-    display: grid;
-    margin-left: -8px;
-    place-items: center;
-    background: var(--sf-light);
-    color: var(--sf-ink);
-    font-family: var(--sf-headline);
-    font-size: 17px;
-  }
-
-  .sf-avatar-count {
-    position: relative;
-    z-index: 5;
-    display: grid;
-    margin-left: -8px;
-    place-items: center;
-    overflow: hidden;
-    background: var(--sf-surface-soft);
-    color: var(--sf-light);
-    font-size: 11px;
-  }
-
-  .sf-loved-copy {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 5px;
-  }
-
-  .sf-section-kicker,
-  .sf-card-kicker,
-  .sf-card-link-hint {
-    margin: 0;
-    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    font-weight: 850;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
   .sf-section-kicker {
-    margin-bottom: 14px;
-    color: rgba(247, 247, 241, 0.52);
-    font-size: 13px;
-  }
-
-  .sf-loved-copy img {
-    width: auto;
-    height: 16px;
-  }
-
-  .sf-star-row {
-    color: rgba(247, 247, 241, 0.78);
-    font-size: 16px;
-    line-height: 1;
-    letter-spacing: 1px;
-  }
-
-  .sf-loved-copy span {
-    color: var(--sf-muted);
+    margin: 0 0 14px;
+    color: rgba(247, 247, 241, 0.46);
     font-size: 18px;
-    white-space: nowrap;
+    line-height: 1.2;
   }
 
-  .sf-marquee-container {
-    width: 100%;
-    margin-top: 50px;
-    overflow: hidden;
-    cursor: ew-resize;
-  }
-
-  .sf-marquee-track {
-    display: flex;
-    width: max-content;
-    gap: 30px;
-    padding: 0 15px;
-    animation: sf-marquee 60s linear infinite;
-  }
-
-  .sf-marquee-container:hover .sf-marquee-track {
-    animation-play-state: paused;
-  }
-
-  @keyframes sf-marquee {
-    0% {
-      transform: translateX(0);
-    }
-
-    100% {
-      transform: translateX(-33.3333%);
-    }
-  }
-
-  .sf-achievement-card {
-    position: relative;
-    display: block;
-    width: 380px;
-    height: 480px;
-    flex: 0 0 auto;
-    overflow: hidden;
-    border-radius: 20px;
-    border: 1px solid rgba(247, 247, 241, 0.08);
-    background: var(--sf-surface);
-    color: var(--sf-light);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.26);
-  }
-
-  .sf-achievement-card > img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.6s ease;
-  }
-
-  .sf-achievement-card:hover > img {
-    transform: scale(1.025);
-  }
-
-  .sf-card-gradient {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(7, 8, 6, 0.96) 0%, rgba(7, 8, 6, 0.18) 48%, rgba(7, 8, 6, 0.96) 100%);
-    opacity: 0.86;
-  }
-
-  .sf-card-content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    height: 100%;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 40px;
-  }
-
-  .sf-card-person {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 7px;
-    font-size: 15px;
-  }
-
-  .sf-card-job {
-    color: rgba(247, 247, 241, 0.6);
-  }
-
-  .sf-card-dot {
-    color: rgba(255, 255, 255, 0.7);
-  }
-
-  .sf-card-result strong {
-    display: block;
-    margin-bottom: 8px;
-    font-family: var(--sf-headline);
-    font-size: 50px;
-    font-weight: 500;
-    letter-spacing: -0.04em;
-    line-height: 1;
-  }
-
-  .sf-card-kicker {
-    display: block;
-    margin-bottom: 12px;
-    color: rgba(255, 255, 255, 0.62);
-    font-size: 11px;
-  }
-
-  .sf-card-result p {
-    max-width: 285px;
-    margin: 0;
-    font-family: var(--sf-headline);
-    font-size: 24px;
-    line-height: 1.22;
+  .sf-section-copy {
+    max-width: 560px;
+    margin: 28px 0 0;
+    color: rgba(247, 247, 241, 0.62);
+    font-size: 20px;
+    line-height: 1.55;
     text-wrap: balance;
   }
 
-  .sf-card-link-hint {
-    position: absolute;
-    right: 34px;
-    bottom: 30px;
-    color: rgba(255, 255, 255, 0.72);
-    font-size: 11px;
+  .sf-poster-grid {
+    display: grid;
+    width: min(1260px, 100%);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+    margin: clamp(130px, 13vw, 190px) auto 0;
   }
+
+  .sf-poster-card {
+    display: block;
+    min-width: 0;
+    color: var(--sf-light);
+  }
+
+  .sf-poster-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+    color: rgba(247, 247, 241, 0.48);
+    font-size: 12px;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .sf-poster-frame {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background: var(--sf-surface);
+  }
+
+  .sf-poster-frame img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), filter 0.7s ease;
+  }
+
+  .sf-poster-card:hover .sf-poster-frame img {
+    filter: saturate(1.05) contrast(1.04);
+    transform: scale(1.035);
+  }
+
+  .sf-poster-shade {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(7, 8, 6, 0.04) 0%, rgba(7, 8, 6, 0.16) 48%, rgba(7, 8, 6, 0.78) 100%),
+      linear-gradient(0deg, rgba(7, 8, 6, 0.14), rgba(7, 8, 6, 0.14));
+    opacity: 0.9;
+    transition: opacity 0.35s ease;
+  }
+
+  .sf-poster-card:hover .sf-poster-shade {
+    opacity: 0.72;
+  }
+
+  .sf-poster-copy {
+    position: absolute;
+    right: 24px;
+    bottom: 22px;
+    left: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .sf-poster-copy span {
+    margin-bottom: 10px;
+    color: rgba(247, 247, 241, 0.62);
+    font-size: 13px;
+  }
+
+  .sf-poster-copy strong {
+    color: rgba(247, 247, 241, 0.96);
+    font-family: var(--sf-serif-display);
+    font-size: clamp(28px, 2.1vw, 40px);
+    font-weight: 400;
+    letter-spacing: -0.045em;
+    line-height: 1.08;
+    text-wrap: balance;
+  }
+
+  .sf-poster-copy p {
+    max-width: 260px;
+    margin: 12px 0 0;
+    color: rgba(247, 247, 241, 0.72);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .sf-poster-copy em {
+    margin-top: 22px;
+    color: rgba(247, 247, 241, 0.84);
+    font-size: 13px;
+    font-style: normal;
+  }
+
 
   .sf-counter {
     display: flex;
@@ -1309,28 +1212,31 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
     }
 
     .sf-achievements-header {
-      align-items: flex-start;
+      align-items: center;
       flex-direction: column;
-      gap: 28px;
+      gap: 0;
+      text-align: center;
     }
 
-    .sf-achievements-title,
-    .sf-avatar-strip {
+    .sf-achievements-title {
       width: 100%;
       flex: none;
     }
 
-    .sf-achievement-card {
-      width: 320px;
-      height: 450px;
+    .sf-section-copy {
+      font-size: 18px;
     }
 
-    .sf-card-content {
-      padding: 20px;
+    .sf-poster-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+      margin-top: 86px;
     }
 
-    .sf-card-result p {
-      max-width: 260px;
+    .sf-poster-copy {
+      right: 20px;
+      bottom: 20px;
+      left: 20px;
     }
 
     .sf-counter {
@@ -1461,21 +1367,28 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
       right: 18px;
     }
 
-    .sf-achievements-header {
-      padding: 0 20px;
-    }
-
     .sf-achievements h2,
     .sf-counter h2 {
       font-size: 38px;
     }
 
-    .sf-avatar-strip {
-      gap: 12px;
+    .sf-achievements h2 {
+      font-size: clamp(42px, 12vw, 56px);
     }
 
-    .sf-loved-copy span {
-      font-size: 16px;
+    .sf-poster-grid {
+      grid-template-columns: 1fr;
+      gap: 26px;
+      margin-top: 70px;
+    }
+
+    .sf-poster-card {
+      width: min(100%, 360px);
+      margin-inline: auto;
+    }
+
+    .sf-poster-copy strong {
+      font-size: 34px;
     }
 
     .sf-counter {
@@ -1566,8 +1479,5 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
       transform: scaleX(1);
     }
 
-    .sf-marquee-track {
-      animation-play-state: paused;
-    }
   }
 </style>
