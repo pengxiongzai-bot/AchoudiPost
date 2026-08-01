@@ -60,7 +60,15 @@ const moduleCards = [
 ];
 
 const featuredModuleCards = moduleCards.slice(0, 4);
-const heroMarqueeCards = [...moduleCards, ...moduleCards];
+const bespokeMarqueeImages = [
+  "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260725_120544_94be5de4-0f4f-494c-bb78-c532290040a6.png&w=1920&q=85",
+  "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260725_120601_5c6e4705-b992-4227-9dff-9b000351c283.png&w=1920&q=85",
+  "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260725_120619_7bc65416-a3d7-4e8c-9929-743f233378fe.png&w=1920&q=85",
+  "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260725_120627_b40a97b0-c5fa-408c-a77e-dc8fa44f8584.png&w=1920&q=85",
+  "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260725_120635_515cde41-2dc6-48ce-a236-088a5bc74ca8.png&w=1920&q=85",
+  "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260725_120645_5a1170c6-145b-477b-abd2-f8620acccd8d.png&w=1920&q=85"
+];
+const heroMarqueeImages = [...bespokeMarqueeImages, ...bespokeMarqueeImages];
 
 const impactStats = [
   { value: "生图框架", label: "商品主图、场景图、卖点图" },
@@ -97,21 +105,22 @@ const impactStats = [
         </div>
       </div>
 
-      <div class="sf-hero-marquee sf-rise" style="--delay: .66s" aria-label="电商 AI 实战模块预览">
-        <div class="sf-hero-marquee-track">
-          {heroMarqueeCards.map((card, index) => (
-            <a
-              class="sf-hero-marquee-card"
-              href={card.href}
-              data-portal-route
-              aria-label={`进入 ${card.name}`}
-              aria-hidden={index >= moduleCards.length ? "true" : undefined}
-              tabindex={index >= moduleCards.length ? "-1" : undefined}
-            >
-              <img src={card.image} alt="" loading={index > 2 ? "lazy" : "eager"} />
-              <span>{card.job}</span>
-              <strong>{card.name}</strong>
-            </a>
+      <div class="sf-hero-marquee sf-rise" style="--delay: .66s" aria-label="建筑参考图片轮播">
+        <div class="sf-marquee-curve sf-marquee-curve-top" aria-hidden="true">
+          <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
+            <path fill="white" d="M0 0H1440V50C1440 50 1200 100 720 100C240 100 0 50 0 50V0Z"></path>
+          </svg>
+        </div>
+        <div class="sf-marquee-curve sf-marquee-curve-bottom" aria-hidden="true">
+          <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
+            <path fill="white" d="M0 100H1440V50C1440 50 1200 0 720 0C240 0 0 50 0 50V100Z"></path>
+          </svg>
+        </div>
+        <div class="sf-hero-marquee-track" data-sf-hero-marquee-track>
+          {heroMarqueeImages.map((src, index) => (
+            <div class="sf-hero-marquee-card" aria-hidden={index >= bespokeMarqueeImages.length ? "true" : undefined}>
+              <img src={src} alt="" loading="lazy" draggable="false" />
+            </div>
           ))}
         </div>
       </div>
@@ -672,59 +681,60 @@ const impactStats = [
   .sf-hero-marquee {
     position: absolute;
     right: 0;
-    bottom: clamp(-82px, -5.4vw, -54px);
+    bottom: clamp(-88px, -5.8vw, -64px);
     left: 0;
     z-index: 0;
+    background: #fff;
     overflow: hidden;
-    padding: 8px 0 24px;
-    opacity: 0.9;
-    pointer-events: none;
-    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
-    mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
+    padding: 16px 0;
   }
 
-  .sf-hero-marquee::before,
-  .sf-hero-marquee::after {
-    content: "";
+  .sf-marquee-curve {
     position: absolute;
     right: 0;
     left: 0;
-    z-index: 2;
-    height: 62px;
+    z-index: 10;
+    height: 100px;
     pointer-events: none;
   }
 
-  .sf-hero-marquee::before {
-    top: 0;
-    background: linear-gradient(180deg, var(--sf-hero-bg) 0%, rgba(7, 8, 6, 0) 100%);
+  .sf-marquee-curve svg {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
 
-  .sf-hero-marquee::after {
+  .sf-marquee-curve-top {
+    top: 0;
+  }
+
+  .sf-marquee-curve-bottom {
     bottom: 0;
-    background: linear-gradient(0deg, var(--sf-hero-bg) 0%, rgba(7, 8, 6, 0) 100%);
   }
 
   .sf-hero-marquee-track {
     display: flex;
     width: max-content;
-    align-items: center;
-    gap: clamp(12px, 1.1vw, 18px);
+    gap: 16px;
+    padding: 16px 0;
+    user-select: none;
+    cursor: grab;
+    touch-action: none;
     will-change: transform;
-    animation: sf-hero-marquee-drift 54s linear infinite;
+  }
+
+  .sf-hero-marquee-track.sf-is-dragging {
+    cursor: grabbing;
   }
 
   .sf-hero-marquee-card {
     position: relative;
     display: block;
-    width: clamp(230px, 15.7vw, 320px);
-    aspect-ratio: 5 / 8;
+    width: 320px;
+    height: 512px;
     flex: 0 0 auto;
     overflow: hidden;
-    border: 0;
     border-radius: 16px;
-    background: rgba(247, 247, 241, 0.04);
-    box-shadow: none;
-    pointer-events: auto;
   }
 
   .sf-hero-marquee-card img {
@@ -732,41 +742,11 @@ const impactStats = [
     height: 100%;
     display: block;
     object-fit: cover;
-    filter: saturate(0.94) brightness(0.86) contrast(1.05);
-    transform: scale(1.01);
-  }
-
-  .sf-hero-marquee-card::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(180deg, rgba(7, 8, 6, 0.04) 0%, rgba(7, 8, 6, 0.04) 48%, rgba(7, 8, 6, 0.16) 100%),
-      linear-gradient(0deg, rgba(7, 8, 6, 0.04), rgba(7, 8, 6, 0.04));
-  }
-
-  .sf-hero-marquee-card span,
-  .sf-hero-marquee-card strong {
-    display: none;
-  }
-
-  .sf-hero-marquee-card:hover img {
-    filter: saturate(1) brightness(0.88) contrast(1.07);
-  }
-
-  @keyframes sf-hero-marquee-drift {
-    from {
-      transform: translate3d(0, 0, 0);
-    }
-
-    to {
-      transform: translate3d(-50%, 0, 0);
-    }
+    pointer-events: none;
   }
 
   @media (prefers-reduced-motion: reduce) {
     .sf-hero-marquee-track {
-      animation: none;
       transform: translate3d(-12%, 0, 0);
     }
   }
@@ -1308,12 +1288,12 @@ const impactStats = [
     }
 
     .sf-hero-marquee {
-      bottom: -52px;
-      opacity: 0.84;
+      bottom: -64px;
     }
 
     .sf-hero-marquee-card {
-      width: 250px;
+      width: 320px;
+      height: 512px;
       border-radius: 16px;
     }
 
@@ -1501,23 +1481,21 @@ const impactStats = [
 
     .sf-hero-marquee {
       bottom: -34px;
-      padding-top: 8px;
-      opacity: 0.78;
+      padding: 16px 0;
     }
 
-    .sf-hero-marquee::before,
-    .sf-hero-marquee::after {
-      height: 54px;
+    .sf-marquee-curve {
+      height: 80px;
     }
 
     .sf-hero-marquee-track {
       gap: 12px;
-      animation-duration: 42s;
     }
 
     .sf-hero-marquee-card {
-      width: 168px;
-      border-radius: 14px;
+      width: 240px;
+      height: 320px;
+      border-radius: 16px;
     }
 
     .sf-video-overlay {
