@@ -16,6 +16,7 @@
   --portal-action-border: #0b0b09;
   --portal-action-shadow: rgba(11, 11, 9, 0.18);
   --portal-signal: #97c731;
+  --portal-danger: #b42318;
   --portal-gold: var(--portal-muted);
   --portal-blue: var(--portal-muted);
   --portal-max: 1180px;
@@ -43,7 +44,8 @@
   --portal-action-text: #0b0b08;
   --portal-action-border: #f4f3ee;
   --portal-action-shadow: rgba(244, 243, 238, 0.16);
-  --portal-signal: #97c731;
+  --portal-signal: #f4f3ee;
+  --portal-danger: #f4f3ee;
   --portal-gold: var(--portal-muted);
   --portal-blue: var(--portal-muted);
   color-scheme: dark;
@@ -336,7 +338,7 @@ body:not([data-page="home"]) #portalContent {
 }
 
 .service-pulse[data-status="offline"] span {
-  background: #e17a71;
+  background: var(--portal-danger);
 }
 
 .service-pulse b {
@@ -1694,7 +1696,7 @@ body:not([data-page="home"]) #portalContent {
 }
 
 .form-error {
-  color: #ef8d84 !important;
+  color: var(--portal-danger) !important;
 }
 
 .affiliate-dashboard-head {
@@ -2164,6 +2166,7 @@ body:not([data-page="home"]) #portalContent {
 
 .portal-footer .portal-brand-mark::after {
   border-color: #0b0b08;
+  background: #f4f3ee;
 }
 
 .portal-footer-inner {
