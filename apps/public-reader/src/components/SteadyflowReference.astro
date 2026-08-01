@@ -104,8 +104,9 @@ const impactStats = [
           <p class="sf-section-kicker">自主智能</p>
           <h2 id="sfModulesHeading">以系统思维设计</h2>
           <p class="sf-section-copy">
-            把生图、生视频、商品内容和私域成交整理成稳定模块。
-            从一个入口进入，再按场景继续深入。
+            <span>设计决策，并非一座孤岛。</span>
+            <span>把生图、生视频、商品内容和私域成交统一成模块，</span>
+            <span>从第一眼，到每一次点击。</span>
           </p>
         </div>
       </div>
@@ -715,7 +716,7 @@ const impactStats = [
 
   .sf-achievements-header {
     display: flex;
-    max-width: 760px;
+    max-width: 680px;
     align-items: center;
     justify-content: center;
     margin: 0 auto;
@@ -732,10 +733,10 @@ const impactStats = [
     margin: 0;
     color: rgba(247, 247, 241, 0.96);
     font-family: var(--sf-serif-display);
-    font-size: clamp(46px, 4.1vw, 76px);
+    font-size: clamp(44px, 3.35vw, 64px);
     font-weight: 400;
-    letter-spacing: -0.045em;
-    line-height: 1.04;
+    letter-spacing: -0.04em;
+    line-height: 1.08;
     text-wrap: balance;
   }
 
@@ -750,19 +751,27 @@ const impactStats = [
   }
 
   .sf-section-kicker {
-    margin: 0 0 14px;
-    color: rgba(247, 247, 241, 0.46);
-    font-size: 18px;
+    margin: 0 0 16px;
+    color: rgba(247, 247, 241, 0.42);
+    font-size: 16px;
     line-height: 1.2;
   }
 
   .sf-section-copy {
-    max-width: 560px;
-    margin: 28px 0 0;
-    color: rgba(247, 247, 241, 0.62);
-    font-size: 20px;
-    line-height: 1.55;
+    display: flex;
+    max-width: 520px;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    margin: 30px 0 0;
+    color: rgba(247, 247, 241, 0.66);
+    font-size: 18px;
+    line-height: 1.48;
     text-wrap: balance;
+  }
+
+  .sf-section-copy span {
+    display: block;
   }
 
   .sf-poster-grid {
@@ -828,7 +837,7 @@ const impactStats = [
   .sf-poster-copy {
     position: absolute;
     right: 24px;
-    bottom: 22px;
+    bottom: 24px;
     left: 24px;
     display: flex;
     flex-direction: column;
@@ -837,33 +846,33 @@ const impactStats = [
   }
 
   .sf-poster-copy span {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     color: rgba(247, 247, 241, 0.62);
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .sf-poster-copy strong {
     color: rgba(247, 247, 241, 0.96);
     font-family: var(--sf-serif-display);
-    font-size: clamp(28px, 2.1vw, 40px);
+    font-size: clamp(24px, 1.72vw, 32px);
     font-weight: 400;
     letter-spacing: -0.045em;
-    line-height: 1.08;
+    line-height: 1.12;
     text-wrap: balance;
   }
 
   .sf-poster-copy p {
-    max-width: 260px;
-    margin: 12px 0 0;
-    color: rgba(247, 247, 241, 0.72);
-    font-size: 14px;
+    max-width: 230px;
+    margin: 10px 0 0;
+    color: rgba(247, 247, 241, 0.64);
+    font-size: 12px;
     line-height: 1.45;
   }
 
   .sf-poster-copy em {
-    margin-top: 22px;
+    margin-top: 16px;
     color: rgba(247, 247, 241, 0.84);
-    font-size: 13px;
+    font-size: 12px;
     font-style: normal;
   }
 
