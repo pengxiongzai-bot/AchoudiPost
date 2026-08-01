@@ -456,6 +456,7 @@ const impactStats = [
     --sf-hero-title-size: clamp(56px, min(4.2vw, 7.8svh), 80px);
     --sf-hero-title-width: min(920px, calc(100vw - 48px));
     --sf-hero-marquee-card-width: clamp(240px, min(15.65vw, 31.25svh), 320px);
+    --sf-hero-marquee-bottom: clamp(20px, 3svh, 34px);
     --sf-hero-marquee-radius: clamp(14px, 1vw, 16px);
     --sf-hero-curve-height: clamp(74px, 9.8svh, 100px);
     width: 100%;
@@ -688,7 +689,7 @@ const impactStats = [
   .sf-hero-marquee {
     position: absolute;
     right: 0;
-    bottom: 0;
+    bottom: var(--sf-hero-marquee-bottom);
     left: 0;
     z-index: 0;
     color: var(--sf-hero-bg);
@@ -1321,7 +1322,7 @@ const impactStats = [
     }
 
     .sf-hero-marquee {
-      bottom: 0;
+      bottom: var(--sf-hero-marquee-bottom);
     }
 
     .sf-hero-marquee-card {
@@ -1432,6 +1433,7 @@ const impactStats = [
       --sf-hero-title-size: clamp(34px, min(10.8vw, 6.3svh), 46px);
       --sf-hero-title-width: min(100%, calc(100vw - 32px));
       --sf-hero-marquee-card-width: clamp(190px, 58vw, 236px);
+      --sf-hero-marquee-bottom: 0px;
       --sf-hero-marquee-radius: 14px;
       --sf-hero-curve-height: clamp(56px, 8svh, 72px);
     }
@@ -1523,7 +1525,7 @@ const impactStats = [
     }
 
     .sf-hero-marquee {
-      bottom: 0;
+      bottom: var(--sf-hero-marquee-bottom);
       padding: 16px 0;
     }
 
