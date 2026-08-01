@@ -1,15 +1,6 @@
 ---
 import PortalShell from "../layouts/PortalShell.astro";
 import SteadyflowReference from "../components/SteadyflowReference.astro";
-import { articles, toPostListItem } from "../lib/articles";
-
-const initialPosts = articles.slice(0, 4).map(toPostListItem);
-const latest = initialPosts[0];
-const formatDate = (value: string) => new Intl.DateTimeFormat("zh-CN", {
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit"
-}).format(new Date(value));
 ---
 
 <PortalShell
@@ -18,50 +9,4 @@ const formatDate = (value: string) => new Intl.DateTimeFormat("zh-CN", {
   description="阿臭弟的小站，整理电商 AI 赋能框架、实战课程和长期更新的飞书知识库。"
 >
   <SteadyflowReference />
-
-  <section class="portal-hero" aria-labelledby="heroTitle">
-    <div class="hero-media" aria-hidden="true"></div>
-    <div class="hero-content portal-container">
-      <p class="eyebrow"><span></span> 电商 AI · 商业实战Skill · 飞书知识库</p>
-      <h1 id="heroTitle">阿臭弟的小站</h1>
-      <p class="hero-lead">这里整理我的电商 AI 赋能框架、实战课程和长期更新的飞书知识库。内容会围绕 AI 生图、生视频，以及不同商业场景下可直接复用的 Skill 框架慢慢展开。</p>
-      <div class="hero-actions">
-        <a class="button primary" href="/market/" data-portal-route>
-          <i data-lucide="sparkles"></i><span>进入AI实战库</span>
-        </a>
-        <a id="latestArticleLink" class="button secondary" href={latest ? `/articles/?post=${encodeURIComponent(latest.slug)}` : "/articles/"} data-portal-route>
-          <i data-lucide="book-open"></i><span>看最新文章</span>
-        </a>
-      </div>
-      <dl class="hero-stats" aria-label="站点统计">
-        <div><dt id="heroPostCount">{initialPosts.length}</dt><dd>篇文章</dd></div>
-        <div><dt id="heroViewCount">{initialPosts.reduce((sum, post) => sum + post.viewCount, 0)}</dt><dd>次阅读</dd></div>
-        <div><dt id="heroCommentCount">{initialPosts.reduce((sum, post) => sum + post.commentCount, 0)}</dt><dd>条讨论</dd></div>
-      </dl>
-    </div>
-  </section>
-
-  <section class="portal-section latest-section" aria-labelledby="latestHeading">
-    <div class="portal-container">
-      <div class="section-head">
-        <div><p class="section-kicker">Latest writing</p><h2 id="latestHeading">最近发布</h2></div>
-        <a class="text-link" href="/articles/">查看全部 <i data-lucide="arrow-right"></i></a>
-      </div>
-      <div id="portalPostGrid" class="post-card-grid" data-limit="4">
-        {
-          initialPosts.map((post, index) => (
-            <article class:list={["post-card", { featured: index === 0 }]}>
-              <a href={`/articles/?post=${encodeURIComponent(post.slug)}`} data-portal-route aria-label={`阅读 ${post.title}`}>
-                <div class="post-card-topline"><span>{index === 0 ? "最新文章" : "文章"}</span><time datetime={post.createdAt}>{formatDate(post.createdAt)}</time></div>
-                <h3>{post.title}</h3>
-                <p>{post.excerpt || "打开文章，继续阅读完整内容。"}</p>
-                <div class="post-card-meta"><span>{post.viewCount} 阅读</span><span>{post.commentCount} 评论</span><i data-lucide="arrow-up-right"></i></div>
-              </a>
-            </article>
-          ))
-        }
-      </div>
-    </div>
-  </section>
-
 </PortalShell>

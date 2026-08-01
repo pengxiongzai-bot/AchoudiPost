@@ -1,6 +1,8 @@
 ---
 const heroVideo =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260728_015819_1b3ec855-d586-4018-96c8-8bf90cada037.mp4";
+const counterVideo =
+  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260625_213350_6343fcfb-2892-4dcc-8573-1161447cacf5.mp4";
 
 const moduleTokens = ["图", "视", "流"];
 
@@ -75,6 +77,12 @@ const days = [
   { label: "流", height: 18, active: false },
   { label: "课", height: 10, active: false },
   { label: "更", height: 10, active: false }
+];
+
+const impactStats = [
+  { value: "生图框架", label: "商品主图、场景图、卖点图" },
+  { value: "生视频框架", label: "短视频开头、镜头转场、产品展示" },
+  { value: "成交流程", label: "内容种草、私域承接、交付路径" }
 ];
 
 const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
@@ -287,6 +295,35 @@ const tripledModuleCards = [...moduleCards, ...moduleCards, ...moduleCards];
                 <span class="sf-card-link-hint">查看详细内容 →</span>
               </div>
             </a>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="sf-counter sf-reveal" id="sf-counter" aria-labelledby="sfCounterHeading">
+      <div class="sf-counter-copy">
+        <div class="sf-counter-pill">Skill Library</div>
+        <h2 id="sfCounterHeading">一个电商 AI 实战框架，会比一堆零散提示词更有用</h2>
+        <strong class="sf-giant-number">3+</strong>
+        <p>核心实战方向正在持续沉淀</p>
+      </div>
+
+      <div class="sf-counter-visual">
+        <div class="sf-earth-stage">
+          <div class="sf-counter-video-frame">
+            <video src={counterVideo} autoplay muted loop playsinline aria-hidden="true"></video>
+            <div class="sf-counter-fade"></div>
+            <div class="sf-cloud-overlay" aria-hidden="true"></div>
+          </div>
+          <div class="sf-blur-slab"></div>
+        </div>
+
+        <div class="sf-impact-stats" aria-label="AchoudiPost 实战方向">
+          {impactStats.map((stat) => (
+            <div class="sf-impact-stat">
+              <strong>{stat.value}</strong>
+              <p>{stat.label}</p>
+            </div>
           ))}
         </div>
       </div>
