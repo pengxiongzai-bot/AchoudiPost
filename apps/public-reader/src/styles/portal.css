@@ -2402,19 +2402,9 @@ body:not([data-page="home"]) #portalContent {
 
   .site-header-inner {
     width: 100%;
-    max-width: none;
+    max-width: 360px;
     min-height: var(--portal-floating-nav-height);
     padding: 10px;
-  }
-
-  .site-header .header-actions {
-    display: none;
-  }
-
-  .site-header .portal-icon-button {
-    width: 44px;
-    height: 44px;
-    border-radius: 13px;
   }
 
   .portal-brand-copy small {
