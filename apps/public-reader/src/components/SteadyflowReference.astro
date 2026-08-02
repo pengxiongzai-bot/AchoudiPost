@@ -1158,9 +1158,19 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     align-items: center;
   }
 
+  .sf-counter .sf-section-kicker,
+  .sf-counter h2,
+  .sf-counter .sf-section-copy span,
+  .sf-counter .sf-ai-preview-card,
+  .sf-counter .sf-ai-prompt-card {
+    opacity: 0;
+    will-change: opacity, transform, filter;
+  }
+
   .sf-counter .sf-section-kicker {
     margin-bottom: 16px;
     color: rgba(247, 247, 241, 0.36);
+    transform: translateY(14px);
   }
 
   .sf-counter h2 {
@@ -1173,12 +1183,18 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     letter-spacing: -0.055em;
     line-height: 1.08;
     text-wrap: balance;
+    transform: translateY(20px);
   }
 
   .sf-counter .sf-section-copy {
     margin-top: 28px;
     color: rgba(247, 247, 241, 0.64);
     font-size: 16px;
+  }
+
+  .sf-counter .sf-section-copy span {
+    display: block;
+    transform: translateY(12px);
   }
 
   .sf-ai-workbench {
@@ -1193,6 +1209,7 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
   .sf-ai-preview-card {
     width: min(360px, 64vw);
     margin: 0;
+    transform: translateY(30px) scale(0.985);
   }
 
   .sf-ai-media-label {
@@ -1253,12 +1270,41 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     gap: 20px;
     margin-top: -34px;
     padding: 18px 20px;
+    overflow: hidden;
     border: 1px solid rgba(247, 247, 241, 0.13);
     border-radius: 22px;
     background: rgba(18, 18, 15, 0.86);
     box-shadow: 0 26px 80px rgba(0, 0, 0, 0.35);
     text-align: left;
+    transform: translateY(34px) scale(0.94);
     backdrop-filter: blur(20px);
+    transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease;
+    will-change: opacity, transform;
+  }
+
+  .sf-ai-prompt-card::before {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 0%, rgba(247, 247, 241, 0.16) 44%, transparent 68%);
+    content: "";
+    opacity: 0;
+    transform: translateX(-120%);
+    pointer-events: none;
+  }
+
+  .sf-ai-prompt-card::after {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 1px 0 rgba(247, 247, 241, 0.12);
+    content: "";
+    pointer-events: none;
+  }
+
+  .sf-ai-prompt-card:hover {
+    border-color: rgba(247, 247, 241, 0.24);
+    box-shadow: 0 30px 96px rgba(0, 0, 0, 0.42), 0 0 34px rgba(247, 247, 241, 0.08);
+    transform: translateY(-3px) scale(1);
   }
 
   .sf-ai-prompt-main {
@@ -1332,6 +1378,152 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     color: var(--sf-counter-bg);
     font-size: 20px;
     font-weight: 900;
+  }
+
+  .sf-counter.sf-in-view .sf-section-kicker {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    animation: sfContactFadeLift 0.52s cubic-bezier(0.22, 1, 0.36, 1) 0.08s backwards;
+  }
+
+  .sf-counter.sf-in-view h2 {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    animation: sfContactTitleIn 0.82s cubic-bezier(0.18, 1, 0.32, 1) 0.18s backwards;
+  }
+
+  .sf-counter.sf-in-view .sf-section-copy span:first-child {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    animation: sfContactFadeLift 0.52s cubic-bezier(0.22, 1, 0.36, 1) 0.62s backwards;
+  }
+
+  .sf-counter.sf-in-view .sf-section-copy span:last-child {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    animation: sfContactFadeLift 0.52s cubic-bezier(0.22, 1, 0.36, 1) 0.76s backwards;
+  }
+
+  .sf-counter.sf-in-view .sf-ai-preview-card {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    animation: sfContactPreviewIn 0.78s cubic-bezier(0.2, 1, 0.28, 1) 0.96s backwards;
+  }
+
+  .sf-counter.sf-in-view .sf-ai-prompt-card {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    animation: sfContactPromptPop 0.68s cubic-bezier(0.16, 1.24, 0.32, 1) 1.26s backwards;
+  }
+
+  .sf-counter.sf-in-view .sf-ai-prompt-card::before {
+    animation: sfContactSweep 1.05s ease 1.68s both;
+  }
+
+  .sf-counter.sf-in-view .sf-ai-send-icon {
+    animation: sfContactSendPulse 1.8s ease 2s infinite;
+  }
+
+  @keyframes sfContactFadeLift {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+      filter: blur(6px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: none;
+    }
+  }
+
+  @keyframes sfContactTitleIn {
+    from {
+      opacity: 0;
+      transform: translateY(22px);
+      filter: blur(10px);
+    }
+
+    58% {
+      opacity: 0.72;
+      filter: blur(2px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: none;
+    }
+  }
+
+  @keyframes sfContactPreviewIn {
+    from {
+      opacity: 0;
+      transform: translateY(32px) scale(0.985);
+      filter: blur(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: none;
+    }
+  }
+
+  @keyframes sfContactPromptPop {
+    from {
+      opacity: 0;
+      transform: translateY(34px) scale(0.94);
+      filter: blur(12px);
+    }
+
+    72% {
+      opacity: 1;
+      transform: translateY(-4px) scale(1.012);
+      filter: none;
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: none;
+    }
+  }
+
+  @keyframes sfContactSweep {
+    0% {
+      opacity: 0;
+      transform: translateX(-120%);
+    }
+
+    18% {
+      opacity: 1;
+    }
+
+    100% {
+      opacity: 0;
+      transform: translateX(120%);
+    }
+  }
+
+  @keyframes sfContactSendPulse {
+    0%,
+    100% {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    50% {
+      transform: translateY(-2px);
+      box-shadow: 0 0 18px rgba(247, 247, 241, 0.18);
+    }
   }
 
   .sf-reveal {
@@ -1764,11 +1956,29 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     .sf-title-rule,
     .sf-title-text::before,
     .sf-title-text::after,
-    .sf-reveal {
+    .sf-reveal,
+    .sf-counter .sf-section-kicker,
+    .sf-counter h2,
+    .sf-counter .sf-section-copy span,
+    .sf-counter .sf-ai-preview-card,
+    .sf-counter .sf-ai-prompt-card,
+    .sf-ai-prompt-card:hover,
+    .sf-counter.sf-in-view .sf-section-kicker,
+    .sf-counter.sf-in-view h2,
+    .sf-counter.sf-in-view .sf-section-copy span,
+    .sf-counter.sf-in-view .sf-ai-preview-card,
+    .sf-counter.sf-in-view .sf-ai-prompt-card,
+    .sf-counter.sf-in-view .sf-ai-send-icon {
       animation: none;
       opacity: 1;
       transform: none;
       transition: none;
+      filter: none;
+      will-change: auto;
+    }
+
+    .sf-ai-prompt-card::before {
+      display: none;
     }
 
     .sf-title-text {
