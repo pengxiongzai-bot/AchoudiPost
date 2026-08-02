@@ -1185,7 +1185,8 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
   .sf-ai-workbench {
     position: relative;
     display: grid;
-    width: min(560px, 100%);
+    width: min(640px, 100%);
+    grid-template-columns: minmax(0, 1fr);
     justify-items: center;
     margin-top: clamp(90px, 9vw, 132px);
   }
@@ -1247,7 +1248,8 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     position: relative;
     z-index: 3;
     display: grid;
-    width: min(640px, calc(100vw - 48px));
+    width: 100%;
+    justify-self: center;
     grid-template-rows: auto auto;
     gap: 20px;
     margin-top: -34px;
@@ -1551,7 +1553,7 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     }
 
     .sf-ai-prompt-card {
-      width: min(520px, calc(100vw - 36px));
+      width: min(520px, 100%);
     }
   }
 
