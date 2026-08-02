@@ -18,6 +18,7 @@
     const imagePreviewClose = root.querySelector(".sf-image-preview-close");
     const imagePreviewCloseButtons = root.querySelectorAll("[data-sf-image-preview-close]");
     const imagePreviewTriggers = root.querySelectorAll("[data-sf-image-preview-trigger]");
+    const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     let lastFocusedPreviewTrigger = null;
 
     const setScrolled = () => {
@@ -161,6 +162,100 @@
       { threshold: 0.35 }
     );
     if (counter) countObserver.observe(counter);
+
+    const replaySections = [
+      { element: root.querySelector(".sf-hero"), interval: 10000, duration: 2600, threshold: 0.42 },
+      { element: root.querySelector(".sf-achievements"), interval: 11000, duration: 2600, threshold: 0.34 },
+      { element: root.querySelector(".sf-counter"), interval: 12000, duration: 3000, threshold: 0.34 }
+    ]
+      .filter((item) => item.element)
+      .map((item) => {
+        let isActive = false;
+        let intervalId = null;
+        let timeoutId = null;
+
+        const removePulse = () => {
+          window.clearTimeout(timeoutId);
+          timeoutId = null;
+          item.element.classList.remove("sf-replay-pulse");
+        };
+
+        const play = () => {
+          if (!isActive || document.hidden || reducedMotionQuery.matches) return;
+
+          item.element.classList.remove("sf-replay-pulse");
+          void item.element.offsetWidth;
+          item.element.classList.add("sf-replay-pulse");
+          window.clearTimeout(timeoutId);
+          timeoutId = window.setTimeout(removePulse, item.duration);
+        };
+
+        const start = () => {
+          isActive = true;
+          if (intervalId || reducedMotionQuery.matches) return;
+          intervalId = window.setInterval(play, item.interval);
+        };
+
+        const stop = () => {
+          isActive = false;
+          window.clearInterval(intervalId);
+          intervalId = null;
+          removePulse();
+        };
+
+        const pause = () => {
+          window.clearInterval(intervalId);
+          intervalId = null;
+          removePulse();
+        };
+
+        const resume = () => {
+          if (!isActive || intervalId || reducedMotionQuery.matches) return;
+          intervalId = window.setInterval(play, item.interval);
+        };
+
+        return { ...item, start, stop, pause, resume };
+      });
+
+    if (replaySections.length && !reducedMotionQuery.matches) {
+      const replayObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            const replayItem = replaySections.find((item) => item.element === entry.target);
+            if (!replayItem) return;
+
+            if (entry.isIntersecting && entry.intersectionRatio >= replayItem.threshold) {
+              replayItem.start();
+            } else {
+              replayItem.stop();
+            }
+          });
+        },
+        { rootMargin: "-8% 0px -8% 0px", threshold: [0, 0.25, 0.35, 0.45, 0.6] }
+      );
+
+      replaySections.forEach((item) => replayObserver.observe(item.element));
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          replaySections.forEach((item) => item.pause());
+        } else {
+          replaySections.forEach((item) => item.resume());
+        }
+      });
+
+      reducedMotionQuery.addEventListener?.("change", () => {
+        if (reducedMotionQuery.matches) {
+          replaySections.forEach((item) => item.stop());
+          replayObserver.disconnect();
+        }
+      });
+
+      window.addEventListener("pagehide", () => {
+        replaySections.forEach((item) => item.stop());
+        replayObserver.disconnect();
+      });
+    }
 
     if (marqueeTrack) {
       const speed = 0.8;

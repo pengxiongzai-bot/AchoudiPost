@@ -613,13 +613,51 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     -webkit-background-clip: text;
     background-clip: text;
     opacity: 0;
-    animation: sf-title-shimmer 4.8s calc(var(--line-delay, 0s) + 1.35s) ease-in-out infinite;
+    animation: sf-title-shimmer 4.8s calc(var(--line-delay, 0s) + 1.35s) ease-in-out both;
+  }
+
+  .sf-hero.sf-replay-pulse .sf-kinetic-line {
+    animation: sf-replay-title-line-rise 0.72s var(--line-delay, 0s) cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .sf-hero.sf-replay-pulse .sf-title-rule {
+    animation: sf-replay-title-rule-in 1.05s calc(var(--line-delay, 0s) + 0.16s) cubic-bezier(0.65, 0, 0.35, 1) both;
+  }
+
+  .sf-hero.sf-replay-pulse .sf-title-text::before {
+    animation: sf-replay-title-clip-in 1.16s calc(var(--line-delay, 0s) + 0.08s) cubic-bezier(0.65, 0, 0.35, 1) both;
+  }
+
+  .sf-hero.sf-replay-pulse .sf-title-text::after {
+    animation: sf-replay-title-shimmer 2.4s calc(var(--line-delay, 0s) + 0.92s) ease-in-out both;
+  }
+
+  .sf-hero.sf-replay-pulse .sf-hero-ctas {
+    animation: sf-replay-soft-lift 0.58s 1.08s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .sf-hero.sf-replay-pulse .sf-hero-marquee {
+    animation: sf-replay-marquee-breathe 1.4s 0.48s ease both;
   }
 
   @keyframes sf-title-line-rise {
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  @keyframes sf-replay-title-line-rise {
+    from {
+      opacity: 0.18;
+      transform: translateY(14px);
+      filter: blur(4px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: none;
     }
   }
 
@@ -637,6 +675,20 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     }
   }
 
+  @keyframes sf-replay-title-clip-in {
+    0% {
+      clip-path: inset(0 100% 0 0);
+    }
+
+    58% {
+      clip-path: inset(0 20% 0 0);
+    }
+
+    100% {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
   @keyframes sf-title-rule-in {
     0% {
       opacity: 0;
@@ -644,6 +696,22 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     }
 
     22% {
+      opacity: 1;
+    }
+
+    100% {
+      opacity: 0.72;
+      transform: scaleX(1);
+    }
+  }
+
+  @keyframes sf-replay-title-rule-in {
+    0% {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+
+    24% {
       opacity: 1;
     }
 
@@ -672,6 +740,51 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     100% {
       opacity: 0;
       background-position: -60% 0;
+    }
+  }
+
+  @keyframes sf-replay-title-shimmer {
+    0%,
+    22% {
+      opacity: 0;
+      background-position: 150% 0;
+    }
+
+    46% {
+      opacity: 0.62;
+    }
+
+    72%,
+    100% {
+      opacity: 0;
+      background-position: -60% 0;
+    }
+  }
+
+  @keyframes sf-replay-soft-lift {
+    from {
+      opacity: 0.22;
+      transform: translateY(12px);
+      filter: blur(6px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: none;
+    }
+  }
+
+  @keyframes sf-replay-marquee-breathe {
+    0%,
+    100% {
+      opacity: 1;
+      filter: none;
+    }
+
+    38% {
+      opacity: 0.78;
+      filter: brightness(1.06);
     }
   }
 
@@ -1134,6 +1247,79 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     font-style: normal;
   }
 
+  .sf-achievements.sf-replay-pulse .sf-section-kicker {
+    animation: sf-replay-soft-lift 0.52s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .sf-achievements.sf-replay-pulse h2 {
+    animation: sf-replay-section-title 0.78s 0.12s cubic-bezier(0.18, 1, 0.32, 1) both;
+  }
+
+  .sf-achievements.sf-replay-pulse .sf-section-copy span:nth-child(1) {
+    animation: sf-replay-soft-lift 0.52s 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .sf-achievements.sf-replay-pulse .sf-section-copy span:nth-child(2) {
+    animation: sf-replay-soft-lift 0.52s 0.58s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .sf-achievements.sf-replay-pulse .sf-section-copy span:nth-child(3) {
+    animation: sf-replay-soft-lift 0.52s 0.68s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .sf-achievements.sf-replay-pulse .sf-poster-card {
+    animation: sf-replay-card-rise 0.72s cubic-bezier(0.18, 1, 0.32, 1) both;
+  }
+
+  .sf-achievements.sf-replay-pulse .sf-poster-card:nth-child(1) {
+    animation-delay: 0.82s;
+  }
+
+  .sf-achievements.sf-replay-pulse .sf-poster-card:nth-child(2) {
+    animation-delay: 0.92s;
+  }
+
+  .sf-achievements.sf-replay-pulse .sf-poster-card:nth-child(3) {
+    animation-delay: 1.02s;
+  }
+
+  .sf-achievements.sf-replay-pulse .sf-poster-card:nth-child(4) {
+    animation-delay: 1.12s;
+  }
+
+  @keyframes sf-replay-section-title {
+    from {
+      opacity: 0.22;
+      transform: translateY(18px);
+      filter: blur(8px);
+    }
+
+    62% {
+      opacity: 0.8;
+      filter: blur(2px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: none;
+    }
+  }
+
+  @keyframes sf-replay-card-rise {
+    from {
+      opacity: 0.34;
+      transform: translateY(20px) scale(0.985);
+      filter: blur(8px) brightness(0.86);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: none;
+    }
+  }
+
 
   .sf-counter {
     display: flex;
@@ -1427,7 +1613,39 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
   }
 
   .sf-counter.sf-in-view .sf-ai-send-icon {
-    animation: sfContactSendPulse 1.8s ease 2s infinite;
+    animation: sfContactSendPulse 1.8s ease 2s 2;
+  }
+
+  .sf-counter.sf-in-view.sf-replay-pulse .sf-section-kicker {
+    animation: sfContactFadeLift 0.52s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+  }
+
+  .sf-counter.sf-in-view.sf-replay-pulse h2 {
+    animation: sfContactTitleIn 0.82s cubic-bezier(0.18, 1, 0.32, 1) 0.18s both;
+  }
+
+  .sf-counter.sf-in-view.sf-replay-pulse .sf-section-copy span:first-child {
+    animation: sfContactFadeLift 0.52s cubic-bezier(0.22, 1, 0.36, 1) 0.62s both;
+  }
+
+  .sf-counter.sf-in-view.sf-replay-pulse .sf-section-copy span:last-child {
+    animation: sfContactFadeLift 0.52s cubic-bezier(0.22, 1, 0.36, 1) 0.76s both;
+  }
+
+  .sf-counter.sf-in-view.sf-replay-pulse .sf-ai-preview-card {
+    animation: sfContactPreviewIn 0.78s cubic-bezier(0.2, 1, 0.28, 1) 0.96s both;
+  }
+
+  .sf-counter.sf-in-view.sf-replay-pulse .sf-ai-prompt-card {
+    animation: sfContactPromptPop 0.68s cubic-bezier(0.16, 1.24, 0.32, 1) 1.26s both;
+  }
+
+  .sf-counter.sf-in-view.sf-replay-pulse .sf-ai-prompt-card::before {
+    animation: sfContactSweep 1.05s ease 1.68s both;
+  }
+
+  .sf-counter.sf-in-view.sf-replay-pulse .sf-ai-send-icon {
+    animation: sfContactSendPulse 1.8s ease 2s 2;
   }
 
   @keyframes sfContactFadeLift {
@@ -1956,7 +2174,17 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     .sf-title-rule,
     .sf-title-text::before,
     .sf-title-text::after,
+    .sf-hero.sf-replay-pulse .sf-kinetic-line,
+    .sf-hero.sf-replay-pulse .sf-title-rule,
+    .sf-hero.sf-replay-pulse .sf-title-text::before,
+    .sf-hero.sf-replay-pulse .sf-title-text::after,
+    .sf-hero.sf-replay-pulse .sf-hero-ctas,
+    .sf-hero.sf-replay-pulse .sf-hero-marquee,
     .sf-reveal,
+    .sf-achievements.sf-replay-pulse .sf-section-kicker,
+    .sf-achievements.sf-replay-pulse h2,
+    .sf-achievements.sf-replay-pulse .sf-section-copy span,
+    .sf-achievements.sf-replay-pulse .sf-poster-card,
     .sf-counter .sf-section-kicker,
     .sf-counter h2,
     .sf-counter .sf-section-copy span,
@@ -1968,7 +2196,13 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     .sf-counter.sf-in-view .sf-section-copy span,
     .sf-counter.sf-in-view .sf-ai-preview-card,
     .sf-counter.sf-in-view .sf-ai-prompt-card,
-    .sf-counter.sf-in-view .sf-ai-send-icon {
+    .sf-counter.sf-in-view .sf-ai-send-icon,
+    .sf-counter.sf-in-view.sf-replay-pulse .sf-section-kicker,
+    .sf-counter.sf-in-view.sf-replay-pulse h2,
+    .sf-counter.sf-in-view.sf-replay-pulse .sf-section-copy span,
+    .sf-counter.sf-in-view.sf-replay-pulse .sf-ai-preview-card,
+    .sf-counter.sf-in-view.sf-replay-pulse .sf-ai-prompt-card,
+    .sf-counter.sf-in-view.sf-replay-pulse .sf-ai-send-icon {
       animation: none;
       opacity: 1;
       transform: none;
