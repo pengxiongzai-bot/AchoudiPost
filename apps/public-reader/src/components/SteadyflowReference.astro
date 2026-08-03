@@ -475,10 +475,10 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     --sf-hero-content-gap: clamp(34px, 5svh, 52px);
     --sf-hero-title-size: clamp(56px, min(4.2vw, 7.8svh), 80px);
     --sf-hero-title-width: min(920px, calc(100vw - 48px));
-    --sf-hero-marquee-card-width: clamp(240px, min(15.65vw, 31.25svh), 320px);
-    --sf-hero-marquee-bottom: clamp(20px, 3svh, 34px);
+    --sf-hero-marquee-card-width: clamp(260px, min(18vw, 36svh), 380px);
+    --sf-hero-marquee-bottom: clamp(10px, 2svh, 24px);
     --sf-hero-marquee-radius: clamp(14px, 1vw, 16px);
-    --sf-hero-curve-height: clamp(74px, 9.8svh, 100px);
+    --sf-hero-curve-height: clamp(28px, 4.2svh, 44px);
     width: 100%;
     min-height: 100svh;
     justify-content: center;
@@ -831,7 +831,7 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     z-index: 0;
     color: var(--sf-hero-bg);
     overflow: hidden;
-    padding: 16px 0;
+    padding: 0;
     background: transparent;
     -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 3.5%, #000 96.5%, transparent 100%);
     mask-image: linear-gradient(90deg, transparent 0%, #000 3.5%, #000 96.5%, transparent 100%);
@@ -842,7 +842,6 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     right: 0;
     left: 0;
     z-index: 10;
-    display: none;
     height: var(--sf-hero-curve-height);
     pointer-events: none;
   }
@@ -865,7 +864,7 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     display: flex;
     width: max-content;
     gap: 16px;
-    padding: 16px 0;
+    padding: calc(var(--sf-hero-curve-height) * 0.7) 0;
     user-select: none;
     cursor: grab;
     touch-action: none;
@@ -951,8 +950,8 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
       --sf-hero-content-top: clamp(98px, 14.5svh, 112px);
       --sf-hero-content-gap: 32px;
       --sf-hero-title-size: clamp(50px, min(3.9vw, 7.2svh), 66px);
-      --sf-hero-marquee-card-width: clamp(216px, min(14vw, 29svh), 280px);
-      --sf-hero-curve-height: 72px;
+      --sf-hero-marquee-card-width: clamp(236px, min(16vw, 34svh), 330px);
+      --sf-hero-curve-height: 34px;
     }
 
     .sf-hero-ctas {
@@ -1762,8 +1761,8 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
       --sf-hero-content-gap: clamp(30px, 4.6svh, 44px);
       --sf-hero-title-size: clamp(44px, min(5.8vw, 7svh), 58px);
       --sf-hero-title-width: min(760px, calc(100vw - 42px));
-      --sf-hero-marquee-card-width: clamp(230px, min(30vw, 31svh), 300px);
-      --sf-hero-curve-height: clamp(66px, 8.8svh, 88px);
+      --sf-hero-marquee-card-width: clamp(250px, min(34vw, 34svh), 340px);
+      --sf-hero-curve-height: clamp(30px, 4.6svh, 38px);
     }
 
     .sf-navbar-wrap {
@@ -1973,10 +1972,10 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
       --sf-hero-content-gap: clamp(28px, 4.8svh, 40px);
       --sf-hero-title-size: clamp(34px, min(10.8vw, 6.3svh), 46px);
       --sf-hero-title-width: min(100%, calc(100vw - 32px));
-      --sf-hero-marquee-card-width: clamp(190px, 58vw, 236px);
+      --sf-hero-marquee-card-width: clamp(210px, 72vw, 280px);
       --sf-hero-marquee-bottom: 0px;
       --sf-hero-marquee-radius: 14px;
-      --sf-hero-curve-height: clamp(56px, 8svh, 72px);
+      --sf-hero-curve-height: clamp(24px, 4.6svh, 32px);
     }
 
     .sf-navbar-wrap {
