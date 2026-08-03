@@ -164,14 +164,13 @@
     if (counter) countObserver.observe(counter);
 
     const replaySections = [
-      { element: root.querySelector(".sf-hero"), interval: 10000, duration: 2600, threshold: 0.42 },
-      { element: root.querySelector(".sf-achievements"), interval: 11000, duration: 2600, threshold: 0.34 },
-      { element: root.querySelector(".sf-counter"), interval: 12000, duration: 3000, threshold: 0.34 }
+      { element: root.querySelector(".sf-hero"), duration: 2600, threshold: 0.42 },
+      { element: root.querySelector(".sf-achievements"), duration: 2600, threshold: 0.34 },
+      { element: root.querySelector(".sf-counter"), duration: 3000, threshold: 0.34 }
     ]
       .filter((item) => item.element)
       .map((item) => {
         let isActive = false;
-        let intervalId = null;
         let timeoutId = null;
 
         const removePulse = () => {
@@ -190,31 +189,27 @@
           timeoutId = window.setTimeout(removePulse, item.duration);
         };
 
-        const start = () => {
+        const enter = () => {
+          if (isActive) return;
           isActive = true;
-          if (intervalId || reducedMotionQuery.matches) return;
-          intervalId = window.setInterval(play, item.interval);
+          play();
         };
 
-        const stop = () => {
+        const leave = () => {
           isActive = false;
-          window.clearInterval(intervalId);
-          intervalId = null;
           removePulse();
         };
 
         const pause = () => {
-          window.clearInterval(intervalId);
-          intervalId = null;
           removePulse();
         };
 
-        const resume = () => {
-          if (!isActive || intervalId || reducedMotionQuery.matches) return;
-          intervalId = window.setInterval(play, item.interval);
+        const replayIfActive = () => {
+          if (!isActive) return;
+          play();
         };
 
-        return { ...item, start, stop, pause, resume };
+        return { ...item, enter, leave, pause, replayIfActive };
       });
 
     if (replaySections.length && !reducedMotionQuery.matches) {
@@ -225,9 +220,9 @@
             if (!replayItem) return;
 
             if (entry.isIntersecting && entry.intersectionRatio >= replayItem.threshold) {
-              replayItem.start();
+              replayItem.enter();
             } else {
-              replayItem.stop();
+              replayItem.leave();
             }
           });
         },
@@ -240,19 +235,19 @@
         if (document.hidden) {
           replaySections.forEach((item) => item.pause());
         } else {
-          replaySections.forEach((item) => item.resume());
+          replaySections.forEach((item) => item.replayIfActive());
         }
       });
 
       reducedMotionQuery.addEventListener?.("change", () => {
         if (reducedMotionQuery.matches) {
-          replaySections.forEach((item) => item.stop());
+          replaySections.forEach((item) => item.leave());
           replayObserver.disconnect();
         }
       });
 
       window.addEventListener("pagehide", () => {
-        replaySections.forEach((item) => item.stop());
+        replaySections.forEach((item) => item.leave());
         replayObserver.disconnect();
       });
     }
