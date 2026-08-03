@@ -609,14 +609,7 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
 
   .sf-title-text::after {
     z-index: 2;
-    color: transparent;
-    background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, 0) 28%, rgba(255, 255, 255, 0.86) 50%, rgba(255, 255, 255, 0) 72%, transparent 100%);
-    background-size: 210% 100%;
-    background-position: 150% 0;
-    -webkit-background-clip: text;
-    background-clip: text;
-    opacity: 0;
-    animation: sf-title-shimmer 4.8s calc(var(--line-delay, 0s) + 1.35s) ease-in-out both;
+    display: none;
   }
 
   .sf-hero.sf-replay-pulse .sf-kinetic-line {
@@ -631,12 +624,29 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     animation: sf-replay-title-clip-in 1.16s calc(var(--line-delay, 0s) + 0.08s) cubic-bezier(0.65, 0, 0.35, 1) both;
   }
 
-  .sf-hero.sf-replay-pulse .sf-title-text::after {
-    animation: sf-replay-title-shimmer 2.4s calc(var(--line-delay, 0s) + 0.92s) ease-in-out both;
+  .sf-hero.sf-hero-ready .sf-rise {
+    opacity: 1;
+    transform: none;
+    animation: none;
+    filter: none;
   }
 
-  .sf-hero.sf-replay-pulse .sf-hero-ctas {
-    animation: sf-replay-soft-lift 0.58s 1.08s cubic-bezier(0.22, 1, 0.36, 1) both;
+  .sf-hero.sf-hero-ready:not(.sf-replay-pulse) .sf-kinetic-line {
+    opacity: 1;
+    transform: none;
+    animation: none;
+    filter: none;
+  }
+
+  .sf-hero.sf-hero-ready:not(.sf-replay-pulse) .sf-title-rule {
+    opacity: 0.72;
+    transform: scaleX(1);
+    animation: none;
+  }
+
+  .sf-hero.sf-hero-ready:not(.sf-replay-pulse) .sf-title-text::before {
+    clip-path: inset(0 0 0 0);
+    animation: none;
   }
 
   @keyframes sf-title-line-rise {
@@ -717,46 +727,6 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     100% {
       opacity: 0.72;
       transform: scaleX(1);
-    }
-  }
-
-  @keyframes sf-title-shimmer {
-    0%,
-    56% {
-      opacity: 0;
-      background-position: 150% 0;
-    }
-
-    64% {
-      opacity: 0.55;
-    }
-
-    76% {
-      opacity: 0;
-      background-position: -60% 0;
-    }
-
-    100% {
-      opacity: 0;
-      background-position: -60% 0;
-    }
-  }
-
-  @keyframes sf-replay-title-shimmer {
-    0%,
-    22% {
-      opacity: 0;
-      background-position: 150% 0;
-    }
-
-    46% {
-      opacity: 0.62;
-    }
-
-    72%,
-    100% {
-      opacity: 0;
-      background-position: -60% 0;
     }
   }
 
@@ -1613,6 +1583,22 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
 
   .sf-counter.sf-in-view .sf-ai-send-icon {
     animation: sfContactSendPulse 1.8s ease 2s 2;
+  }
+
+  .sf-counter.sf-in-view.sf-replay-ready:not(.sf-replay-pulse) .sf-section-kicker,
+  .sf-counter.sf-in-view.sf-replay-ready:not(.sf-replay-pulse) h2,
+  .sf-counter.sf-in-view.sf-replay-ready:not(.sf-replay-pulse) .sf-section-copy span,
+  .sf-counter.sf-in-view.sf-replay-ready:not(.sf-replay-pulse) .sf-ai-preview-card,
+  .sf-counter.sf-in-view.sf-replay-ready:not(.sf-replay-pulse) .sf-ai-prompt-card,
+  .sf-counter.sf-in-view.sf-replay-ready:not(.sf-replay-pulse) .sf-ai-send-icon {
+    opacity: 1;
+    transform: none;
+    animation: none;
+    filter: none;
+  }
+
+  .sf-counter.sf-in-view.sf-replay-ready:not(.sf-replay-pulse) .sf-ai-prompt-card::before {
+    animation: none;
   }
 
   .sf-counter.sf-in-view.sf-replay-pulse .sf-section-kicker {

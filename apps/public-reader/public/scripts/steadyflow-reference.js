@@ -154,7 +154,6 @@
 
     const isCompactViewport = () => window.matchMedia("(max-width: 640px)").matches;
     const replaySections = [
-      { element: hero, duration: 2600, threshold: () => (isCompactViewport() ? 0.42 : 0.5), replayOnReenterOnly: true },
       { element: root.querySelector(".sf-achievements"), duration: 2600, threshold: () => (isCompactViewport() ? 0.18 : 0.34) },
       { element: root.querySelector(".sf-counter"), duration: 3000, threshold: () => (isCompactViewport() ? 0.2 : 0.34) }
     ]
@@ -162,17 +161,18 @@
       .map((item) => {
         let isActive = false;
         let timeoutId = null;
-        let canReplay = !item.replayOnReenterOnly;
 
         const removePulse = () => {
           window.clearTimeout(timeoutId);
           timeoutId = null;
+          item.element.classList.add("sf-replay-ready");
           item.element.classList.remove("sf-replay-pulse");
         };
 
         const play = () => {
           if (!isActive || document.hidden || reducedMotionQuery.matches) return;
 
+          item.element.classList.add("sf-replay-ready");
           item.element.classList.remove("sf-replay-pulse");
           void item.element.offsetWidth;
           item.element.classList.add("sf-replay-pulse");
@@ -183,13 +183,11 @@
         const enter = () => {
           if (isActive) return;
           isActive = true;
-          if (!canReplay) return;
           play();
         };
 
         const leave = () => {
           isActive = false;
-          canReplay = true;
           removePulse();
         };
 
@@ -237,6 +235,82 @@
       window.addEventListener("pagehide", () => {
         replaySections.forEach((item) => item.leave());
         replayObserver.disconnect();
+      });
+    }
+
+    if (hero && !reducedMotionQuery.matches) {
+      let heroReplayArmed = false;
+      let heroReplayTicking = false;
+      let heroReplayTimeoutId = null;
+      let heroReadyTimeoutId = null;
+      let lastHeroReplayAt = 0;
+
+      const markHeroReady = () => {
+        window.clearTimeout(heroReadyTimeoutId);
+        heroReadyTimeoutId = null;
+        hero.classList.add("sf-hero-ready");
+      };
+
+      const clearHeroReplay = () => {
+        window.clearTimeout(heroReplayTimeoutId);
+        heroReplayTimeoutId = null;
+        hero.classList.remove("sf-replay-pulse");
+      };
+
+      const playHeroReplay = () => {
+        const now = performance.now();
+        if (document.hidden || now - lastHeroReplayAt < 1400) return;
+
+        lastHeroReplayAt = now;
+        heroReplayArmed = false;
+        markHeroReady();
+        hero.classList.remove("sf-replay-pulse");
+        void hero.offsetWidth;
+        hero.classList.add("sf-replay-pulse");
+        window.clearTimeout(heroReplayTimeoutId);
+        heroReplayTimeoutId = window.setTimeout(clearHeroReplay, 2200);
+      };
+
+      const updateHeroReplay = () => {
+        heroReplayTicking = false;
+
+        const heroTop = hero.getBoundingClientRect().top + window.scrollY;
+        const heroHeight = Math.max(hero.offsetHeight, window.innerHeight || document.documentElement.clientHeight);
+        const progress = window.scrollY - heroTop;
+        const leaveDistance = heroHeight * (isCompactViewport() ? 0.5 : 0.58);
+        const returnDistance = heroHeight * (isCompactViewport() ? 0.14 : 0.12);
+
+        if (progress > leaveDistance) {
+          heroReplayArmed = true;
+          clearHeroReplay();
+          return;
+        }
+
+        if (heroReplayArmed && progress <= returnDistance) {
+          playHeroReplay();
+        }
+      };
+
+      const requestHeroReplayUpdate = () => {
+        if (heroReplayTicking) return;
+        heroReplayTicking = true;
+        window.requestAnimationFrame(updateHeroReplay);
+      };
+
+      updateHeroReplay();
+      heroReadyTimeoutId = window.setTimeout(markHeroReady, 2200);
+      window.addEventListener("scroll", requestHeroReplayUpdate, { passive: true });
+      window.addEventListener("resize", requestHeroReplayUpdate, { passive: true });
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) clearHeroReplay();
+      });
+      window.addEventListener("pagehide", () => {
+        window.clearTimeout(heroReadyTimeoutId);
+        clearHeroReplay();
+      });
+
+      reducedMotionQuery.addEventListener?.("change", () => {
+        if (reducedMotionQuery.matches) clearHeroReplay();
       });
     }
 
