@@ -12,6 +12,7 @@
     const videoOpen = root.querySelector("[data-sf-video-open]");
     const videoClose = root.querySelector("[data-sf-video-close]");
     const demoUrl = "https://www.youtube.com/embed/b-jRHsYdomY?autoplay=0&mute=1";
+    const hero = root.querySelector(".sf-hero");
     const marqueeTrack = root.querySelector("[data-sf-hero-marquee-track]");
     const imagePreviewOverlay = root.querySelector("[data-sf-image-preview-overlay]");
     const imagePreviewImage = root.querySelector("[data-sf-image-preview-image]");
@@ -112,18 +113,7 @@
       }
     });
 
-    if (avatarCount) {
-      const counts = avatarCount.dataset.sfCounts?.split(",").map((count) => count.trim()).filter(Boolean) ?? ["51+", "52+", "53+", "54+"];
-      let index = 0;
-      window.setInterval(() => {
-        index = (index + 1) % counts.length;
-        avatarCount.textContent = counts[index];
-        avatarCount.animate(
-          [{ opacity: 0, transform: "scale(.65)" }, { opacity: 1, transform: "scale(1)" }],
-          { duration: 450, easing: "cubic-bezier(.25,.46,.45,.94)" }
-        );
-      }, 2000);
-    }
+    if (avatarCount) avatarCount.textContent = avatarCount.dataset.sfCounts?.split(",")[0]?.trim() || avatarCount.textContent;
 
     const revealObserver = new IntersectionObserver(
       (entries) => {
@@ -164,6 +154,7 @@
 
     const isCompactViewport = () => window.matchMedia("(max-width: 640px)").matches;
     const replaySections = [
+      { element: hero, duration: 2600, threshold: () => (isCompactViewport() ? 0.42 : 0.5), replayOnReenterOnly: true },
       { element: root.querySelector(".sf-achievements"), duration: 2600, threshold: () => (isCompactViewport() ? 0.18 : 0.34) },
       { element: root.querySelector(".sf-counter"), duration: 3000, threshold: () => (isCompactViewport() ? 0.2 : 0.34) }
     ]
@@ -171,6 +162,7 @@
       .map((item) => {
         let isActive = false;
         let timeoutId = null;
+        let canReplay = !item.replayOnReenterOnly;
 
         const removePulse = () => {
           window.clearTimeout(timeoutId);
@@ -191,11 +183,13 @@
         const enter = () => {
           if (isActive) return;
           isActive = true;
+          if (!canReplay) return;
           play();
         };
 
         const leave = () => {
           isActive = false;
+          canReplay = true;
           removePulse();
         };
 
@@ -203,12 +197,7 @@
           removePulse();
         };
 
-        const replayIfActive = () => {
-          if (!isActive) return;
-          play();
-        };
-
-        return { ...item, enter, leave, pause, replayIfActive };
+        return { ...item, enter, leave, pause };
       });
 
     if (replaySections.length && !reducedMotionQuery.matches) {
@@ -235,8 +224,6 @@
       document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
           replaySections.forEach((item) => item.pause());
-        } else {
-          replaySections.forEach((item) => item.replayIfActive());
         }
       });
 
@@ -254,137 +241,28 @@
     }
 
     if (marqueeTrack) {
-      const speed = 0.8;
-      let frameId = null;
-      let offset = 0;
-      let velocity = 0;
-      let isDragging = false;
-      let dragStartX = 0;
-      let dragStartY = 0;
-      let dragDistance = 0;
-      let dragStartOffset = 0;
-      let lastX = 0;
-      let lastTime = 0;
-      let activePointerId = null;
-      let activePreviewTrigger = null;
-
-      const getLoopWidth = () => {
+      const syncMarqueeLoop = () => {
         const cards = [...marqueeTrack.querySelectorAll("[data-sf-image-preview-trigger]")];
         const firstCard = cards[0];
         const firstDuplicateCard = cards.find((card, index) => index > 0 && card.getAttribute("aria-hidden") === "true") || cards[Math.floor(cards.length / 2)];
 
         if (firstCard && firstDuplicateCard) {
           const loopWidth = firstDuplicateCard.offsetLeft - firstCard.offsetLeft;
-          if (loopWidth > 0) return loopWidth;
-        }
-
-        return marqueeTrack.scrollWidth / 2;
-      };
-
-      const wrapOffset = (value) => {
-        const loopWidth = getLoopWidth();
-        if (!loopWidth) return value;
-
-        let next = value;
-        while (next <= -loopWidth) next += loopWidth;
-        while (next > 0) next -= loopWidth;
-        return next;
-      };
-
-      const paint = () => {
-        marqueeTrack.style.transform = `translate3d(${offset}px, 0, 0)`;
-      };
-
-      const setOffset = (value, adjustDragStart = false) => {
-        const wrapped = wrapOffset(value);
-        if (adjustDragStart && wrapped !== value) {
-          dragStartOffset += wrapped - value;
-        }
-
-        offset = wrapped;
-        paint();
-      };
-
-      const animate = () => {
-        if (!isDragging) {
-          if (Math.abs(velocity) > 0.1) {
-            setOffset(offset + velocity);
-            velocity *= 0.95;
-          } else {
-            velocity = 0;
-            setOffset(offset - speed);
+          if (loopWidth > 0) {
+            const duration = Math.min(54, Math.max(34, loopWidth / 42));
+            marqueeTrack.style.setProperty("--sf-hero-marquee-loop-distance", `-${loopWidth}px`);
+            marqueeTrack.style.setProperty("--sf-hero-marquee-duration", `${duration.toFixed(2)}s`);
           }
-        } else {
-          setOffset(offset, true);
-        }
-
-        frameId = window.requestAnimationFrame(animate);
-      };
-
-      const handlePointerDown = (event) => {
-        if (event.button !== 0) return;
-        event.preventDefault();
-        isDragging = true;
-        activePointerId = event.pointerId;
-        velocity = 0;
-        dragStartX = event.clientX;
-        dragStartY = event.clientY;
-        dragDistance = 0;
-        dragStartOffset = offset;
-        lastX = event.clientX;
-        lastTime = event.timeStamp;
-        activePreviewTrigger = event.target instanceof Element ? event.target.closest("[data-sf-image-preview-trigger]") : null;
-        marqueeTrack.classList.add("sf-is-dragging");
-        marqueeTrack.setPointerCapture?.(event.pointerId);
-      };
-
-      const handlePointerMove = (event) => {
-        if (!isDragging || activePointerId !== event.pointerId) return;
-
-        event.preventDefault();
-        const dx = event.clientX - lastX;
-        const dt = Math.max(event.timeStamp - lastTime, 1);
-        velocity = (dx / dt) * 16;
-        lastX = event.clientX;
-        lastTime = event.timeStamp;
-        dragDistance = Math.max(
-          dragDistance,
-          Math.abs(event.clientX - dragStartX),
-          Math.abs(event.clientY - dragStartY)
-        );
-        setOffset(dragStartOffset + (event.clientX - dragStartX), true);
-      };
-
-      const stopDragging = (event) => {
-        if (!isDragging || activePointerId !== event.pointerId) return;
-
-        const wasTap = dragDistance < 8 && Math.abs(event.clientX - dragStartX) < 8 && Math.abs(event.clientY - dragStartY) < 8;
-        const targetAtPoint = document.elementFromPoint(event.clientX, event.clientY);
-        const previewTrigger = activePreviewTrigger || targetAtPoint?.closest?.("[data-sf-image-preview-trigger]");
-
-        isDragging = false;
-        activePointerId = null;
-        activePreviewTrigger = null;
-        marqueeTrack.classList.remove("sf-is-dragging");
-
-        if (marqueeTrack.hasPointerCapture?.(event.pointerId)) {
-          marqueeTrack.releasePointerCapture(event.pointerId);
-        }
-
-        if (wasTap && previewTrigger) {
-          openImagePreview(previewTrigger);
         }
       };
 
-      frameId = window.requestAnimationFrame(animate);
-      window.addEventListener("pagehide", () => {
-        if (frameId !== null) window.cancelAnimationFrame(frameId);
+      syncMarqueeLoop();
+      window.addEventListener("resize", syncMarqueeLoop, { passive: true });
+      window.addEventListener("load", syncMarqueeLoop, { once: true });
+      root.querySelectorAll(".sf-hero-marquee-card img").forEach((image) => {
+        if (image.complete) return;
+        image.addEventListener("load", syncMarqueeLoop, { once: true });
       });
-      window.addEventListener("resize", () => setOffset(offset));
-      marqueeTrack.addEventListener("pointerdown", handlePointerDown);
-      marqueeTrack.addEventListener("pointermove", handlePointerMove);
-      marqueeTrack.addEventListener("pointerup", stopDragging);
-      marqueeTrack.addEventListener("pointercancel", stopDragging);
     }
 
     setScrolled();

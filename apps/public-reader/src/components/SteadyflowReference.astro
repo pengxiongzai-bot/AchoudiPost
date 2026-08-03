@@ -479,6 +479,8 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     --sf-hero-marquee-bottom: clamp(10px, 2svh, 24px);
     --sf-hero-marquee-radius: clamp(14px, 1vw, 16px);
     --sf-hero-curve-height: clamp(26px, 4svh, 40px);
+    --sf-hero-marquee-loop-distance: -50%;
+    --sf-hero-marquee-duration: 42s;
     width: 100%;
     min-height: 100svh;
     justify-content: center;
@@ -637,10 +639,6 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     animation: sf-replay-soft-lift 0.58s 1.08s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
-  .sf-hero.sf-replay-pulse .sf-hero-marquee {
-    animation: sf-replay-marquee-breathe 1.4s 0.48s ease both;
-  }
-
   @keyframes sf-title-line-rise {
     to {
       opacity: 1;
@@ -776,19 +774,6 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     }
   }
 
-  @keyframes sf-replay-marquee-breathe {
-    0%,
-    100% {
-      opacity: 1;
-      filter: none;
-    }
-
-    38% {
-      opacity: 0.78;
-      filter: brightness(1.06);
-    }
-  }
-
   .sf-hero-subtitle {
     max-width: 500px;
     color: rgba(247, 247, 241, 0.78);
@@ -867,13 +852,23 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     gap: 16px;
     padding: calc(var(--sf-hero-curve-height) * 0.7) 0;
     user-select: none;
-    cursor: grab;
-    touch-action: none;
+    touch-action: manipulation;
+    animation: sf-hero-marquee-scroll var(--sf-hero-marquee-duration) linear infinite;
     will-change: transform;
   }
 
   .sf-hero-marquee-track.sf-is-dragging {
     cursor: grabbing;
+  }
+
+  @keyframes sf-hero-marquee-scroll {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+
+    to {
+      transform: translate3d(var(--sf-hero-marquee-loop-distance), 0, 0);
+    }
   }
 
   .sf-hero-marquee-card {
@@ -942,6 +937,7 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
 
   @media (prefers-reduced-motion: reduce) {
     .sf-hero-marquee-track {
+      animation: none;
       transform: translate3d(-12%, 0, 0);
     }
   }
@@ -2182,7 +2178,7 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     .sf-hero.sf-replay-pulse .sf-title-text::before,
     .sf-hero.sf-replay-pulse .sf-title-text::after,
     .sf-hero.sf-replay-pulse .sf-hero-ctas,
-    .sf-hero.sf-replay-pulse .sf-hero-marquee,
+    .sf-hero-marquee-track,
     .sf-reveal,
     .sf-achievements.sf-replay-pulse .sf-section-kicker,
     .sf-achievements.sf-replay-pulse h2,
