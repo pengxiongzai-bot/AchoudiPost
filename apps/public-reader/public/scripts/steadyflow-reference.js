@@ -268,15 +268,26 @@
       let activePointerId = null;
       let activePreviewTrigger = null;
 
-      const getHalfWidth = () => marqueeTrack.scrollWidth / 2;
+      const getLoopWidth = () => {
+        const cards = [...marqueeTrack.querySelectorAll("[data-sf-image-preview-trigger]")];
+        const firstCard = cards[0];
+        const firstDuplicateCard = cards.find((card, index) => index > 0 && card.getAttribute("aria-hidden") === "true") || cards[Math.floor(cards.length / 2)];
+
+        if (firstCard && firstDuplicateCard) {
+          const loopWidth = firstDuplicateCard.offsetLeft - firstCard.offsetLeft;
+          if (loopWidth > 0) return loopWidth;
+        }
+
+        return marqueeTrack.scrollWidth / 2;
+      };
 
       const wrapOffset = (value) => {
-        const halfWidth = getHalfWidth();
-        if (!halfWidth) return value;
+        const loopWidth = getLoopWidth();
+        if (!loopWidth) return value;
 
         let next = value;
-        if (next <= -halfWidth) next += halfWidth;
-        if (next > 0) next -= halfWidth;
+        while (next <= -loopWidth) next += loopWidth;
+        while (next > 0) next -= loopWidth;
         return next;
       };
 
