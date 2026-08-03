@@ -163,9 +163,10 @@
     );
     if (counter) countObserver.observe(counter);
 
+    const isCompactViewport = () => window.matchMedia("(max-width: 640px)").matches;
     const replaySections = [
-      { element: root.querySelector(".sf-achievements"), duration: 2600, threshold: 0.34 },
-      { element: root.querySelector(".sf-counter"), duration: 3000, threshold: 0.34 }
+      { element: root.querySelector(".sf-achievements"), duration: 2600, threshold: () => (isCompactViewport() ? 0.18 : 0.34) },
+      { element: root.querySelector(".sf-counter"), duration: 3000, threshold: () => (isCompactViewport() ? 0.2 : 0.34) }
     ]
       .filter((item) => item.element)
       .map((item) => {
@@ -218,14 +219,16 @@
             const replayItem = replaySections.find((item) => item.element === entry.target);
             if (!replayItem) return;
 
-            if (entry.isIntersecting && entry.intersectionRatio >= replayItem.threshold) {
+            const threshold = typeof replayItem.threshold === "function" ? replayItem.threshold() : replayItem.threshold;
+
+            if (entry.isIntersecting && entry.intersectionRatio >= threshold) {
               replayItem.enter();
             } else {
               replayItem.leave();
             }
           });
         },
-        { rootMargin: "-8% 0px -8% 0px", threshold: [0, 0.25, 0.35, 0.45, 0.6] }
+        { rootMargin: "-8% 0px -8% 0px", threshold: [0, 0.12, 0.18, 0.25, 0.34, 0.45, 0.6] }
       );
 
       replaySections.forEach((item) => replayObserver.observe(item.element));
