@@ -842,6 +842,7 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     right: 0;
     left: 0;
     z-index: 10;
+    display: none;
     height: var(--sf-hero-curve-height);
     pointer-events: none;
   }
@@ -885,7 +886,7 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     overflow: hidden;
     border: 0;
     border-radius: var(--sf-hero-marquee-radius);
-    background: transparent;
+    background: rgba(255, 255, 255, 0.02);
     cursor: zoom-in;
     appearance: none;
   }
@@ -894,9 +895,9 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     width: 100%;
     height: 100%;
     display: block;
-    object-fit: cover;
+    object-fit: contain;
     pointer-events: none;
-    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), filter 0.5s ease;
+    transition: filter 0.5s ease;
   }
 
   .sf-hero-marquee-card::after {
@@ -921,7 +922,6 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
   }
 
   .sf-hero-marquee-card:hover img {
-    transform: scale(1.035);
     filter: brightness(1.06);
   }
 
