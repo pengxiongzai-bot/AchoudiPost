@@ -99,7 +99,6 @@
     imagePreviewCloseButtons.forEach((button) => button.addEventListener("click", closeImagePreview));
     imagePreviewTriggers.forEach((trigger) => {
       trigger.addEventListener("click", (event) => {
-        if (event.detail !== 0) return;
         event.preventDefault();
         openImagePreview(trigger, { focusClose: true });
       });
