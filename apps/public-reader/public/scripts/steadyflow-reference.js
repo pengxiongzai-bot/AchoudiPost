@@ -164,7 +164,6 @@
     if (counter) countObserver.observe(counter);
 
     const replaySections = [
-      { element: root.querySelector(".sf-hero"), duration: 2600, threshold: 0.42 },
       { element: root.querySelector(".sf-achievements"), duration: 2600, threshold: 0.34 },
       { element: root.querySelector(".sf-counter"), duration: 3000, threshold: 0.34 }
     ]
