@@ -271,11 +271,8 @@ function bindRouteNavigation() {
     if (destination.origin !== location.origin) return;
     addLockedReferral(destination);
     event.preventDefault();
-    if (isSameRoute(destination) && destination.hash) {
-      history.pushState({}, "", `${destination.pathname}${destination.search}${destination.hash}`);
-      updateActiveNavigation(destination.pathname, destination.hash);
-      setPrimaryNavigation(false);
-      scrollToHash(destination.hash);
+    if (isSameRoute(destination)) {
+      navigateWithinCurrentRoute(destination, true);
       return;
     }
     void loadRoute(destination, true);
@@ -298,12 +295,7 @@ function bindRouteNavigation() {
 async function loadRoute(destination: URL, push: boolean) {
   if (routeLoading) return;
   if (push && isSameRoute(destination)) {
-    if (destination.hash) {
-      history.pushState({}, "", `${destination.pathname}${destination.search}${destination.hash}`);
-      updateActiveNavigation(destination.pathname, destination.hash);
-      setPrimaryNavigation(false);
-      scrollToHash(destination.hash);
-    }
+    navigateWithinCurrentRoute(destination, true);
     return;
   }
   const content = document.querySelector<HTMLElement>("#portalContent");
@@ -345,6 +337,19 @@ async function loadRoute(destination: URL, push: boolean) {
 
 function isSameRoute(destination: URL) {
   return destination.pathname === location.pathname && destination.search === location.search;
+}
+
+function navigateWithinCurrentRoute(destination: URL, push: boolean) {
+  const nextLocation = `${destination.pathname}${destination.search}${destination.hash}`;
+  const currentLocation = `${location.pathname}${location.search}${location.hash}`;
+  if (nextLocation !== currentLocation) {
+    if (push) history.pushState({}, "", nextLocation);
+    else history.replaceState(history.state, "", nextLocation);
+  }
+  updateActiveNavigation(destination.pathname, destination.hash);
+  setPrimaryNavigation(false);
+  if (destination.hash) scrollToHash(destination.hash);
+  else window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function scrollToHash(hash: string) {
