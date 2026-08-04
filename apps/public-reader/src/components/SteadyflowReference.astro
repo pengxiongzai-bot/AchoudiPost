@@ -67,6 +67,7 @@ const bespokeMarqueeImages = [
 ];
 const heroMarqueeImages = [...bespokeMarqueeImages, ...bespokeMarqueeImages];
 const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
+const wechatQrImage = "/images/wechat-qr-yunx0723.jpg";
 
 ---
 
@@ -196,10 +197,10 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
             </span>
             <p>YunX0723&nbsp;&nbsp;备注：AIGC电商业务沟通</p>
           </div>
-          <div class="sf-ai-prompt-actions" aria-hidden="true">
-            <span class="sf-ai-soft-icon">⌘</span>
-            <span class="sf-ai-soft-icon">◇</span>
-            <span class="sf-ai-send-icon">↑</span>
+          <div class="sf-ai-prompt-actions">
+            <span class="sf-ai-soft-icon" aria-hidden="true">⌘</span>
+            <span class="sf-ai-soft-icon" aria-hidden="true">◇</span>
+            <button class="sf-ai-send-icon" type="button" data-sf-qr-open aria-label="打开微信二维码">↑</button>
           </div>
         </div>
       </div>
@@ -217,9 +218,24 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
       <img data-sf-image-preview-image alt="" />
     </figure>
   </div>
+
+  <div class="sf-qr-overlay" data-sf-qr-overlay hidden role="dialog" aria-modal="true" aria-label="微信二维码">
+    <button class="sf-qr-backdrop" type="button" data-sf-qr-close aria-label="关闭微信二维码"></button>
+    <figure class="sf-qr-panel">
+      <button class="sf-modal-close sf-qr-close" type="button" data-sf-qr-close aria-label="关闭微信二维码">
+        <span></span>
+        <span></span>
+      </button>
+      <img src={wechatQrImage} alt="微信二维码，微信号 YunX0723，备注 AIGC电商业务沟通" loading="lazy" />
+      <figcaption>
+        <strong>微信联系：YunX0723</strong>
+        <span>备注：AIGC电商业务沟通</span>
+      </figcaption>
+    </figure>
+  </div>
 </section>
 
-<script is:inline type="module" src="/scripts/steadyflow-reference.js"></script>
+<script is:inline type="module" src="/scripts/steadyflow-reference.js?v=20260804-qr"></script>
 
 <style>
   @import url("https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@500&family=Noto+Serif+SC:wght@400;500&display=swap");
@@ -943,6 +959,7 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
 
   .sf-video-overlay[hidden],
   .sf-image-preview-overlay[hidden],
+  .sf-qr-overlay[hidden],
   .sf-mobile-menu-backdrop[hidden] {
     display: none;
   }
@@ -1035,6 +1052,73 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     top: clamp(18px, 3vw, 34px);
     right: clamp(18px, 3vw, 34px);
     z-index: 2;
+  }
+
+  .sf-qr-overlay {
+    position: fixed;
+    z-index: 130;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: clamp(20px, 4vw, 56px);
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(20px);
+  }
+
+  .sf-qr-backdrop {
+    position: absolute;
+    inset: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .sf-qr-panel {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    width: min(420px, calc(100vw - 40px));
+    gap: 18px;
+    justify-items: center;
+    margin: 0;
+    padding: clamp(18px, 3vw, 26px);
+    border: 1px solid rgba(247, 247, 241, 0.16);
+    border-radius: 26px;
+    background: rgba(247, 247, 241, 0.98);
+    box-shadow: 0 34px 110px rgba(0, 0, 0, 0.58);
+    color: rgb(10, 11, 9);
+    text-align: center;
+    transform-origin: center;
+    animation: sf-preview-pop 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .sf-qr-panel img {
+    display: block;
+    width: 100%;
+    max-height: min(70svh, 535px);
+    object-fit: contain;
+    border-radius: 18px;
+  }
+
+  .sf-qr-panel figcaption {
+    display: grid;
+    gap: 6px;
+    color: rgba(10, 11, 9, 0.72);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .sf-qr-panel figcaption strong {
+    color: rgb(10, 11, 9);
+    font-size: 17px;
+    font-weight: 850;
+  }
+
+  .sf-qr-close {
+    top: 14px;
+    right: 14px;
+    background: rgba(10, 11, 9, 0.08);
   }
 
   @keyframes sf-preview-pop {
@@ -1534,10 +1618,28 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
     width: 38px;
     height: 38px;
     margin-left: auto;
+    padding: 0;
+    border: 0;
+    appearance: none;
     background: rgba(247, 247, 241, 0.96);
     color: var(--sf-counter-bg);
+    cursor: pointer;
     font-size: 20px;
     font-weight: 900;
+    font-family: inherit;
+    transition: transform 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
+  }
+
+  .sf-ai-send-icon:hover,
+  .sf-ai-send-icon:focus-visible {
+    background: #ffffff;
+    box-shadow: 0 0 0 6px rgba(247, 247, 241, 0.08), 0 12px 28px rgba(0, 0, 0, 0.28);
+    transform: translateY(-2px);
+  }
+
+  .sf-ai-send-icon:focus-visible {
+    outline: 2px solid rgba(247, 247, 241, 0.92);
+    outline-offset: 4px;
   }
 
   .sf-counter.sf-in-view .sf-section-kicker {

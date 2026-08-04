@@ -19,8 +19,13 @@
     const imagePreviewClose = root.querySelector(".sf-image-preview-close");
     const imagePreviewCloseButtons = root.querySelectorAll("[data-sf-image-preview-close]");
     const imagePreviewTriggers = root.querySelectorAll("[data-sf-image-preview-trigger]");
+    const qrOverlay = root.querySelector("[data-sf-qr-overlay]");
+    const qrOpen = root.querySelector("[data-sf-qr-open]");
+    const qrClose = root.querySelector(".sf-qr-close");
+    const qrCloseButtons = root.querySelectorAll("[data-sf-qr-close]");
     const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     let lastFocusedPreviewTrigger = null;
+    let lastFocusedQrTrigger = null;
 
     const setScrolled = () => {
       const top = root.getBoundingClientRect().top + window.scrollY;
@@ -71,6 +76,37 @@
       if (event.target === videoOverlay) closeVideo();
     });
 
+    const closeQr = () => {
+      if (!qrOverlay) return;
+      qrOverlay.hidden = true;
+      document.body.style.overflow = "";
+
+      if (lastFocusedQrTrigger instanceof HTMLElement) {
+        lastFocusedQrTrigger.focus({ preventScroll: true });
+      }
+      lastFocusedQrTrigger = null;
+    };
+
+    const openQr = () => {
+      if (!qrOverlay || !(qrOpen instanceof HTMLElement)) return;
+      lastFocusedQrTrigger = qrOpen;
+      qrOverlay.hidden = false;
+      document.body.style.overflow = "hidden";
+      qrClose?.focus({ preventScroll: true });
+    };
+
+    qrOpen?.addEventListener("click", (event) => {
+      event.preventDefault();
+      openQr();
+    });
+    qrCloseButtons.forEach((button) => button.addEventListener("click", closeQr));
+    qrOverlay?.addEventListener("click", (event) => {
+      if (event.target instanceof HTMLElement && event.target.closest("[data-sf-qr-close]")) {
+        event.preventDefault();
+        closeQr();
+      }
+    });
+
     const closeImagePreview = () => {
       if (!imagePreviewOverlay || !imagePreviewImage) return;
       imagePreviewOverlay.hidden = true;
@@ -78,7 +114,10 @@
       imagePreviewImage.setAttribute("alt", "");
       document.body.style.overflow = "";
 
-      if (lastFocusedPreviewTrigger?.getAttribute("aria-hidden") !== "true") {
+      if (
+        lastFocusedPreviewTrigger instanceof HTMLElement &&
+        lastFocusedPreviewTrigger.getAttribute("aria-hidden") !== "true"
+      ) {
         lastFocusedPreviewTrigger.focus({ preventScroll: true });
       }
       lastFocusedPreviewTrigger = null;
@@ -105,13 +144,16 @@
       });
     });
 
-    window.addEventListener("keydown", (event) => {
+    const handleGlobalKeydown = (event) => {
       if (event.key === "Escape") {
         closeMenu();
         closeVideo();
         closeImagePreview();
+        closeQr();
       }
-    });
+    };
+    window.addEventListener("keydown", handleGlobalKeydown);
+    document.addEventListener("keydown", handleGlobalKeydown);
 
     if (avatarCount) avatarCount.textContent = avatarCount.dataset.sfCounts?.split(",")[0]?.trim() || avatarCount.textContent;
 
