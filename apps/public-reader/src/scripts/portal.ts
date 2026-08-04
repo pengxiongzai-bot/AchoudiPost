@@ -92,6 +92,15 @@ let currentServiceStatus: "checking" | "online" | "offline" = "checking";
 let currentServiceLabel = "服务检测中";
 let headerSurfaceBound = false;
 let headerSurfaceFrame = 0;
+let sectionNavigationBound = false;
+let sectionNavigationFrame = 0;
+let lastSectionNavigationId: string | null = null;
+
+const homeSectionNavigation = [
+  { sectionId: "sf-hero", navId: "home" },
+  { sectionId: "sf-achievements", navId: "market" },
+  { sectionId: "sf-counter", navId: "business" }
+] as const;
 
 let posts: PostListItem[] = [];
 let searchDocuments: SearchDocument[] = [];
@@ -100,6 +109,7 @@ bindNavigation();
 bindRouteNavigation();
 bindArticleReaderMessages();
 bindHeaderSurfaceSync();
+bindSectionNavigationSync();
 bindPageInteractions();
 createPortalIcons();
 
@@ -192,10 +202,73 @@ function roundTo(value: number, precision = 3) {
   return Math.round(value * base) / base;
 }
 
+function bindSectionNavigationSync() {
+  if (sectionNavigationBound) return;
+  sectionNavigationBound = true;
+  window.addEventListener("scroll", scheduleSectionNavigationSync, { passive: true });
+  window.addEventListener("resize", scheduleSectionNavigationSync);
+  scheduleSectionNavigationSync();
+}
+
+function scheduleSectionNavigationSync() {
+  if (sectionNavigationFrame) return;
+  sectionNavigationFrame = window.requestAnimationFrame(() => {
+    sectionNavigationFrame = 0;
+    syncSectionNavigation();
+  });
+}
+
+function syncSectionNavigation() {
+  if (document.body.dataset.page !== "home") {
+    lastSectionNavigationId = null;
+    return;
+  }
+
+  const activeNavId = resolveVisibleHomeSectionNavId();
+  if (!activeNavId || activeNavId === lastSectionNavigationId) return;
+  lastSectionNavigationId = activeNavId;
+  updateActiveNavigation("/", location.hash, activeNavId);
+}
+
+function resolveVisibleHomeSectionNavId() {
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 1;
+  const headerClearance = readRootPixelVariable("--portal-floating-nav-clearance", 92);
+  const decisionLine = Math.min(viewportHeight * 0.48, Math.max(headerClearance + 96, viewportHeight * 0.38));
+
+  for (const item of homeSectionNavigation) {
+    const section = document.getElementById(item.sectionId);
+    if (!section) continue;
+    const rect = section.getBoundingClientRect();
+    if (rect.top <= decisionLine && rect.bottom > decisionLine) return item.navId;
+  }
+
+  let bestNavId: string | null = null;
+  let bestVisibleHeight = 0;
+  homeSectionNavigation.forEach((item) => {
+    const section = document.getElementById(item.sectionId);
+    if (!section) return;
+    const rect = section.getBoundingClientRect();
+    const visibleHeight = Math.max(0, Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0));
+    if (visibleHeight > bestVisibleHeight) {
+      bestVisibleHeight = visibleHeight;
+      bestNavId = item.navId;
+    }
+  });
+
+  return bestNavId;
+}
+
+function readRootPixelVariable(name: string, fallback: number) {
+  const rawValue = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const parsedValue = Number.parseFloat(rawValue);
+  return Number.isFinite(parsedValue) ? parsedValue : fallback;
+}
+
 function bindPageInteractions() {
   window.initSteadyflowReference?.();
   scheduleHeaderSurfaceSync();
   updateActiveNavigation(location.pathname, location.hash);
+  scheduleSectionNavigationSync();
   updateServicePulses(currentServiceStatus, currentServiceLabel);
   postGrid = document.querySelector<HTMLElement>("#portalPostGrid");
   searchInput = document.querySelector<HTMLInputElement>("#portalSearchInput");
@@ -357,12 +430,14 @@ function scrollToHash(hash: string) {
   if (!targetId) return;
   const target = document.getElementById(targetId);
   if (!target) return;
-  target.scrollIntoView({ behavior: "smooth", block: "start" });
+  const targetTop = Math.max(0, Math.round(target.getBoundingClientRect().top + window.scrollY));
+  window.scrollTo({ top: targetTop, behavior: "smooth" });
+  scheduleSectionNavigationSync();
 }
 
-function updateActiveNavigation(pathname: string, hash = location.hash) {
+function updateActiveNavigation(pathname: string, hash = location.hash, forcedNavId: string | null = null) {
   const activePath = pathname.startsWith("/p/") ? "/articles/" : pathname;
-  const activeNavId = resolveActiveNavigationId(activePath, hash);
+  const activeNavId = forcedNavId ?? resolveActiveNavigationId(activePath, hash);
   document.querySelectorAll<HTMLAnchorElement>(".nav-link").forEach((link) => {
     const linkPath = new URL(link.href, location.href).pathname;
     const active = activeNavId ? link.dataset.navId === activeNavId : linkPath === activePath;
