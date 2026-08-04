@@ -45,16 +45,6 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
       </div>
 
       <div class="sf-hero-marquee sf-rise" style="--delay: .66s" aria-label="电商视觉作品轮播">
-        <div class="sf-marquee-curve sf-marquee-curve-top" aria-hidden="true">
-          <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
-            <path fill="currentColor" d="M0 0H1440V30C1120 82 940 100 720 100C500 100 320 82 0 30V0Z"></path>
-          </svg>
-        </div>
-        <div class="sf-marquee-curve sf-marquee-curve-bottom" aria-hidden="true">
-          <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
-            <path fill="currentColor" d="M0 100H1440V70C1120 18 940 0 720 0C500 0 320 18 0 70V100Z"></path>
-          </svg>
-        </div>
         <div class="sf-hero-marquee-track" data-sf-hero-marquee-track>
           {heroMarqueeImages.map((src, index) => (
             <button
@@ -448,7 +438,7 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
     --sf-hero-marquee-card-width: clamp(244px, min(17vw, 34svh), 356px);
     --sf-hero-marquee-bottom: clamp(10px, 2svh, 24px);
     --sf-hero-marquee-radius: 0px;
-    --sf-hero-curve-height: clamp(58px, 7svh, 82px);
+    --sf-hero-curve-height: 0px;
     --sf-hero-marquee-loop-distance: -50%;
     --sf-hero-marquee-duration: 42s;
     width: 100%;
@@ -790,7 +780,7 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
     display: flex;
     width: max-content;
     gap: 16px;
-    padding: calc(var(--sf-hero-curve-height) * 0.42) 0;
+    padding: 0;
     user-select: none;
     touch-action: manipulation;
     animation: sf-hero-marquee-scroll var(--sf-hero-marquee-duration) linear infinite;
@@ -888,7 +878,7 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
       --sf-hero-content-gap: 32px;
       --sf-hero-title-size: clamp(50px, min(3.9vw, 7.2svh), 66px);
       --sf-hero-marquee-card-width: clamp(222px, min(15vw, 32svh), 310px);
-      --sf-hero-curve-height: clamp(46px, 6.8svh, 58px);
+      --sf-hero-curve-height: 0px;
     }
 
     .sf-hero-ctas {
@@ -1837,7 +1827,7 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
       --sf-hero-title-size: clamp(44px, min(5.8vw, 7svh), 58px);
       --sf-hero-title-width: min(760px, calc(100vw - 42px));
       --sf-hero-marquee-card-width: clamp(234px, min(32vw, 32svh), 320px);
-      --sf-hero-curve-height: clamp(40px, 5.4svh, 56px);
+      --sf-hero-curve-height: 0px;
     }
 
     .sf-navbar-wrap {
@@ -2050,7 +2040,7 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
       --sf-hero-marquee-card-width: clamp(198px, 68vw, 264px);
       --sf-hero-marquee-bottom: 0px;
       --sf-hero-marquee-radius: 0px;
-      --sf-hero-curve-height: clamp(26px, 4.8svh, 38px);
+      --sf-hero-curve-height: 0px;
     }
 
     .sf-navbar-wrap {
