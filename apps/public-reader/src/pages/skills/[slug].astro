@@ -1,0 +1,320 @@
+---
+import type { GetStaticPaths } from "astro";
+import PortalShell from "../../layouts/PortalShell.astro";
+import { skillModules } from "../../data/skill-modules";
+import type { SkillModule } from "../../data/skill-modules";
+
+export const getStaticPaths = (() =>
+  skillModules.map((module) => ({
+    params: { slug: module.slug },
+    props: { module }
+  }))) satisfies GetStaticPaths;
+
+const { module } = Astro.props as { module: SkillModule };
+---
+
+<PortalShell
+  activePage="market"
+  title={module.name}
+  description={module.summary}
+  hideFooter={true}
+>
+  <section class="skill-detail" aria-labelledby="skillDetailTitle">
+    <div class="skill-detail-inner">
+      <nav class="skill-breadcrumb" aria-label="当前位置">
+        <a href="/" data-portal-route>首页</a>
+        <span>/</span>
+        <a href="/#sf-achievements" data-portal-route>AI实战库</a>
+        <span>/</span>
+        <strong>{module.name}</strong>
+      </nav>
+
+      <div class="skill-hero">
+        <div class="skill-hero-copy">
+          <p class="skill-kicker">{module.eyebrow}</p>
+          <h1 id="skillDetailTitle">{module.headline}</h1>
+          <p>{module.summary}</p>
+          <div class="skill-actions">
+            <a class="skill-button primary" href="/#sf-counter" data-portal-route>微信沟通</a>
+            <a class="skill-button ghost" href="/#sf-achievements" data-portal-route>返回实战库</a>
+          </div>
+        </div>
+
+        <figure class="skill-visual">
+          <figcaption>
+            <span>▧ Image</span>
+            <span>720 × 960</span>
+          </figcaption>
+          <div class="skill-visual-frame">
+            <img src={module.image} alt={`${module.name} 视觉封面`} loading="eager" />
+          </div>
+        </figure>
+      </div>
+
+      <div class="skill-panels" aria-label={`${module.name} 详情`}>
+        <section class="skill-panel">
+          <p>重点解决</p>
+          <h2>这个模块先帮你看清楚什么</h2>
+          <ul>
+            {module.highlights.map((item) => <li>{item}</li>)}
+          </ul>
+        </section>
+
+        <section class="skill-panel">
+          <p>你会拿到</p>
+          <h2>后续可以沉淀成资产的内容</h2>
+          <ul>
+            {module.deliverables.map((item) => <li>{item}</li>)}
+          </ul>
+        </section>
+
+        <section class="skill-panel wide">
+          <p>执行路径</p>
+          <h2>从问题到可复用框架</h2>
+          <ol>
+            {module.flow.map((item, index) => (
+              <li>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <strong>{item}</strong>
+              </li>
+            ))}
+          </ol>
+        </section>
+      </div>
+    </div>
+  </section>
+</PortalShell>
+
+<style>
+  .skill-detail {
+    min-height: 100vh;
+    color: #f4f2eb;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.08), transparent 34rem),
+      linear-gradient(180deg, #050604 0%, #0b0d08 55%, #10120d 100%);
+    padding: clamp(7.5rem, 12vw, 11rem) clamp(1rem, 4vw, 4rem) clamp(4rem, 7vw, 7rem);
+  }
+
+  .skill-detail-inner {
+    width: min(1180px, 100%);
+    margin: 0 auto;
+  }
+
+  .skill-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem;
+    color: rgba(244, 242, 235, 0.48);
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+  }
+
+  .skill-breadcrumb a {
+    color: rgba(244, 242, 235, 0.66);
+    text-decoration: none;
+  }
+
+  .skill-breadcrumb strong {
+    color: rgba(244, 242, 235, 0.9);
+    font-weight: 600;
+  }
+
+  .skill-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: center;
+    padding: clamp(3rem, 8vw, 7rem) 0 clamp(2.5rem, 5vw, 5rem);
+  }
+
+  .skill-kicker,
+  .skill-panel > p {
+    margin: 0 0 1rem;
+    color: rgba(244, 242, 235, 0.48);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .skill-hero h1 {
+    max-width: 820px;
+    margin: 0;
+    font-family: "Songti SC", "STSong", "Noto Serif SC", serif;
+    font-size: clamp(3.25rem, 7.6vw, 7.4rem);
+    font-weight: 400;
+    line-height: 0.98;
+    letter-spacing: -0.08em;
+  }
+
+  .skill-hero-copy > p:not(.skill-kicker) {
+    max-width: 620px;
+    margin: 1.65rem 0 0;
+    color: rgba(244, 242, 235, 0.62);
+    font-size: clamp(1rem, 1.35vw, 1.18rem);
+    line-height: 1.9;
+  }
+
+  .skill-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-top: 2.2rem;
+  }
+
+  .skill-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3rem;
+    border-radius: 999px;
+    padding: 0 1.25rem;
+    font-size: 0.92rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .skill-button.primary {
+    color: #0a0b08;
+    background: #f7f5ee;
+  }
+
+  .skill-button.ghost {
+    color: rgba(244, 242, 235, 0.78);
+    border: 1px solid rgba(244, 242, 235, 0.18);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .skill-visual {
+    margin: 0;
+  }
+
+  .skill-visual figcaption {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.55rem;
+    color: rgba(244, 242, 235, 0.35);
+    font-size: 0.74rem;
+    font-weight: 700;
+  }
+
+  .skill-visual-frame {
+    overflow: hidden;
+    aspect-ratio: 3 / 4;
+    border: 1px solid rgba(244, 242, 235, 0.12);
+    background: #171814;
+    box-shadow: 0 1.8rem 5rem rgba(0, 0, 0, 0.38);
+  }
+
+  .skill-visual-frame img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+
+  .skill-panels {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .skill-panel {
+    border: 1px solid rgba(244, 242, 235, 0.1);
+    border-radius: 1.4rem;
+    padding: clamp(1.3rem, 3vw, 2rem);
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  .skill-panel.wide {
+    grid-column: 1 / -1;
+  }
+
+  .skill-panel h2 {
+    margin: 0 0 1.4rem;
+    color: rgba(244, 242, 235, 0.92);
+    font-size: clamp(1.25rem, 2.1vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+  }
+
+  .skill-panel ul,
+  .skill-panel ol {
+    display: grid;
+    gap: 0.72rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .skill-panel li {
+    color: rgba(244, 242, 235, 0.72);
+    line-height: 1.7;
+  }
+
+  .skill-panel ul li {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .skill-panel ul li::before {
+    content: "";
+    width: 0.38rem;
+    height: 0.38rem;
+    border-radius: 999px;
+    background: rgba(244, 242, 235, 0.68);
+    flex: 0 0 auto;
+  }
+
+  .skill-panel ol {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .skill-panel ol li {
+    min-height: 8rem;
+    border-top: 1px solid rgba(244, 242, 235, 0.12);
+    padding-top: 1rem;
+  }
+
+  .skill-panel ol span {
+    display: block;
+    margin-bottom: 1.1rem;
+    color: rgba(244, 242, 235, 0.38);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+  }
+
+  .skill-panel ol strong {
+    color: rgba(244, 242, 235, 0.88);
+    font-size: clamp(1rem, 1.45vw, 1.22rem);
+    line-height: 1.45;
+  }
+
+  @media (max-width: 860px) {
+    .skill-detail {
+      padding-top: 7rem;
+    }
+
+    .skill-hero,
+    .skill-panels {
+      grid-template-columns: 1fr;
+    }
+
+    .skill-hero {
+      gap: 2.5rem;
+      padding-top: 3.5rem;
+    }
+
+    .skill-visual {
+      max-width: 360px;
+      margin: 0 auto;
+    }
+
+    .skill-panel ol {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

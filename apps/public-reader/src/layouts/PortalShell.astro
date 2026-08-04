@@ -14,7 +14,7 @@ const pageTitle = activePage === "home" ? siteName : `${title} - ${siteName}`;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://example.com").toString();
 const navItems = [
   { id: "home", href: "/", label: "首页" },
-  { id: "market", href: "/market/", label: "AI实战库" },
+  { id: "market", href: "/#sf-achievements", label: "AI实战库" },
   { id: "articles", href: "/articles/", label: "文章" },
   { id: "tools", href: "/tools/", label: "资源工具" },
   { id: "about", href: "/about/", label: "关于" }
@@ -56,7 +56,7 @@ const navItems = [
         <nav id="primaryNav" class="primary-nav" aria-label="主导航">
           {
             navItems.map((item) => (
-              <a class:list={["nav-link", "className" in item ? item.className : undefined, { active: activePage === item.id }]} href={item.href} data-portal-route aria-current={activePage === item.id ? "page" : undefined}>
+              <a class:list={["nav-link", "className" in item ? item.className : undefined, { active: activePage === item.id }]} href={item.href} data-nav-id={item.id} data-portal-route aria-current={activePage === item.id ? "page" : undefined}>
                 {item.label}
               </a>
             ))
@@ -84,7 +84,7 @@ const navItems = [
         </a>
         <p>阿臭弟的小站，整理电商 AI 赋能框架、实战课程和长期更新的飞书知识库。</p>
         <nav aria-label="页脚导航">
-          <a href="/market/" data-portal-route>AI实战库</a>
+          <a href="/#sf-achievements" data-portal-route>AI实战库</a>
           <a href="/articles/" data-portal-route>文章</a>
           <a href="/about/" data-portal-route>关于阿臭弟</a>
         </nav>

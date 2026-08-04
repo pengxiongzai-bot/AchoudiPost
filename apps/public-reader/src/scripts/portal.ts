@@ -195,6 +195,7 @@ function roundTo(value: number, precision = 3) {
 function bindPageInteractions() {
   window.initSteadyflowReference?.();
   scheduleHeaderSurfaceSync();
+  updateActiveNavigation(location.pathname, location.hash);
   updateServicePulses(currentServiceStatus, currentServiceLabel);
   postGrid = document.querySelector<HTMLElement>("#portalPostGrid");
   searchInput = document.querySelector<HTMLInputElement>("#portalSearchInput");
@@ -270,6 +271,13 @@ function bindRouteNavigation() {
     if (destination.origin !== location.origin) return;
     addLockedReferral(destination);
     event.preventDefault();
+    if (isSameRoute(destination) && destination.hash) {
+      history.pushState({}, "", `${destination.pathname}${destination.search}${destination.hash}`);
+      updateActiveNavigation(destination.pathname, destination.hash);
+      setPrimaryNavigation(false);
+      scrollToHash(destination.hash);
+      return;
+    }
     void loadRoute(destination, true);
   });
 
@@ -288,7 +296,16 @@ function bindRouteNavigation() {
 }
 
 async function loadRoute(destination: URL, push: boolean) {
-  if (routeLoading || (push && destination.pathname === location.pathname && destination.search === location.search)) return;
+  if (routeLoading) return;
+  if (push && isSameRoute(destination)) {
+    if (destination.hash) {
+      history.pushState({}, "", `${destination.pathname}${destination.search}${destination.hash}`);
+      updateActiveNavigation(destination.pathname, destination.hash);
+      setPrimaryNavigation(false);
+      scrollToHash(destination.hash);
+    }
+    return;
+  }
   const content = document.querySelector<HTMLElement>("#portalContent");
   if (!content) return;
 
@@ -312,11 +329,12 @@ async function loadRoute(destination: URL, push: boolean) {
     document.title = nextDocument.title;
     document.body.dataset.page = nextDocument.body.dataset.page ?? "";
     if (push) history.pushState({}, "", `${destination.pathname}${destination.search}${destination.hash}`);
-    updateActiveNavigation(destination.pathname);
+    updateActiveNavigation(destination.pathname, destination.hash);
     setPrimaryNavigation(false);
-    window.scrollTo(0, 0);
     bindPageInteractions();
     createPortalIcons();
+    if (destination.hash) requestAnimationFrame(() => scrollToHash(destination.hash));
+    else window.scrollTo(0, 0);
   } catch {
     location.assign(destination.href);
   } finally {
@@ -325,15 +343,38 @@ async function loadRoute(destination: URL, push: boolean) {
   }
 }
 
-function updateActiveNavigation(pathname: string) {
+function isSameRoute(destination: URL) {
+  return destination.pathname === location.pathname && destination.search === location.search;
+}
+
+function scrollToHash(hash: string) {
+  const targetId = decodeURIComponent(hash.replace(/^#/, ""));
+  if (!targetId) return;
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function updateActiveNavigation(pathname: string, hash = location.hash) {
   const activePath = pathname.startsWith("/p/") ? "/articles/" : pathname;
+  const activeNavId = resolveActiveNavigationId(activePath, hash);
   document.querySelectorAll<HTMLAnchorElement>(".nav-link").forEach((link) => {
     const linkPath = new URL(link.href, location.href).pathname;
-    const active = linkPath === activePath;
+    const active = activeNavId ? link.dataset.navId === activeNavId : linkPath === activePath;
     link.classList.toggle("active", active);
     if (active) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });
+}
+
+function resolveActiveNavigationId(pathname: string, hash: string) {
+  if (pathname === "/" && hash === "#sf-achievements") return "market";
+  if (pathname.startsWith("/skills/") || pathname.startsWith("/market/")) return "market";
+  if (pathname.startsWith("/articles/")) return "articles";
+  if (pathname.startsWith("/tools/")) return "tools";
+  if (pathname.startsWith("/about/")) return "about";
+  if (pathname === "/") return "home";
+  return null;
 }
 
 async function checkService() {
