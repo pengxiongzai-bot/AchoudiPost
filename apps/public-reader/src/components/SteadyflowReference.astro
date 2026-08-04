@@ -436,7 +436,8 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
     --sf-hero-title-size: clamp(56px, min(4.2vw, 7.8svh), 80px);
     --sf-hero-title-width: min(920px, calc(100vw - 48px));
     --sf-hero-marquee-card-width: clamp(244px, min(17vw, 34svh), 356px);
-    --sf-hero-marquee-bottom: clamp(10px, 2svh, 24px);
+    --sf-hero-marquee-bottom: clamp(28px, 3.8svh, 48px);
+    --sf-hero-marquee-gap: clamp(18px, 1.35vw, 28px);
     --sf-hero-marquee-radius: 0px;
     --sf-hero-curve-height: 0px;
     --sf-hero-marquee-loop-distance: -50%;
@@ -779,7 +780,7 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
   .sf-hero-marquee-track {
     display: flex;
     width: max-content;
-    gap: 16px;
+    gap: var(--sf-hero-marquee-gap);
     padding: 0;
     user-select: none;
     touch-action: manipulation;
@@ -878,6 +879,7 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
       --sf-hero-content-gap: 32px;
       --sf-hero-title-size: clamp(50px, min(3.9vw, 7.2svh), 66px);
       --sf-hero-marquee-card-width: clamp(222px, min(15vw, 32svh), 310px);
+      --sf-hero-marquee-bottom: clamp(24px, 3.2svh, 34px);
       --sf-hero-curve-height: 0px;
     }
 
@@ -1827,6 +1829,8 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
       --sf-hero-title-size: clamp(44px, min(5.8vw, 7svh), 58px);
       --sf-hero-title-width: min(760px, calc(100vw - 42px));
       --sf-hero-marquee-card-width: clamp(234px, min(32vw, 32svh), 320px);
+      --sf-hero-marquee-bottom: clamp(20px, 3svh, 34px);
+      --sf-hero-marquee-gap: clamp(14px, 2vw, 22px);
       --sf-hero-curve-height: 0px;
     }
 
@@ -2038,7 +2042,8 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
       --sf-hero-title-size: clamp(34px, min(10.8vw, 6.3svh), 46px);
       --sf-hero-title-width: min(100%, calc(100vw - 32px));
       --sf-hero-marquee-card-width: clamp(198px, 68vw, 264px);
-      --sf-hero-marquee-bottom: 0px;
+      --sf-hero-marquee-bottom: 14px;
+      --sf-hero-marquee-gap: 14px;
       --sf-hero-marquee-radius: 0px;
       --sf-hero-curve-height: 0px;
     }
@@ -2139,7 +2144,7 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
     }
 
     .sf-hero-marquee-track {
-      gap: 12px;
+      gap: var(--sf-hero-marquee-gap);
     }
 
     .sf-hero-marquee-card {
