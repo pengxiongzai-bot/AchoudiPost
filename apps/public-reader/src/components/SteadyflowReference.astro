@@ -58,12 +58,12 @@ const moduleCards = [
 
 const featuredModuleCards = moduleCards.slice(0, 4);
 const bespokeMarqueeImages = [
-  "/images/achoudi-panda-camera-showcase.jpg",
-  "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260725_120601_5c6e4705-b992-4227-9dff-9b000351c283.png&w=1920&q=85",
-  "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260725_120619_7bc65416-a3d7-4e8c-9929-743f233378fe.png&w=1920&q=85",
-  "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260725_120627_b40a97b0-c5fa-408c-a77e-dc8fa44f8584.png&w=1920&q=85",
-  "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260725_120635_515cde41-2dc6-48ce-a236-088a5bc74ca8.png&w=1920&q=85",
-  "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260725_120645_5a1170c6-145b-477b-abd2-f8620acccd8d.png&w=1920&q=85"
+  "/images/hero-showcase-snow-chain.jpg",
+  "/images/hero-showcase-dining-chair.jpg",
+  "/images/hero-showcase-plush-bear.jpg",
+  "/images/hero-showcase-red-sneaker.jpg",
+  "/images/hero-showcase-panda-camera.jpg",
+  "/images/hero-showcase-steel-container.jpg"
 ];
 const heroMarqueeImages = [...bespokeMarqueeImages, ...bespokeMarqueeImages];
 const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
@@ -97,7 +97,7 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
         </div>
       </div>
 
-      <div class="sf-hero-marquee sf-rise" style="--delay: .66s" aria-label="建筑参考图片轮播">
+      <div class="sf-hero-marquee sf-rise" style="--delay: .66s" aria-label="电商视觉作品轮播">
         <div class="sf-marquee-curve sf-marquee-curve-top" aria-hidden="true">
           <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
             <path fill="currentColor" d="M0 0H1440V50C1440 50 1200 100 720 100C240 100 0 50 0 50V0Z"></path>
@@ -115,11 +115,16 @@ const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
               type="button"
               data-sf-image-preview-trigger
               data-sf-preview-src={src}
-              aria-label={`预览参考图片 ${(index % bespokeMarqueeImages.length) + 1}`}
+              aria-label={`预览作品图 ${(index % bespokeMarqueeImages.length) + 1}`}
               aria-hidden={index >= bespokeMarqueeImages.length ? "true" : undefined}
               tabindex={index >= bespokeMarqueeImages.length ? "-1" : undefined}
             >
-              <img src={src} alt="" loading="lazy" draggable="false" />
+              <img
+                src={src}
+                alt=""
+                loading={index < bespokeMarqueeImages.length ? "eager" : "lazy"}
+                draggable="false"
+              />
             </button>
           ))}
         </div>
