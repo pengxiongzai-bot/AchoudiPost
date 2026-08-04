@@ -68,6 +68,7 @@ const bespokeMarqueeImages = [
 const heroMarqueeImages = [...bespokeMarqueeImages, ...bespokeMarqueeImages];
 const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
 const wechatQrImage = "/images/wechat-qr-yunx0723.jpg";
+const wechatQrDrawingImage = "/images/wechat-qr-yunx0723-zuotu.jpg";
 
 ---
 
@@ -221,21 +222,32 @@ const wechatQrImage = "/images/wechat-qr-yunx0723.jpg";
 
   <div class="sf-qr-overlay" data-sf-qr-overlay hidden role="dialog" aria-modal="true" aria-label="微信二维码">
     <button class="sf-qr-backdrop" type="button" data-sf-qr-close aria-label="关闭微信二维码"></button>
-    <figure class="sf-qr-panel">
+    <div class="sf-qr-panel">
       <button class="sf-modal-close sf-qr-close" type="button" data-sf-qr-close aria-label="关闭微信二维码">
         <span></span>
         <span></span>
       </button>
-      <img src={wechatQrImage} alt="微信二维码，微信号 YunX0723，备注 AIGC电商业务沟通" loading="lazy" />
-      <figcaption>
-        <strong>微信联系：YunX0723</strong>
-        <span>备注：AIGC电商业务沟通</span>
-      </figcaption>
-    </figure>
+      <div class="sf-qr-grid" aria-label="微信二维码：有课和作图">
+        <figure class="sf-qr-card">
+          <img src={wechatQrImage} alt="微信二维码：A.潮汕阿臭弟（有课），微信号 YunX0723，备注 AIGC电商业务沟通" loading="lazy" />
+          <figcaption>
+            <strong>微信联系：YunX0723</strong>
+            <span>备注：AIGC电商业务沟通</span>
+          </figcaption>
+        </figure>
+        <figure class="sf-qr-card">
+          <img src={wechatQrDrawingImage} alt="微信二维码：A.潮汕阿臭弟（作图），微信号 YunX0723，备注 AIGC电商业务沟通" loading="lazy" />
+          <figcaption>
+            <strong>微信联系：YunX0723</strong>
+            <span>备注：AIGC电商业务沟通</span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
   </div>
 </section>
 
-<script is:inline type="module" src="/scripts/steadyflow-reference.js?v=20260804-qr"></script>
+<script is:inline type="module" src="/scripts/steadyflow-reference.js?v=20260804-qr-dual"></script>
 
 <style>
   @import url("https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@500&family=Noto+Serif+SC:wght@400;500&display=swap");
@@ -1061,6 +1073,7 @@ const wechatQrImage = "/images/wechat-qr-yunx0723.jpg";
     display: grid;
     place-items: center;
     padding: clamp(20px, 4vw, 56px);
+    overflow-y: auto;
     background: rgba(0, 0, 0, 0.72);
     backdrop-filter: blur(20px);
   }
@@ -1078,30 +1091,49 @@ const wechatQrImage = "/images/wechat-qr-yunx0723.jpg";
     position: relative;
     z-index: 1;
     display: grid;
-    width: min(420px, calc(100vw - 40px));
-    gap: 18px;
+    width: min(890px, calc(100vw - 40px));
+    gap: 0;
     justify-items: center;
     margin: 0;
-    padding: clamp(18px, 3vw, 26px);
-    border: 1px solid rgba(247, 247, 241, 0.16);
-    border-radius: 26px;
-    background: rgba(247, 247, 241, 0.98);
-    box-shadow: 0 34px 110px rgba(0, 0, 0, 0.58);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
     color: rgb(10, 11, 9);
     text-align: center;
     transform-origin: center;
     animation: sf-preview-pop 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
-  .sf-qr-panel img {
+  .sf-qr-grid {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(16px, 2.4vw, 28px);
+    align-items: start;
+  }
+
+  .sf-qr-card {
+    display: grid;
+    gap: 16px;
+    justify-items: center;
+    margin: 0;
+    padding: clamp(16px, 2vw, 22px);
+    border: 1px solid rgba(247, 247, 241, 0.16);
+    border-radius: 26px;
+    background: rgba(247, 247, 241, 0.98);
+    box-shadow: 0 34px 110px rgba(0, 0, 0, 0.42);
+  }
+
+  .sf-qr-card img {
     display: block;
     width: 100%;
-    max-height: min(70svh, 535px);
+    max-height: min(62svh, 510px);
     object-fit: contain;
     border-radius: 18px;
   }
 
-  .sf-qr-panel figcaption {
+  .sf-qr-card figcaption {
     display: grid;
     gap: 6px;
     color: rgba(10, 11, 9, 0.72);
@@ -1109,16 +1141,43 @@ const wechatQrImage = "/images/wechat-qr-yunx0723.jpg";
     line-height: 1.45;
   }
 
-  .sf-qr-panel figcaption strong {
+  .sf-qr-card figcaption strong {
     color: rgb(10, 11, 9);
     font-size: 17px;
     font-weight: 850;
   }
 
   .sf-qr-close {
-    top: 14px;
-    right: 14px;
-    background: rgba(10, 11, 9, 0.08);
+    top: -14px;
+    right: -14px;
+    z-index: 2;
+    background: rgba(247, 247, 241, 0.92);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+  }
+
+  @media (max-width: 760px) {
+    .sf-qr-overlay {
+      align-items: start;
+      padding: 58px 18px 26px;
+    }
+
+    .sf-qr-panel {
+      width: min(420px, 100%);
+    }
+
+    .sf-qr-grid {
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    .sf-qr-card img {
+      max-height: none;
+    }
+
+    .sf-qr-close {
+      top: -42px;
+      right: 0;
+    }
   }
 
   @keyframes sf-preview-pop {
@@ -2182,6 +2241,11 @@ const wechatQrImage = "/images/wechat-qr-yunx0723.jpg";
     .sf-modal-close {
       top: 18px;
       right: 18px;
+    }
+
+    .sf-qr-close {
+      top: -42px;
+      right: 0;
     }
 
     .sf-achievements h2,
