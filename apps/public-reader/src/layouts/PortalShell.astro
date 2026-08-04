@@ -2,7 +2,7 @@
 import "../styles/portal.css";
 
 interface Props {
-  activePage: "home" | "articles" | "tools" | "topics" | "market" | "earn" | "guide" | "about";
+  activePage: "home" | "articles" | "tools" | "topics" | "market" | "business" | "earn" | "guide" | "about";
   title: string;
   description: string;
   hideFooter?: boolean;
@@ -15,6 +15,7 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://example.
 const navItems = [
   { id: "home", href: "/", label: "首页" },
   { id: "market", href: "/#sf-achievements", label: "AI实战库" },
+  { id: "business", href: "/#sf-counter", label: "业务" },
   { id: "articles", href: "/articles/", label: "文章" },
   { id: "tools", href: "/tools/", label: "资源工具" },
   { id: "about", href: "/about/", label: "关于" }

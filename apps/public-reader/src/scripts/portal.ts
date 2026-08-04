@@ -373,6 +373,7 @@ function updateActiveNavigation(pathname: string, hash = location.hash) {
 }
 
 function resolveActiveNavigationId(pathname: string, hash: string) {
+  if (pathname === "/" && hash === "#sf-counter") return "business";
   if (pathname === "/" && hash === "#sf-achievements") return "market";
   if (pathname.startsWith("/skills/") || pathname.startsWith("/market/")) return "market";
   if (pathname.startsWith("/articles/")) return "articles";
