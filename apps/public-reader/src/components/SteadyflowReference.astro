@@ -67,8 +67,8 @@ const bespokeMarqueeImages = [
 ];
 const heroMarqueeImages = [...bespokeMarqueeImages, ...bespokeMarqueeImages];
 const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
-const wechatQrImage = "/images/wechat-qr-yunx0723.jpg";
-const wechatQrDrawingImage = "/images/wechat-qr-yunx0723-zuotu.jpg";
+const wechatQrCourseCardImage = "/images/wechat-qr-card-course-final.jpg";
+const wechatQrDrawingCardImage = "/images/wechat-qr-card-drawing-final.jpg";
 
 ---
 
@@ -229,25 +229,17 @@ const wechatQrDrawingImage = "/images/wechat-qr-yunx0723-zuotu.jpg";
       </button>
       <div class="sf-qr-grid" aria-label="微信二维码：有课和作图">
         <figure class="sf-qr-card">
-          <img src={wechatQrImage} alt="微信二维码：A.潮汕阿臭弟（有课），微信号 YunX0723，备注 AIGC电商业务沟通" loading="lazy" />
-          <figcaption>
-            <strong>微信联系：YunX0723</strong>
-            <span>备注：AIGC电商业务沟通</span>
-          </figcaption>
+          <img src={wechatQrCourseCardImage} alt="微信二维码：A.潮汕阿臭弟（有课），微信联系 YunX0723，备注 AIGC电商业务沟通" loading="lazy" />
         </figure>
         <figure class="sf-qr-card">
-          <img src={wechatQrDrawingImage} alt="微信二维码：A.潮汕阿臭弟（作图），微信号 YunX0723，备注 AIGC电商业务沟通" loading="lazy" />
-          <figcaption>
-            <strong>微信联系：YunX0723</strong>
-            <span>备注：AIGC电商业务沟通</span>
-          </figcaption>
+          <img src={wechatQrDrawingCardImage} alt="微信二维码：A.潮汕阿臭弟（作图），微信联系 YunX0723，备注 AIGC电商业务沟通" loading="lazy" />
         </figure>
       </div>
     </div>
   </div>
 </section>
 
-<script is:inline type="module" src="/scripts/steadyflow-reference.js?v=20260804-qr-dual"></script>
+<script is:inline type="module" src="/scripts/steadyflow-reference.js?v=20260804-qr-card-final"></script>
 
 <style>
   @import url("https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@500&family=Noto+Serif+SC:wght@400;500&display=swap");
@@ -1115,36 +1107,22 @@ const wechatQrDrawingImage = "/images/wechat-qr-yunx0723-zuotu.jpg";
 
   .sf-qr-card {
     display: grid;
-    gap: 16px;
     justify-items: center;
     margin: 0;
-    padding: clamp(16px, 2vw, 22px);
-    border: 1px solid rgba(247, 247, 241, 0.16);
-    border-radius: 26px;
-    background: rgba(247, 247, 241, 0.98);
+    padding: 0;
+    border: 0;
+    border-radius: 30px;
+    background: transparent;
     box-shadow: 0 34px 110px rgba(0, 0, 0, 0.42);
+    overflow: hidden;
   }
 
   .sf-qr-card img {
     display: block;
     width: 100%;
-    max-height: min(62svh, 510px);
+    max-height: min(68svh, 604px);
     object-fit: contain;
-    border-radius: 18px;
-  }
-
-  .sf-qr-card figcaption {
-    display: grid;
-    gap: 6px;
-    color: rgba(10, 11, 9, 0.72);
-    font-size: 14px;
-    line-height: 1.45;
-  }
-
-  .sf-qr-card figcaption strong {
-    color: rgb(10, 11, 9);
-    font-size: 17px;
-    font-weight: 850;
+    border-radius: inherit;
   }
 
   .sf-qr-close {
