@@ -120,7 +120,7 @@ const homeSectionNavigation = [
   { sectionId: "sf-achievements", navId: "market" },
   { sectionId: "sf-counter", navId: "business" }
 ] as const;
-const fullScreenHomeSectionIds = new Set(homeSectionNavigation.slice(1).map((item) => item.sectionId));
+const fullScreenHomeSectionIds = new Set<string>(homeSectionNavigation.slice(1).map((item) => item.sectionId));
 const skillReturnStorageKey = "achoudi:skill-return-state";
 const desktopEscapeMedia = "(min-width: 901px)";
 
