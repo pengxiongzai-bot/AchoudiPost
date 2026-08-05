@@ -120,6 +120,7 @@ const homeSectionNavigation = [
   { sectionId: "sf-achievements", navId: "market" },
   { sectionId: "sf-counter", navId: "business" }
 ] as const;
+const fullScreenHomeSectionIds = new Set(homeSectionNavigation.slice(1).map((item) => item.sectionId));
 const skillReturnStorageKey = "achoudi:skill-return-state";
 const desktopEscapeMedia = "(min-width: 901px)";
 
@@ -432,6 +433,7 @@ async function loadRoute(destination: URL, push: boolean, options: RouteNavigati
     const nextFooter = nextDocument.querySelector<HTMLElement>("#portalFooter");
     if (!nextContent) throw new Error("Route content is missing");
 
+    await ensureRouteStyles(nextDocument, destination.href);
     content.innerHTML = nextContent.innerHTML;
     if (footer && nextFooter) {
       footer.innerHTML = nextFooter.innerHTML;
@@ -439,6 +441,7 @@ async function loadRoute(destination: URL, push: boolean, options: RouteNavigati
     }
     document.title = nextDocument.title;
     document.body.dataset.page = nextDocument.body.dataset.page ?? "";
+    lastSectionNavigationId = null;
     const nextLocation = `${destination.pathname}${destination.search}${destination.hash}`;
     if (push) history.pushState(options.state ?? {}, "", nextLocation);
     else if (options.replace) history.replaceState(options.state ?? history.state, "", nextLocation);
@@ -455,6 +458,51 @@ async function loadRoute(destination: URL, push: boolean, options: RouteNavigati
   } finally {
     routeLoading = false;
     document.body.classList.remove("route-loading");
+  }
+}
+
+async function ensureRouteStyles(nextDocument: Document, routeBaseUrl: string) {
+  const existingStyles = currentStylesheetHrefs();
+  const routeStyles = Array.from(nextDocument.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"][href]'));
+  const styleLoads: Promise<void>[] = [];
+
+  routeStyles.forEach((routeStyle) => {
+    const href = normalizedStylesheetHref(routeStyle, routeBaseUrl);
+    if (!href || existingStyles.has(href)) return;
+
+    const styleLink = routeStyle.cloneNode(true) as HTMLLinkElement;
+    styleLink.href = href;
+    styleLoads.push(
+      new Promise((resolve) => {
+        const finish = () => resolve();
+        styleLink.addEventListener("load", finish, { once: true });
+        styleLink.addEventListener("error", finish, { once: true });
+        window.setTimeout(finish, 1200);
+      })
+    );
+    document.head.appendChild(styleLink);
+    existingStyles.add(href);
+  });
+
+  if (styleLoads.length) await Promise.all(styleLoads);
+}
+
+function currentStylesheetHrefs() {
+  return new Set(
+    Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"][href]'))
+      .map((link) => normalizedStylesheetHref(link, location.href))
+      .filter((href): href is string => Boolean(href))
+  );
+}
+
+function normalizedStylesheetHref(link: HTMLLinkElement, baseUrl: string) {
+  const href = link.getAttribute("href");
+  if (!href) return null;
+
+  try {
+    return new URL(href, baseUrl).href;
+  } catch {
+    return href;
   }
 }
 
@@ -482,18 +530,27 @@ function prepareSkillEntryState(link: HTMLAnchorElement, destination: URL): Port
 }
 
 function resolveCurrentSkillReturnState(link: HTMLAnchorElement): SkillReturnState {
-  const scrollY = Math.max(0, Math.round(window.scrollY));
   const shouldReturnToAchievements = shouldAnchorSkillReturnToAchievements(link);
 
   if (shouldReturnToAchievements) {
     const destination = new URL(location.href);
     destination.pathname = "/";
     destination.hash = "sf-achievements";
-    return { url: `${destination.pathname}${destination.search}${destination.hash}`, scrollY };
+    return {
+      url: `${destination.pathname}${destination.search}${destination.hash}`,
+      scrollY: resolveHomeSectionScrollY("sf-achievements")
+    };
   }
 
+  const scrollY = Math.max(0, Math.round(window.scrollY));
   const currentUrl = `${location.pathname}${location.search}${location.hash}`;
   return { url: currentUrl || "/", scrollY };
+}
+
+function resolveHomeSectionScrollY(sectionId: string) {
+  const section = document.getElementById(sectionId);
+  if (!section) return Math.max(0, Math.round(window.scrollY));
+  return targetTopForHash(section);
 }
 
 function shouldAnchorSkillReturnToAchievements(link: HTMLAnchorElement) {
@@ -620,9 +677,27 @@ function scrollToHash(hash: string) {
   if (!targetId) return;
   const target = document.getElementById(targetId);
   if (!target) return;
-  const targetTop = Math.max(0, Math.round(target.getBoundingClientRect().top + window.scrollY));
+  const targetTop = targetTopForHash(target);
   window.scrollTo({ top: targetTop, behavior: "smooth" });
   scheduleSectionNavigationSync();
+  window.setTimeout(scheduleSectionNavigationSync, 420);
+}
+
+function targetTopForHash(target: HTMLElement) {
+  const absoluteTop = target.getBoundingClientRect().top + window.scrollY;
+  const offset = shouldAlignHomeSectionToViewport(target) ? 0 : routeScrollOffset();
+  return Math.max(0, Math.round(absoluteTop - offset));
+}
+
+function shouldAlignHomeSectionToViewport(target: HTMLElement) {
+  return document.body.dataset.page === "home" && fullScreenHomeSectionIds.has(target.id);
+}
+
+function routeScrollOffset() {
+  const header = document.querySelector<HTMLElement>(".site-header");
+  const headerHeight = header ? header.getBoundingClientRect().height : 0;
+  const headerClearance = readRootPixelVariable("--portal-floating-nav-clearance", 92);
+  return Math.max(headerHeight + 16, headerClearance);
 }
 
 function updateActiveNavigation(pathname: string, hash = location.hash, forcedNavId: string | null = null) {
