@@ -80,6 +80,25 @@ type AffiliateProduct = StoreProduct & {
   customerPriceCents: number;
 };
 
+type PortalHistoryState = Record<string, unknown> & {
+  portalReturnSource?: "skill-module";
+  portalReturnUrl?: string;
+  portalReturnScrollY?: number;
+  portalRestoreScrollY?: number;
+};
+
+type SkillReturnState = {
+  url: string;
+  scrollY: number | null;
+};
+
+type RouteNavigationOptions = {
+  state?: PortalHistoryState;
+  replace?: boolean;
+  restoreScrollY?: number | null;
+  scrollBehavior?: ScrollBehavior;
+};
+
 const navToggle = document.querySelector<HTMLButtonElement>("#navToggle");
 const primaryNav = document.querySelector<HTMLElement>("#primaryNav");
 let postGrid = document.querySelector<HTMLElement>("#portalPostGrid");
@@ -101,6 +120,8 @@ const homeSectionNavigation = [
   { sectionId: "sf-achievements", navId: "market" },
   { sectionId: "sf-counter", navId: "business" }
 ] as const;
+const skillReturnStorageKey = "achoudi:skill-return-state";
+const desktopEscapeMedia = "(min-width: 901px)";
 
 let posts: PostListItem[] = [];
 let searchDocuments: SearchDocument[] = [];
@@ -344,11 +365,29 @@ function bindRouteNavigation() {
     if (destination.origin !== location.origin) return;
     addLockedReferral(destination);
     event.preventDefault();
+
+    const skillExitState = resolveSkillExitState(destination);
+    if (skillExitState) {
+      const skillExitDestination = new URL(skillExitState.url, location.origin);
+      const restoreScrollY = validScrollY(skillExitState.scrollY);
+      void loadRoute(skillExitDestination, false, {
+        replace: true,
+        state:
+          restoreScrollY === null
+            ? currentPortalHistoryState()
+            : { ...currentPortalHistoryState(), portalRestoreScrollY: restoreScrollY },
+        restoreScrollY,
+        scrollBehavior: "auto"
+      });
+      return;
+    }
+
+    const skillEntryState = prepareSkillEntryState(link, destination);
     if (isSameRoute(destination)) {
       navigateWithinCurrentRoute(destination, true);
       return;
     }
-    void loadRoute(destination, true);
+    void loadRoute(destination, true, { state: skillEntryState ?? undefined });
   });
 
   document.addEventListener("keydown", (event) => {
@@ -357,15 +396,22 @@ function bindRouteNavigation() {
       event.preventDefault();
       searchInput.focus();
       searchInput.select();
+      return;
     }
+
+    if (event.key === "Escape") handleSkillEscape(event);
   });
 
-  window.addEventListener("popstate", () => {
-    void loadRoute(new URL(location.href), false);
+  window.addEventListener("popstate", (event) => {
+    const state = normalizePortalHistoryState(event.state);
+    void loadRoute(new URL(location.href), false, {
+      restoreScrollY: validScrollY(state.portalRestoreScrollY),
+      scrollBehavior: "auto"
+    });
   });
 }
 
-async function loadRoute(destination: URL, push: boolean) {
+async function loadRoute(destination: URL, push: boolean, options: RouteNavigationOptions = {}) {
   if (routeLoading) return;
   if (push && isSameRoute(destination)) {
     navigateWithinCurrentRoute(destination, true);
@@ -393,12 +439,16 @@ async function loadRoute(destination: URL, push: boolean) {
     }
     document.title = nextDocument.title;
     document.body.dataset.page = nextDocument.body.dataset.page ?? "";
-    if (push) history.pushState({}, "", `${destination.pathname}${destination.search}${destination.hash}`);
+    const nextLocation = `${destination.pathname}${destination.search}${destination.hash}`;
+    if (push) history.pushState(options.state ?? {}, "", nextLocation);
+    else if (options.replace) history.replaceState(options.state ?? history.state, "", nextLocation);
     updateActiveNavigation(destination.pathname, destination.hash);
     setPrimaryNavigation(false);
     bindPageInteractions();
     createPortalIcons();
-    if (destination.hash) requestAnimationFrame(() => scrollToHash(destination.hash));
+    const restoreScrollY = validScrollY(options.restoreScrollY);
+    if (restoreScrollY !== null) restoreScrollPosition(restoreScrollY, options.scrollBehavior ?? "auto");
+    else if (destination.hash) requestAnimationFrame(() => scrollToHash(destination.hash));
     else window.scrollTo(0, 0);
   } catch {
     location.assign(destination.href);
@@ -406,6 +456,146 @@ async function loadRoute(destination: URL, push: boolean) {
     routeLoading = false;
     document.body.classList.remove("route-loading");
   }
+}
+
+function prepareSkillEntryState(link: HTMLAnchorElement, destination: URL): PortalHistoryState | null {
+  if (!isSkillDetailPath(destination.pathname)) return null;
+
+  const returnState = resolveCurrentSkillReturnState(link);
+  const returnScrollY = validScrollY(returnState.scrollY) ?? 0;
+  persistSkillReturnState(returnState);
+
+  if (shouldAnchorSkillReturnToAchievements(link)) {
+    history.replaceState(
+      { ...currentPortalHistoryState(), portalRestoreScrollY: returnScrollY },
+      "",
+      returnState.url
+    );
+  }
+
+  return {
+    ...currentPortalHistoryState(),
+    portalReturnSource: "skill-module",
+    portalReturnUrl: returnState.url,
+    portalReturnScrollY: returnScrollY
+  };
+}
+
+function resolveCurrentSkillReturnState(link: HTMLAnchorElement): SkillReturnState {
+  const scrollY = Math.max(0, Math.round(window.scrollY));
+  const shouldReturnToAchievements = shouldAnchorSkillReturnToAchievements(link);
+
+  if (shouldReturnToAchievements) {
+    const destination = new URL(location.href);
+    destination.pathname = "/";
+    destination.hash = "sf-achievements";
+    return { url: `${destination.pathname}${destination.search}${destination.hash}`, scrollY };
+  }
+
+  const currentUrl = `${location.pathname}${location.search}${location.hash}`;
+  return { url: currentUrl || "/", scrollY };
+}
+
+function shouldAnchorSkillReturnToAchievements(link: HTMLAnchorElement) {
+  return location.pathname === "/" && Boolean(link.closest("#sf-achievements"));
+}
+
+function resolveSkillExitState(destination: URL): SkillReturnState | null {
+  if (!isSkillDetailPath(location.pathname)) return null;
+  if (destination.pathname !== "/" || destination.hash !== "#sf-achievements") return null;
+  return readSkillReturnState() ?? { url: `${destination.pathname}${destination.search}${destination.hash}`, scrollY: null };
+}
+
+function handleSkillEscape(event: KeyboardEvent) {
+  if (
+    event.defaultPrevented ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey ||
+    !isSkillDetailPath(location.pathname) ||
+    !window.matchMedia(desktopEscapeMedia).matches ||
+    isEditableTarget(event.target)
+  ) {
+    return;
+  }
+
+  const returnState = readSkillReturnState() ?? { url: "/#sf-achievements", scrollY: null };
+  const destination = new URL(returnState.url, location.origin);
+  const restoreScrollY = validScrollY(returnState.scrollY);
+  event.preventDefault();
+  void loadRoute(destination, false, {
+    replace: true,
+    state:
+      restoreScrollY === null
+        ? currentPortalHistoryState()
+        : { ...currentPortalHistoryState(), portalRestoreScrollY: restoreScrollY },
+    restoreScrollY,
+    scrollBehavior: "auto"
+  });
+}
+
+function isEditableTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  const tagName = target.tagName.toLowerCase();
+  return tagName === "input" || tagName === "textarea" || tagName === "select" || target.isContentEditable;
+}
+
+function isSkillDetailPath(pathname: string) {
+  return pathname.startsWith("/skills/");
+}
+
+function persistSkillReturnState(returnState: SkillReturnState) {
+  try {
+    sessionStorage.setItem(skillReturnStorageKey, JSON.stringify(returnState));
+  } catch {
+    // The history state still carries the return target if session storage is unavailable.
+  }
+}
+
+function readSkillReturnState(): SkillReturnState | null {
+  const historyState = currentPortalHistoryState();
+  const historyReturnUrl = typeof historyState.portalReturnUrl === "string" ? historyState.portalReturnUrl : null;
+  const historyReturnScrollY = validScrollY(historyState.portalReturnScrollY);
+  if (historyReturnUrl && historyReturnScrollY !== null) return { url: historyReturnUrl, scrollY: historyReturnScrollY };
+
+  try {
+    const rawValue = sessionStorage.getItem(skillReturnStorageKey);
+    if (!rawValue) return null;
+    const stored = JSON.parse(rawValue) as Partial<SkillReturnState>;
+    if (typeof stored.url !== "string") return null;
+    const storedScrollY = validScrollY(stored.scrollY);
+    if (storedScrollY === null) return null;
+    return { url: stored.url, scrollY: storedScrollY };
+  } catch {
+    return null;
+  }
+}
+
+function currentPortalHistoryState() {
+  return normalizePortalHistoryState(history.state);
+}
+
+function normalizePortalHistoryState(state: unknown): PortalHistoryState {
+  return state && typeof state === "object" ? (state as PortalHistoryState) : {};
+}
+
+function validScrollY(scrollY: unknown) {
+  return typeof scrollY === "number" && Number.isFinite(scrollY) && scrollY >= 0 ? scrollY : null;
+}
+
+function restoreScrollPosition(scrollY: number, behavior: ScrollBehavior = "auto") {
+  const top = Math.max(0, Math.round(scrollY));
+  const restore = () => {
+    window.scrollTo({ top, behavior });
+    scheduleHeaderSurfaceSync();
+    scheduleSectionNavigationSync();
+  };
+
+  requestAnimationFrame(() => {
+    restore();
+    window.setTimeout(restore, 80);
+  });
 }
 
 function isSameRoute(destination: URL) {
