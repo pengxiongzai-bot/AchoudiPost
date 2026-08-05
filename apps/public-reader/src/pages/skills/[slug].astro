@@ -11,6 +11,24 @@ export const getStaticPaths = (() =>
   }))) satisfies GetStaticPaths;
 
 const { module } = Astro.props as { module: SkillModule };
+
+const detailSteps = [
+  {
+    number: "01",
+    title: "选场景",
+    description: "先确认你现在最需要解决的电商场景"
+  },
+  {
+    number: "02",
+    title: "拿框架",
+    description: "从模块里拿到可以复用的内容方法"
+  },
+  {
+    number: "03",
+    title: "联系咨询",
+    description: "把产品、类目和当前卡点发我继续细化"
+  }
+];
 ---
 
 <PortalShell
@@ -26,100 +44,90 @@ const { module } = Astro.props as { module: SkillModule };
         <span>{module.name}</span>
       </div>
 
-      <div class="skill-hero" data-skill-detail-hero>
-        <div class="skill-hero-copy">
+      <section class="skill-library-intro" data-skill-detail-hero>
+        <div class="skill-library-copy">
           <p class="skill-kicker">{module.eyebrow}</p>
           <h1 id="skillDetailTitle">{module.headline}</h1>
           <p class="skill-summary">{module.summary}</p>
 
-          <dl class="skill-meta">
-            <div>
-              <dt>模块方向</dt>
-              <dd>{module.job}</dd>
-            </div>
-            <div>
-              <dt>核心状态</dt>
-              <dd>{module.stat}</dd>
-            </div>
-            <div>
-              <dt>适用方式</dt>
-              <dd>可沟通定制</dd>
-            </div>
-          </dl>
-
           <div class="skill-actions">
-            <a class="skill-button primary" href="/#sf-counter" data-portal-route>微信沟通</a>
-            <a class="skill-button ghost" href="/#sf-achievements" data-portal-route>返回实战库</a>
+            <a class="skill-button primary" href="/#sf-counter" data-portal-route>联系咨询</a>
+            <a class="skill-button ghost" href="/#sf-achievements" data-portal-route>返回模块</a>
           </div>
         </div>
 
-        <figure class="skill-visual">
-          <figcaption>
-            <span>▧ Image</span>
-            <span>720 × 960</span>
-          </figcaption>
-          <div class="skill-visual-frame">
-            <img src={module.image} alt={`${module.name} 视觉封面`} loading="eager" />
-          </div>
-        </figure>
-      </div>
+        <div class="skill-step-flow" aria-label="模块使用路径">
+          {detailSteps.map((step) => (
+            <article>
+              <span>{step.number}</span>
+              <strong>{step.title}</strong>
+              <p>{step.description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
 
-      <section class="skill-highlight-strip" aria-label="模块重点">
-        {module.highlights.map((item, index) => (
-          <article>
-            <span>{String(index + 1).padStart(2, "0")}</span>
-            <strong>{item}</strong>
+      <section class="skill-library-toolbar" aria-label="框架筛选">
+        <div class="skill-tabs" aria-label="当前分类">
+          <span>品类</span>
+          <strong>全部</strong>
+          <span>{module.job}</span>
+          <span>基础框架</span>
+          <span>私域落地</span>
+        </div>
+        <div class="skill-count">
+          <span>{module.resourceCards.length} 个可看框架</span>
+          <a href="/#sf-counter" data-portal-route>使用说明</a>
+        </div>
+      </section>
+
+      <section class="skill-resource-grid" aria-label={`${module.name} 框架列表`}>
+        {module.resourceCards.map((card, index) => (
+          <article class="skill-resource-card">
+            <figure class="skill-resource-cover">
+              <figcaption>
+                <span>{card.code}</span>
+                <span>{module.stat}</span>
+              </figcaption>
+              <img src={module.image} alt="" loading={index > 2 ? "lazy" : "eager"} />
+              <div class="skill-resource-shade"></div>
+              <span class="skill-resource-tag">{card.tag}</span>
+            </figure>
+            <div class="skill-resource-content">
+              <p>{card.code}</p>
+              <h2>{card.title}</h2>
+              <p>{card.description}</p>
+              <div class="skill-resource-actions">
+                <a href="/#sf-counter" data-portal-route>{card.action}</a>
+                <a href="/#sf-counter" data-portal-route>联系咨询</a>
+              </div>
+            </div>
           </article>
         ))}
       </section>
 
-      <div class="skill-panels" aria-label={`${module.name} 详情`}>
-        <section class="skill-panel">
-          <p>你会拿到</p>
-          <h2>后续可以沉淀成资产的内容</h2>
-          <ul>
-            {module.deliverables.map((item) => <li>{item}</li>)}
-          </ul>
-        </section>
-
-        <section class="skill-panel wide">
-          <p>执行路径</p>
-          <h2>从问题到可复用框架</h2>
-          <ol>
-            {module.flow.map((item, index) => (
-              <li>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <strong>{item}</strong>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <section class="skill-panel contact">
-          <p>下一步</p>
-          <h2>把你的产品、类目和当前卡点发我</h2>
-          <p class="skill-contact-copy">
-            我会先帮你判断从视觉、视频、自动化还是定制 Skill 切入，让这个模块真的能接到你的业务里。
-          </p>
-          <a class="skill-button primary" href="/#sf-counter" data-portal-route>去微信联系</a>
-        </section>
-      </div>
+      <section class="skill-bottom-cta" aria-label="下一步联系">
+        <p>下一步</p>
+        <h2>把你的产品、类目和当前卡点发我</h2>
+        <span>我会先判断从哪个框架切入，再把它细化成你可以直接用的执行路径。</span>
+        <a class="skill-button primary" href="/#sf-counter" data-portal-route>去微信联系</a>
+      </section>
     </div>
   </section>
 </PortalShell>
 
 <style>
   .skill-detail {
-    min-height: calc(100svh - var(--portal-floating-nav-clearance));
+    min-height: 100svh;
     color: #f4f2eb;
     background:
-      radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.075), transparent 30rem),
-      linear-gradient(180deg, #050604 0%, #090a07 54%, #11130e 100%);
-    padding: clamp(2.2rem, 5vw, 4.8rem) clamp(1rem, 4vw, 4rem) clamp(4rem, 7vw, 7rem);
+      radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.06), transparent 34rem),
+      linear-gradient(180deg, #050604 0%, #090a07 42%, #10120d 100%);
+    padding: clamp(2.2rem, 5vw, 4.5rem) clamp(1rem, 4vw, 4rem) clamp(4rem, 7vw, 7rem);
   }
 
   .skill-detail-inner {
-    width: min(1240px, 100%);
+    width: min(1280px, 100%);
     margin: 0 auto;
   }
 
@@ -151,16 +159,16 @@ const { module } = Astro.props as { module: SkillModule };
     text-align: right;
   }
 
-  .skill-hero {
+  .skill-library-intro {
     display: grid;
-    grid-template-columns: minmax(0, 1.04fr) minmax(280px, 0.72fr);
-    gap: clamp(2rem, 5.5vw, 5.6rem);
-    align-items: center;
-    padding: clamp(3.4rem, 7vw, 6.5rem) 0 clamp(2.4rem, 4vw, 4rem);
+    grid-template-columns: minmax(0, 0.92fr) minmax(360px, 0.72fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: end;
+    padding: clamp(4rem, 8vw, 7rem) 0 clamp(2.5rem, 4vw, 3.8rem);
   }
 
   .skill-kicker,
-  .skill-panel > p {
+  .skill-bottom-cta > p {
     margin: 0 0 1rem;
     color: rgba(244, 242, 235, 0.48);
     font-size: 0.78rem;
@@ -169,13 +177,13 @@ const { module } = Astro.props as { module: SkillModule };
     text-transform: uppercase;
   }
 
-  .skill-hero h1 {
+  .skill-library-copy h1 {
     max-width: 860px;
     margin: 0;
     font-family: "Noto Serif SC", "Songti SC", "STSong", "SimSun", ui-serif, Georgia, serif;
-    font-size: clamp(3.15rem, 7.1vw, 7.1rem);
+    font-size: clamp(2.6rem, 5.5vw, 5.9rem);
     font-weight: 400;
-    line-height: 1.02;
+    line-height: 1.04;
     letter-spacing: -0.075em;
   }
 
@@ -185,44 +193,6 @@ const { module } = Astro.props as { module: SkillModule };
     color: rgba(244, 242, 235, 0.62);
     font-size: clamp(1rem, 1.35vw, 1.18rem);
     line-height: 1.9;
-  }
-
-  .skill-meta {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    max-width: 690px;
-    margin: clamp(1.8rem, 3vw, 2.6rem) 0 0;
-    border-top: 1px solid rgba(244, 242, 235, 0.12);
-    border-bottom: 1px solid rgba(244, 242, 235, 0.12);
-  }
-
-  .skill-meta div {
-    min-height: 5.4rem;
-    padding: 1rem 1rem 1rem 0;
-  }
-
-  .skill-meta div + div {
-    padding-left: 1rem;
-    border-left: 1px solid rgba(244, 242, 235, 0.12);
-  }
-
-  .skill-meta dt,
-  .skill-meta dd {
-    margin: 0;
-  }
-
-  .skill-meta dt {
-    color: rgba(244, 242, 235, 0.42);
-    font-size: 0.76rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-  }
-
-  .skill-meta dd {
-    margin-top: 0.65rem;
-    color: rgba(244, 242, 235, 0.88);
-    font-size: clamp(1rem, 1.55vw, 1.26rem);
-    font-weight: 700;
   }
 
   .skill-actions {
@@ -240,7 +210,7 @@ const { module } = Astro.props as { module: SkillModule };
     border-radius: 999px;
     padding: 0 1.25rem;
     font-size: 0.92rem;
-    font-weight: 700;
+    font-weight: 800;
     text-decoration: none;
     transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
   }
@@ -260,167 +230,223 @@ const { module } = Astro.props as { module: SkillModule };
     background: rgba(255, 255, 255, 0.04);
   }
 
-  .skill-visual {
-    margin: 0;
-    justify-self: end;
-    width: min(420px, 100%);
-  }
-
-  .skill-visual figcaption {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.55rem;
-    color: rgba(244, 242, 235, 0.35);
-    font-size: 0.74rem;
-    font-weight: 700;
-  }
-
-  .skill-visual-frame {
-    position: relative;
-    overflow: hidden;
-    aspect-ratio: 3 / 4;
-    border: 1px solid rgba(244, 242, 235, 0.14);
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015)),
-      #12130f;
-    box-shadow: 0 1.8rem 5rem rgba(0, 0, 0, 0.42);
-  }
-
-  .skill-visual-frame img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: contain;
-  }
-
-  .skill-highlight-strip {
+  .skill-step-flow {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1px;
-    overflow: hidden;
-    margin-bottom: clamp(1.2rem, 2.8vw, 2rem);
-    border: 1px solid rgba(244, 242, 235, 0.11);
-    background: rgba(244, 242, 235, 0.11);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border: 1px solid rgba(244, 242, 235, 0.13);
+    background: rgba(255, 255, 255, 0.035);
+    box-shadow: 0 1.4rem 4rem rgba(0, 0, 0, 0.25);
   }
 
-  .skill-highlight-strip article {
-    min-height: clamp(6.4rem, 9vw, 8.4rem);
+  .skill-step-flow article {
+    min-height: 8.4rem;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: clamp(1rem, 2vw, 1.4rem);
-    background: rgba(255, 255, 255, 0.035);
+    padding: clamp(1rem, 2vw, 1.35rem);
   }
 
-  .skill-highlight-strip span {
-    color: rgba(244, 242, 235, 0.36);
-    font: 800 0.72rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  .skill-step-flow article + article {
+    border-left: 1px solid rgba(244, 242, 235, 0.12);
   }
 
-  .skill-highlight-strip strong {
-    color: rgba(244, 242, 235, 0.86);
-    font-size: clamp(1rem, 1.35vw, 1.18rem);
-    line-height: 1.35;
-  }
-
-  .skill-panels {
-    display: grid;
-    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-    gap: 1rem;
-  }
-
-  .skill-panel {
-    border: 1px solid rgba(244, 242, 235, 0.1);
-    padding: clamp(1.3rem, 3vw, 2rem);
-    background: rgba(255, 255, 255, 0.035);
-  }
-
-  .skill-panel.wide {
-    grid-row: span 2;
-  }
-
-  .skill-panel.contact {
-    min-height: 17rem;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: space-between;
-    background:
-      radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.12), transparent 16rem),
-      rgba(255, 255, 255, 0.055);
-  }
-
-  .skill-panel h2 {
-    margin: 0 0 1.4rem;
-    color: rgba(244, 242, 235, 0.92);
-    font-size: clamp(1.25rem, 2.1vw, 2rem);
-    font-weight: 700;
-    letter-spacing: -0.04em;
-  }
-
-  .skill-panel ul,
-  .skill-panel ol {
-    display: grid;
-    gap: 0.72rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .skill-panel li {
-    color: rgba(244, 242, 235, 0.72);
-    line-height: 1.7;
-  }
-
-  .skill-panel ul li {
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-  }
-
-  .skill-panel ul li::before {
-    content: "";
-    width: 0.38rem;
-    height: 0.38rem;
-    border-radius: 999px;
-    background: rgba(244, 242, 235, 0.68);
-    flex: 0 0 auto;
-  }
-
-  .skill-panel ol {
-    grid-template-columns: 1fr;
-  }
-
-  .skill-panel ol li {
-    display: grid;
-    grid-template-columns: 3.2rem minmax(0, 1fr);
-    gap: 1rem;
-    align-items: start;
-    min-height: auto;
-    border-top: 1px solid rgba(244, 242, 235, 0.12);
-    padding-top: 1rem;
-  }
-
-  .skill-panel ol span {
-    display: block;
-    margin: 0;
+  .skill-step-flow span,
+  .skill-resource-content > p,
+  .skill-count span {
     color: rgba(244, 242, 235, 0.38);
-    font-size: 0.75rem;
-    font-weight: 800;
+    font: 800 0.72rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
     letter-spacing: 0.08em;
   }
 
-  .skill-panel ol strong {
-    color: rgba(244, 242, 235, 0.88);
-    font-size: clamp(1rem, 1.45vw, 1.22rem);
-    line-height: 1.45;
+  .skill-step-flow strong {
+    color: rgba(244, 242, 235, 0.92);
+    font-size: clamp(1.15rem, 1.7vw, 1.55rem);
+    line-height: 1.2;
   }
 
-  .skill-contact-copy {
-    margin: -0.3rem 0 1.4rem;
+  .skill-step-flow p {
+    margin: 0;
+    color: rgba(244, 242, 235, 0.52);
+    font-size: 0.88rem;
+    line-height: 1.65;
+  }
+
+  .skill-library-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: clamp(1.2rem, 2.8vw, 2rem);
+    border-top: 1px solid rgba(244, 242, 235, 0.11);
+    border-bottom: 1px solid rgba(244, 242, 235, 0.11);
+    min-height: 4.2rem;
+  }
+
+  .skill-tabs,
+  .skill-count {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+  }
+
+  .skill-tabs span,
+  .skill-tabs strong,
+  .skill-count a {
+    min-height: 2.35rem;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0 0.95rem;
+    color: rgba(244, 242, 235, 0.58);
+    border: 1px solid rgba(244, 242, 235, 0.18);
+    background: rgba(255, 255, 255, 0.035);
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .skill-tabs strong,
+  .skill-count a {
+    color: #090a07;
+    background: #f7f5ee;
+    border-color: #f7f5ee;
+  }
+
+  .skill-resource-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(1rem, 2vw, 1.35rem);
+  }
+
+  .skill-resource-card {
+    overflow: hidden;
+    border: 1px solid rgba(244, 242, 235, 0.12);
+    background: rgba(255, 255, 255, 0.035);
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.2);
+  }
+
+  .skill-resource-cover {
+    position: relative;
+    margin: 0;
+    aspect-ratio: 16 / 11;
+    overflow: hidden;
+    background: #13140f;
+  }
+
+  .skill-resource-cover figcaption {
+    position: absolute;
+    z-index: 2;
+    top: 0.85rem;
+    left: 0.85rem;
+    right: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    color: rgba(255, 255, 255, 0.55);
+    font: 800 0.68rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  }
+
+  .skill-resource-cover img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    filter: saturate(0.88);
+  }
+
+  .skill-resource-shade {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(0, 0, 0, 0.14), rgba(0, 0, 0, 0.62)),
+      radial-gradient(circle at 50% 0%, transparent, rgba(0, 0, 0, 0.28));
+  }
+
+  .skill-resource-tag {
+    position: absolute;
+    left: 0.9rem;
+    bottom: 0.9rem;
+    z-index: 2;
+    min-height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0 0.75rem;
+    color: #090a07;
+    background: rgba(247, 245, 238, 0.92);
+    font-size: 0.75rem;
+    font-weight: 900;
+  }
+
+  .skill-resource-content {
+    padding: clamp(1.1rem, 2.2vw, 1.55rem);
+  }
+
+  .skill-resource-content h2 {
+    margin: 0.75rem 0 0.65rem;
+    color: rgba(244, 242, 235, 0.94);
+    font-size: clamp(1.2rem, 1.85vw, 1.7rem);
+    line-height: 1.15;
+    letter-spacing: -0.05em;
+  }
+
+  .skill-resource-content h2 + p {
+    min-height: 4.8rem;
+    margin: 0;
     color: rgba(244, 242, 235, 0.62);
-    font-size: 0.98rem;
-    line-height: 1.85;
+    font-size: 0.92rem;
+    line-height: 1.78;
+  }
+
+  .skill-resource-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
+    margin-top: 1.2rem;
+  }
+
+  .skill-resource-actions a {
+    min-height: 2.6rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(244, 242, 235, 0.2);
+    color: rgba(244, 242, 235, 0.82);
+    background: rgba(255, 255, 255, 0.03);
+    font-size: 0.82rem;
+    font-weight: 850;
+    text-decoration: none;
+  }
+
+  .skill-resource-actions a:first-child {
+    color: #090a07;
+    background: #f7f5ee;
+    border-color: #f7f5ee;
+  }
+
+  .skill-bottom-cta {
+    margin-top: clamp(1rem, 2.8vw, 2rem);
+    border: 1px solid rgba(244, 242, 235, 0.12);
+    padding: clamp(1.35rem, 3vw, 2rem);
+    background:
+      radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.1), transparent 18rem),
+      rgba(255, 255, 255, 0.035);
+  }
+
+  .skill-bottom-cta h2 {
+    margin: 0;
+    color: rgba(244, 242, 235, 0.94);
+    font-size: clamp(1.5rem, 2.8vw, 2.6rem);
+    line-height: 1.12;
+    letter-spacing: -0.055em;
+  }
+
+  .skill-bottom-cta span {
+    display: block;
+    max-width: 720px;
+    margin: 0.85rem 0 1.35rem;
+    color: rgba(244, 242, 235, 0.6);
+    line-height: 1.8;
   }
 
   @media (max-width: 860px) {
@@ -428,40 +454,36 @@ const { module } = Astro.props as { module: SkillModule };
       padding-top: 1.8rem;
     }
 
-    .skill-hero,
-    .skill-highlight-strip,
-    .skill-panels {
+    .skill-library-intro,
+    .skill-step-flow,
+    .skill-resource-grid {
       grid-template-columns: 1fr;
     }
 
-    .skill-hero {
+    .skill-library-intro {
       gap: 2.5rem;
       padding-top: 3.5rem;
     }
 
-    .skill-hero h1 {
-      font-size: clamp(2.65rem, 13vw, 4.4rem);
+    .skill-library-copy h1 {
+      font-size: clamp(2.25rem, 10.5vw, 4rem);
       letter-spacing: -0.07em;
     }
 
-    .skill-meta {
-      grid-template-columns: 1fr;
-    }
-
-    .skill-meta div + div {
-      padding-left: 0;
+    .skill-step-flow article + article {
       border-left: 0;
       border-top: 1px solid rgba(244, 242, 235, 0.12);
     }
 
-    .skill-visual {
-      max-width: 360px;
-      margin: 0 auto;
-      justify-self: center;
+    .skill-library-toolbar,
+    .skill-count {
+      align-items: flex-start;
+      flex-direction: column;
+      padding: 0.95rem 0;
     }
 
-    .skill-panel.wide {
-      grid-row: auto;
+    .skill-resource-content h2 + p {
+      min-height: auto;
     }
 
     .skill-routebar {
