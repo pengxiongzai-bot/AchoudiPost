@@ -113,13 +113,16 @@ let headerSurfaceBound = false;
 let headerSurfaceFrame = 0;
 let sectionNavigationBound = false;
 let sectionNavigationFrame = 0;
+let homeHashAlignmentFrame = 0;
 let lastSectionNavigationId: string | null = null;
+let renderedPortalRoute = portalRouteKey(new URL(location.href));
 
 const homeSectionNavigation = [
   { sectionId: "sf-hero", navId: "home" },
   { sectionId: "sf-achievements", navId: "market" },
   { sectionId: "sf-counter", navId: "business" }
 ] as const;
+type HomeSectionNavId = (typeof homeSectionNavigation)[number]["navId"];
 const fullScreenHomeSectionIds = new Set<string>(homeSectionNavigation.slice(1).map((item) => item.sectionId));
 const skillReturnStorageKey = "achoudi:skill-return-state";
 const desktopEscapeMedia = "(min-width: 901px)";
@@ -127,6 +130,7 @@ const desktopEscapeMedia = "(min-width: 901px)";
 let posts: PostListItem[] = [];
 let searchDocuments: SearchDocument[] = [];
 
+configureBrowserScrollRestoration();
 bindNavigation();
 bindRouteNavigation();
 bindArticleReaderMessages();
@@ -134,6 +138,12 @@ bindHeaderSurfaceSync();
 bindSectionNavigationSync();
 bindPageInteractions();
 createPortalIcons();
+
+function configureBrowserScrollRestoration() {
+  if ("scrollRestoration" in window.history) {
+    window.history.scrollRestoration = "manual";
+  }
+}
 
 function setPrimaryNavigation(open: boolean) {
   if (!primaryNav || !navToggle) return;
@@ -250,6 +260,7 @@ function syncSectionNavigation() {
   if (!activeNavId || activeNavId === lastSectionNavigationId) return;
   lastSectionNavigationId = activeNavId;
   updateActiveNavigation("/", location.hash, activeNavId);
+  syncHomeLocationForSection(activeNavId);
 }
 
 function resolveVisibleHomeSectionNavId() {
@@ -280,6 +291,30 @@ function resolveVisibleHomeSectionNavId() {
   return bestNavId;
 }
 
+function homeSectionUrlForNavId(navId: string) {
+  const homeNavId = navId as HomeSectionNavId;
+  if (homeNavId === "home") return "/";
+  if (homeNavId === "market") return "/#sf-achievements";
+  if (homeNavId === "business") return "/#sf-counter";
+  return null;
+}
+
+function syncHomeLocationForSection(navId: string) {
+  if (routeLoading || document.body.dataset.page !== "home") return;
+
+  const targetLocation = homeSectionUrlForNavId(navId);
+  if (!targetLocation) return;
+
+  const destination = new URL(targetLocation, location.origin);
+  const currentLocation = portalLocationString(new URL(location.href));
+  const nextLocation = portalLocationString(destination);
+  if (currentLocation === nextLocation) return;
+
+  const nextState = portalHistoryStateForDestination(destination, currentPortalHistoryState());
+  nextState.portalRestoreScrollY = Math.max(0, Math.round(window.scrollY));
+  history.replaceState(nextState, "", nextLocation);
+}
+
 function readRootPixelVariable(name: string, fallback: number) {
   const rawValue = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   const parsedValue = Number.parseFloat(rawValue);
@@ -291,6 +326,7 @@ function bindPageInteractions() {
   scheduleHeaderSurfaceSync();
   updateActiveNavigation(location.pathname, location.hash);
   scheduleSectionNavigationSync();
+  alignCurrentHomeHashToPortalViewport();
   updateServicePulses(currentServiceStatus, currentServiceLabel);
   postGrid = document.querySelector<HTMLElement>("#portalPostGrid");
   searchInput = document.querySelector<HTMLInputElement>("#portalSearchInput");
@@ -340,6 +376,7 @@ function bindArticleReaderMessages() {
     }
 
     document.body.dataset.page = "articles";
+    renderedPortalRoute = portalRouteKey(destination);
     updateActiveNavigation("/articles/");
     updateArticleMetadata(destination, typeof data.title === "string" ? data.title : null);
     propagateReferralLinks();
@@ -385,7 +422,7 @@ function bindRouteNavigation() {
 
     const skillEntryState = prepareSkillEntryState(link, destination);
     if (isSameRoute(destination)) {
-      navigateWithinCurrentRoute(destination, true);
+      navigateWithinCurrentRoute(destination, true, { state: skillEntryState ?? undefined });
       return;
     }
     void loadRoute(destination, true, { state: skillEntryState ?? undefined });
@@ -405,8 +442,17 @@ function bindRouteNavigation() {
 
   window.addEventListener("popstate", (event) => {
     const state = normalizePortalHistoryState(event.state);
-    void loadRoute(new URL(location.href), false, {
-      restoreScrollY: validScrollY(state.portalRestoreScrollY),
+    const destination = new URL(location.href);
+    const restoreScrollY = validScrollY(state.portalRestoreScrollY);
+    if (isSameRoute(destination)) {
+      navigateWithinCurrentRoute(destination, false, {
+        restoreScrollY,
+        scrollBehavior: "auto"
+      });
+      return;
+    }
+    void loadRoute(destination, false, {
+      restoreScrollY,
       scrollBehavior: "auto"
     });
   });
@@ -415,7 +461,7 @@ function bindRouteNavigation() {
 async function loadRoute(destination: URL, push: boolean, options: RouteNavigationOptions = {}) {
   if (routeLoading) return;
   if (push && isSameRoute(destination)) {
-    navigateWithinCurrentRoute(destination, true);
+    navigateWithinCurrentRoute(destination, true, options);
     return;
   }
   const content = document.querySelector<HTMLElement>("#portalContent");
@@ -424,7 +470,7 @@ async function loadRoute(destination: URL, push: boolean, options: RouteNavigati
   routeLoading = true;
   document.body.classList.add("route-loading");
   try {
-    const response = await fetch(destination.href, { headers: { "X-AchoudiPost-Route": "1" } });
+    const response = await fetch(destination.href, { headers: { Accept: "text/html" } });
     if (!response.ok) throw new Error(`Route request failed: ${response.status}`);
     const documentText = await response.text();
     const nextDocument = new DOMParser().parseFromString(documentText, "text/html");
@@ -434,31 +480,50 @@ async function loadRoute(destination: URL, push: boolean, options: RouteNavigati
     if (!nextContent) throw new Error("Route content is missing");
 
     await ensureRouteStyles(nextDocument, destination.href);
+    window.cleanupSteadyflowReference?.();
     content.innerHTML = nextContent.innerHTML;
     if (footer && nextFooter) {
       footer.innerHTML = nextFooter.innerHTML;
       footer.hidden = nextFooter.hidden;
     }
     document.title = nextDocument.title;
-    document.body.dataset.page = nextDocument.body.dataset.page ?? "";
+    syncRouteBodyState(nextDocument.body);
     lastSectionNavigationId = null;
-    const nextLocation = `${destination.pathname}${destination.search}${destination.hash}`;
-    if (push) history.pushState(options.state ?? {}, "", nextLocation);
-    else if (options.replace) history.replaceState(options.state ?? history.state, "", nextLocation);
+    renderedPortalRoute = portalRouteKey(destination);
+    const nextLocation = portalLocationString(destination);
+    const nextHistoryState = portalHistoryStateForDestination(destination, options.state ?? currentPortalHistoryState());
+    if (push) history.pushState(nextHistoryState, "", nextLocation);
+    else if (options.replace) history.replaceState(nextHistoryState, "", nextLocation);
     updateActiveNavigation(destination.pathname, destination.hash);
     setPrimaryNavigation(false);
     bindPageInteractions();
     createPortalIcons();
-    const restoreScrollY = validScrollY(options.restoreScrollY);
-    if (restoreScrollY !== null) restoreScrollPosition(restoreScrollY, options.scrollBehavior ?? "auto");
-    else if (destination.hash) requestAnimationFrame(() => scrollToHash(destination.hash));
-    else window.scrollTo(0, 0);
+    const restoreScrollY = navigationScrollYForDestination(destination, options.restoreScrollY);
+    if (restoreScrollY !== null) {
+      restoreScrollPosition(restoreScrollY, options.scrollBehavior ?? "auto");
+    } else if (destination.hash) {
+      scrollToHash(destination.hash, options.scrollBehavior ?? "auto");
+    } else {
+      window.scrollTo({ top: 0, behavior: options.scrollBehavior ?? "auto" });
+      scheduleHeaderSurfaceSync();
+      scheduleSectionNavigationSync();
+    }
   } catch {
     location.assign(destination.href);
   } finally {
     routeLoading = false;
     document.body.classList.remove("route-loading");
   }
+}
+
+function syncRouteBodyState(nextBody: HTMLElement) {
+  const shouldKeepRouteLoading = document.body.classList.contains("route-loading");
+  document.body.className = nextBody.className;
+  if (shouldKeepRouteLoading) document.body.classList.add("route-loading");
+
+  const nextPage = nextBody.dataset.page;
+  if (nextPage) document.body.dataset.page = nextPage;
+  else delete document.body.dataset.page;
 }
 
 async function ensureRouteStyles(nextDocument: Document, routeBaseUrl: string) {
@@ -484,7 +549,25 @@ async function ensureRouteStyles(nextDocument: Document, routeBaseUrl: string) {
     existingStyles.add(href);
   });
 
+  cloneRouteInlineStyles(nextDocument);
+
   if (styleLoads.length) await Promise.all(styleLoads);
+}
+
+function cloneRouteInlineStyles(nextDocument: Document) {
+  const existingInlineStyles = currentInlineStyleKeys();
+  const routeInlineStyles = Array.from(nextDocument.querySelectorAll<HTMLStyleElement>("head style"));
+
+  routeInlineStyles.forEach((routeStyle) => {
+    const key = inlineStyleKey(routeStyle);
+    if (!key || existingInlineStyles.has(key)) return;
+
+    const style = routeStyle.cloneNode(true) as HTMLStyleElement;
+    style.dataset.portalRouteStyle = "true";
+    style.dataset.portalStyleKey = key;
+    document.head.appendChild(style);
+    existingInlineStyles.add(key);
+  });
 }
 
 function currentStylesheetHrefs() {
@@ -504,6 +587,35 @@ function normalizedStylesheetHref(link: HTMLLinkElement, baseUrl: string) {
   } catch {
     return href;
   }
+}
+
+function currentInlineStyleKeys() {
+  const keys = new Set<string>();
+  Array.from(document.querySelectorAll<HTMLStyleElement>("head style")).forEach((style) => {
+    const key = style.dataset.portalStyleKey || inlineStyleKey(style);
+    if (key) keys.add(key);
+  });
+  return keys;
+}
+
+function inlineStyleKey(style: HTMLStyleElement) {
+  const viteId = style.getAttribute("data-vite-dev-id");
+  if (viteId) return `vite:${viteId}`;
+
+  const astroId = style.getAttribute("data-astro-id");
+  if (astroId) return `astro:${astroId}`;
+
+  const text = style.textContent?.trim();
+  if (!text) return null;
+  return `text:${hashString(text)}`;
+}
+
+function hashString(value: string) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (Math.imul(31, hash) + value.charCodeAt(index)) | 0;
+  }
+  return `${value.length}:${(hash >>> 0).toString(36)}`;
 }
 
 function prepareSkillEntryState(link: HTMLAnchorElement, destination: URL): PortalHistoryState | null {
@@ -538,7 +650,7 @@ function resolveCurrentSkillReturnState(link: HTMLAnchorElement): SkillReturnSta
     destination.hash = "sf-achievements";
     return {
       url: `${destination.pathname}${destination.search}${destination.hash}`,
-      scrollY: resolveHomeSectionScrollY("sf-achievements")
+      scrollY: resolveHomeSectionReturnScrollY("sf-achievements")
     };
   }
 
@@ -547,10 +659,13 @@ function resolveCurrentSkillReturnState(link: HTMLAnchorElement): SkillReturnSta
   return { url: currentUrl || "/", scrollY };
 }
 
-function resolveHomeSectionScrollY(sectionId: string) {
+function resolveHomeSectionReturnScrollY(sectionId: string) {
   const section = document.getElementById(sectionId);
-  if (!section) return Math.max(0, Math.round(window.scrollY));
-  return targetTopForHash(section);
+  const currentScrollY = Math.max(0, Math.round(window.scrollY));
+  if (!section) return currentScrollY;
+
+  const sectionTop = targetTopForHash(section);
+  return isScrollYInsideTargetSection(currentScrollY, section, sectionTop) ? currentScrollY : sectionTop;
 }
 
 function shouldAnchorSkillReturnToAchievements(link: HTMLAnchorElement) {
@@ -614,7 +729,7 @@ function readSkillReturnState(): SkillReturnState | null {
   const historyState = currentPortalHistoryState();
   const historyReturnUrl = typeof historyState.portalReturnUrl === "string" ? historyState.portalReturnUrl : null;
   const historyReturnScrollY = validScrollY(historyState.portalReturnScrollY);
-  if (historyReturnUrl && historyReturnScrollY !== null) return { url: historyReturnUrl, scrollY: historyReturnScrollY };
+  if (historyReturnUrl) return { url: historyReturnUrl, scrollY: historyReturnScrollY };
 
   try {
     const rawValue = sessionStorage.getItem(skillReturnStorageKey);
@@ -622,7 +737,6 @@ function readSkillReturnState(): SkillReturnState | null {
     const stored = JSON.parse(rawValue) as Partial<SkillReturnState>;
     if (typeof stored.url !== "string") return null;
     const storedScrollY = validScrollY(stored.scrollY);
-    if (storedScrollY === null) return null;
     return { url: stored.url, scrollY: storedScrollY };
   } catch {
     return null;
@@ -641,56 +755,159 @@ function validScrollY(scrollY: unknown) {
   return typeof scrollY === "number" && Number.isFinite(scrollY) && scrollY >= 0 ? scrollY : null;
 }
 
+function navigationScrollYForDestination(destination: URL, requestedScrollY: unknown) {
+  const requested = validScrollY(requestedScrollY);
+  if (!destination.hash || !shouldPreferHashTargetForNavigation(destination)) return requested;
+
+  const target = elementFromHash(destination.hash);
+  if (!target) return requested;
+
+  const hashScrollY = targetTopForHash(target);
+  if (requested !== null && isScrollYInsideTargetSection(requested, target, hashScrollY)) return requested;
+  return hashScrollY;
+}
+
+function shouldPreferHashTargetForNavigation(destination: URL) {
+  if (destination.pathname !== "/" || document.body.dataset.page !== "home" || !destination.hash) return false;
+  const target = elementFromHash(destination.hash);
+  return Boolean(target && shouldAlignHomeSectionToViewport(target));
+}
+
+function portalLocationString(destination: URL) {
+  return `${destination.pathname}${destination.search}${destination.hash}`;
+}
+
+function portalRouteKey(destination: URL) {
+  return `${destination.pathname}${destination.search}`;
+}
+
+function portalHistoryStateForDestination(destination: URL, fallbackState: PortalHistoryState = {}) {
+  const nextState: PortalHistoryState = { ...fallbackState };
+  if (!isSkillDetailPath(destination.pathname)) {
+    delete nextState.portalReturnSource;
+    delete nextState.portalReturnUrl;
+    delete nextState.portalReturnScrollY;
+  }
+  const requestedScrollY = validScrollY(nextState.portalRestoreScrollY);
+  const target = destination.hash ? elementFromHash(destination.hash) : null;
+  if (target) {
+    const targetScrollY = targetTopForHash(target);
+    nextState.portalRestoreScrollY =
+      requestedScrollY !== null && isScrollYInsideTargetSection(requestedScrollY, target, targetScrollY)
+        ? requestedScrollY
+        : targetScrollY;
+  } else {
+    delete nextState.portalRestoreScrollY;
+  }
+  return nextState;
+}
+
+function elementFromHash(hash: string) {
+  try {
+    const targetId = decodeURIComponent(hash.replace(/^#/, ""));
+    return targetId ? document.getElementById(targetId) : null;
+  } catch {
+    return null;
+  }
+}
+
+function targetScrollYForHash(hash: string) {
+  const target = elementFromHash(hash);
+  return target ? targetTopForHash(target) : null;
+}
+
+function alignCurrentHomeHashToPortalViewport() {
+  if (document.body.dataset.page !== "home" || !location.hash) return;
+  const target = elementFromHash(location.hash);
+  if (!target || !shouldAlignHomeSectionToViewport(target)) return;
+  if (homeHashAlignmentFrame) window.cancelAnimationFrame(homeHashAlignmentFrame);
+  homeHashAlignmentFrame = window.requestAnimationFrame(() => {
+    homeHashAlignmentFrame = 0;
+    const targetTop = targetScrollYForHash(location.hash);
+    if (targetTop === null) return;
+    restoreScrollPosition(targetTop, "auto");
+    updateActiveNavigation("/", location.hash);
+  });
+}
+
 function restoreScrollPosition(scrollY: number, behavior: ScrollBehavior = "auto") {
   const top = Math.max(0, Math.round(scrollY));
-  const restore = () => {
-    window.scrollTo({ top, behavior });
+  const restore = (restoreBehavior: ScrollBehavior = "auto") => {
+    window.scrollTo({ top, behavior: restoreBehavior });
     scheduleHeaderSurfaceSync();
     scheduleSectionNavigationSync();
   };
 
+  restore(behavior);
   requestAnimationFrame(() => {
-    restore();
-    window.setTimeout(restore, 80);
+    restore("auto");
+    window.setTimeout(() => restore("auto"), 80);
+    window.setTimeout(() => restore("auto"), 260);
   });
 }
 
 function isSameRoute(destination: URL) {
-  return destination.pathname === location.pathname && destination.search === location.search;
+  return portalRouteKey(destination) === renderedPortalRoute;
 }
 
-function navigateWithinCurrentRoute(destination: URL, push: boolean) {
-  const nextLocation = `${destination.pathname}${destination.search}${destination.hash}`;
-  const currentLocation = `${location.pathname}${location.search}${location.hash}`;
+function navigateWithinCurrentRoute(destination: URL, push: boolean, options: RouteNavigationOptions = {}) {
+  const nextLocation = portalLocationString(destination);
+  const currentLocation = portalLocationString(new URL(location.href));
+  const nextHistoryState = portalHistoryStateForDestination(destination, options.state ?? currentPortalHistoryState());
   if (nextLocation !== currentLocation) {
-    if (push) history.pushState({}, "", nextLocation);
-    else history.replaceState(history.state, "", nextLocation);
+    if (push) history.pushState(nextHistoryState, "", nextLocation);
+    else history.replaceState(nextHistoryState, "", nextLocation);
+  } else if (options.replace) {
+    history.replaceState(nextHistoryState, "", nextLocation);
   }
+  lastSectionNavigationId = null;
   updateActiveNavigation(destination.pathname, destination.hash);
   setPrimaryNavigation(false);
-  if (destination.hash) scrollToHash(destination.hash);
-  else window.scrollTo({ top: 0, behavior: "smooth" });
+  const restoreScrollY = navigationScrollYForDestination(destination, options.restoreScrollY);
+  const scrollBehavior = options.scrollBehavior ?? (push ? "smooth" : "auto");
+  if (restoreScrollY !== null) {
+    restoreScrollPosition(restoreScrollY, scrollBehavior);
+  } else if (destination.hash) {
+    scrollToHash(destination.hash, scrollBehavior);
+  } else {
+    window.scrollTo({ top: 0, behavior: scrollBehavior });
+    scheduleHeaderSurfaceSync();
+    scheduleSectionNavigationSync();
+  }
 }
 
-function scrollToHash(hash: string) {
-  const targetId = decodeURIComponent(hash.replace(/^#/, ""));
-  if (!targetId) return;
-  const target = document.getElementById(targetId);
-  if (!target) return;
-  const targetTop = targetTopForHash(target);
-  window.scrollTo({ top: targetTop, behavior: "smooth" });
+function scrollToHash(hash: string, behavior: ScrollBehavior = "smooth") {
+  const targetTop = targetScrollYForHash(hash);
+  if (targetTop === null) return;
+  if (behavior === "smooth") {
+    window.scrollTo({ top: targetTop, behavior });
+  } else {
+    restoreScrollPosition(targetTop, behavior);
+  }
+  scheduleHeaderSurfaceSync();
   scheduleSectionNavigationSync();
+  window.setTimeout(scheduleHeaderSurfaceSync, 420);
   window.setTimeout(scheduleSectionNavigationSync, 420);
 }
 
 function targetTopForHash(target: HTMLElement) {
   const absoluteTop = target.getBoundingClientRect().top + window.scrollY;
-  const offset = shouldAlignHomeSectionToViewport(target) ? 0 : routeScrollOffset();
+  if (shouldAlignHomeSectionToViewport(target)) {
+    return Math.max(0, Math.ceil(absoluteTop) + 4);
+  }
+
+  const offset = routeScrollOffset();
   return Math.max(0, Math.round(absoluteTop - offset));
 }
 
 function shouldAlignHomeSectionToViewport(target: HTMLElement) {
   return document.body.dataset.page === "home" && fullScreenHomeSectionIds.has(target.id);
+}
+
+function isScrollYInsideTargetSection(scrollY: number, target: HTMLElement, targetTop: number) {
+  const sectionHeight = Math.max(target.getBoundingClientRect().height, target.offsetHeight, window.innerHeight || 0);
+  const tolerance = Math.max(24, Math.round(routeScrollOffset() * 0.5));
+  return scrollY >= targetTop - tolerance && scrollY <= targetTop + sectionHeight - tolerance;
 }
 
 function routeScrollOffset() {

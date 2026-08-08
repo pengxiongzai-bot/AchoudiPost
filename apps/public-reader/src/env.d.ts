@@ -2,6 +2,7 @@
 
 interface Window {
   initSteadyflowReference?: () => void;
+  cleanupSteadyflowReference?: () => void;
   __FREEDOMPOST_INITIAL__?: {
     slug: string;
     meta: {

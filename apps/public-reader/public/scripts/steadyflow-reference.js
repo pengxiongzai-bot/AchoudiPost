@@ -1,7 +1,23 @@
 (() => {
+  let activeRoot = null;
+  let activeCleanup = null;
+
+  const cleanupSteadyflowReference = () => {
+    if (typeof activeCleanup === "function") activeCleanup();
+    activeCleanup = null;
+    activeRoot = null;
+  };
+
   const initSteadyflowReference = () => {
     const root = document.querySelector("[data-steadyflow-reference]");
-    if (!root || root.dataset.sfReady === "true") return;
+    if (!root) {
+      cleanupSteadyflowReference();
+      return;
+    }
+    if (root === activeRoot && root.dataset.sfReady === "true") return;
+
+    cleanupSteadyflowReference();
+    activeRoot = root;
     root.dataset.sfReady = "true";
 
     const toggle = root.querySelector("[data-sf-menu-toggle]");
@@ -27,6 +43,52 @@
     let lastFocusedPreviewTrigger = null;
     let lastFocusedQrTrigger = null;
 
+    const cleanupTasks = [];
+    const addCleanup = (task) => cleanupTasks.push(task);
+    const on = (target, type, handler, options) => {
+      if (!target?.addEventListener) return;
+      target.addEventListener(type, handler, options);
+      addCleanup(() => target.removeEventListener(type, handler, options));
+    };
+    const onMediaChange = (query, handler) => {
+      if (query?.addEventListener) {
+        query.addEventListener("change", handler);
+        addCleanup(() => query.removeEventListener("change", handler));
+        return;
+      }
+      if (query?.addListener) {
+        query.addListener(handler);
+        addCleanup(() => query.removeListener?.(handler));
+      }
+    };
+
+    activeCleanup = () => {
+      const tasks = cleanupTasks.splice(0).reverse();
+      tasks.forEach((task) => {
+        try {
+          task();
+        } catch {
+          // Ignore cleanup failures from already-detached DOM nodes.
+        }
+      });
+      document.body.style.overflow = "";
+      root.classList.remove("sf-menu-open", "sf-scrolled");
+      if (backdrop) backdrop.hidden = true;
+      if (toggle) {
+        toggle.setAttribute("aria-expanded", "false");
+        toggle.setAttribute("aria-label", "打开导航");
+      }
+      if (videoOverlay) videoOverlay.hidden = true;
+      if (videoFrame) videoFrame.setAttribute("src", "");
+      if (imagePreviewOverlay) imagePreviewOverlay.hidden = true;
+      if (imagePreviewImage) {
+        imagePreviewImage.removeAttribute("src");
+        imagePreviewImage.setAttribute("alt", "");
+      }
+      if (qrOverlay) qrOverlay.hidden = true;
+      delete root.dataset.sfReady;
+    };
+
     const setScrolled = () => {
       const top = root.getBoundingClientRect().top + window.scrollY;
       root.classList.toggle("sf-scrolled", window.scrollY > top + 50);
@@ -50,13 +112,13 @@
       document.body.style.overflow = "hidden";
     };
 
-    toggle?.addEventListener("click", () => {
+    on(toggle, "click", () => {
       root.classList.contains("sf-menu-open") ? closeMenu() : openMenu();
     });
-    backdrop?.addEventListener("click", (event) => {
+    on(backdrop, "click", (event) => {
       if (event.target === backdrop) closeMenu();
     });
-    backdrop?.querySelectorAll("a").forEach((link) => link.addEventListener("click", closeMenu));
+    backdrop?.querySelectorAll("a").forEach((link) => on(link, "click", closeMenu));
 
     const closeVideo = () => {
       if (!videoOverlay || !videoFrame) return;
@@ -65,14 +127,14 @@
       document.body.style.overflow = "";
     };
 
-    videoOpen?.addEventListener("click", () => {
+    on(videoOpen, "click", () => {
       if (!videoOverlay || !videoFrame) return;
       videoFrame.setAttribute("src", demoUrl);
       videoOverlay.hidden = false;
       document.body.style.overflow = "hidden";
     });
-    videoClose?.addEventListener("click", closeVideo);
-    videoOverlay?.addEventListener("click", (event) => {
+    on(videoClose, "click", closeVideo);
+    on(videoOverlay, "click", (event) => {
       if (event.target === videoOverlay) closeVideo();
     });
 
@@ -95,12 +157,12 @@
       qrClose?.focus({ preventScroll: true });
     };
 
-    qrOpen?.addEventListener("click", (event) => {
+    on(qrOpen, "click", (event) => {
       event.preventDefault();
       openQr();
     });
-    qrCloseButtons.forEach((button) => button.addEventListener("click", closeQr));
-    qrOverlay?.addEventListener("click", (event) => {
+    qrCloseButtons.forEach((button) => on(button, "click", closeQr));
+    on(qrOverlay, "click", (event) => {
       if (event.target instanceof HTMLElement && event.target.closest("[data-sf-qr-close]")) {
         event.preventDefault();
         closeQr();
@@ -136,9 +198,9 @@
       if (options.focusClose) imagePreviewClose?.focus({ preventScroll: true });
     };
 
-    imagePreviewCloseButtons.forEach((button) => button.addEventListener("click", closeImagePreview));
+    imagePreviewCloseButtons.forEach((button) => on(button, "click", closeImagePreview));
     imagePreviewTriggers.forEach((trigger) => {
-      trigger.addEventListener("click", (event) => {
+      on(trigger, "click", (event) => {
         event.preventDefault();
         openImagePreview(trigger, { focusClose: true });
       });
@@ -152,8 +214,8 @@
         closeQr();
       }
     };
-    window.addEventListener("keydown", handleGlobalKeydown);
-    document.addEventListener("keydown", handleGlobalKeydown);
+    on(window, "keydown", handleGlobalKeydown);
+    on(document, "keydown", handleGlobalKeydown);
 
     if (avatarCount) avatarCount.textContent = avatarCount.dataset.sfCounts?.split(",")[0]?.trim() || avatarCount.textContent;
 
@@ -169,6 +231,7 @@
       { rootMargin: "0px 0px -100px 0px", threshold: 0.1 }
     );
     root.querySelectorAll(".sf-reveal").forEach((item) => revealObserver.observe(item));
+    addCleanup(() => revealObserver.disconnect());
 
     const counter = root.querySelector(".sf-counter");
     const countObserver = new IntersectionObserver(
@@ -193,6 +256,7 @@
       { threshold: 0.35 }
     );
     if (counter) countObserver.observe(counter);
+    addCleanup(() => countObserver.disconnect());
 
     const isCompactViewport = () => window.matchMedia("(max-width: 640px)").matches;
     const replaySections = [
@@ -261,36 +325,55 @@
 
       replaySections.forEach((item) => replayObserver.observe(item.element));
 
-      document.addEventListener("visibilitychange", () => {
+      const handleReplayVisibilityChange = () => {
         if (document.hidden) {
           replaySections.forEach((item) => item.pause());
         }
-      });
+      };
 
-      reducedMotionQuery.addEventListener?.("change", () => {
+      const handleReplayReducedMotionChange = () => {
         if (reducedMotionQuery.matches) {
           replaySections.forEach((item) => item.leave());
           replayObserver.disconnect();
         }
-      });
+      };
 
-      window.addEventListener("pagehide", () => {
+      const handleReplayPageHide = () => {
+        replaySections.forEach((item) => item.leave());
+        replayObserver.disconnect();
+      };
+
+      on(document, "visibilitychange", handleReplayVisibilityChange);
+      onMediaChange(reducedMotionQuery, handleReplayReducedMotionChange);
+      on(window, "pagehide", handleReplayPageHide);
+      addCleanup(() => {
         replaySections.forEach((item) => item.leave());
         replayObserver.disconnect();
       });
     }
 
     if (hero && !reducedMotionQuery.matches) {
-      let heroReplayArmed = false;
-      let heroReplayTicking = false;
       let heroReplayTimeoutId = null;
       let heroReadyTimeoutId = null;
+      let heroReady = false;
+      let heroWasAway = false;
+      let heroInReplayZone = false;
+      let heroObserver = null;
       let lastHeroReplayAt = 0;
+
+      const heroViewportRatio = () => {
+        const rect = hero.getBoundingClientRect();
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+        const visibleHeight = Math.max(0, Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0));
+        return rect.height > 0 ? visibleHeight / Math.max(rect.height, 1) : 0;
+      };
 
       const markHeroReady = () => {
         window.clearTimeout(heroReadyTimeoutId);
         heroReadyTimeoutId = null;
+        heroReady = true;
         hero.classList.add("sf-hero-ready");
+        if (heroViewportRatio() < (isCompactViewport() ? 0.22 : 0.28)) heroWasAway = true;
       };
 
       const clearHeroReplay = () => {
@@ -301,10 +384,10 @@
 
       const playHeroReplay = () => {
         const now = performance.now();
-        if (document.hidden || now - lastHeroReplayAt < 1400) return;
+        if (!heroReady || document.hidden || now - lastHeroReplayAt < 1800) return;
 
         lastHeroReplayAt = now;
-        heroReplayArmed = false;
+        heroWasAway = false;
         markHeroReady();
         hero.classList.remove("sf-replay-pulse");
         void hero.offsetWidth;
@@ -313,46 +396,62 @@
         heroReplayTimeoutId = window.setTimeout(clearHeroReplay, 2200);
       };
 
-      const updateHeroReplay = () => {
-        heroReplayTicking = false;
-
-        const heroTop = hero.getBoundingClientRect().top + window.scrollY;
-        const heroHeight = Math.max(hero.offsetHeight, window.innerHeight || document.documentElement.clientHeight);
-        const progress = window.scrollY - heroTop;
-        const leaveDistance = heroHeight * (isCompactViewport() ? 0.5 : 0.58);
-        const returnDistance = heroHeight * (isCompactViewport() ? 0.14 : 0.12);
-
-        if (progress > leaveDistance) {
-          heroReplayArmed = true;
-          clearHeroReplay();
-          return;
-        }
-
-        if (heroReplayArmed && progress <= returnDistance) {
-          playHeroReplay();
-        }
+      const markHeroAway = () => {
+        heroInReplayZone = false;
+        if (heroReady) heroWasAway = true;
+        clearHeroReplay();
       };
 
-      const requestHeroReplayUpdate = () => {
-        if (heroReplayTicking) return;
-        heroReplayTicking = true;
-        window.requestAnimationFrame(updateHeroReplay);
-      };
+      if ("IntersectionObserver" in window) {
+        heroObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.target !== hero) return;
+              const enterThreshold = isCompactViewport() ? 0.38 : 0.42;
+              const leaveThreshold = isCompactViewport() ? 0.08 : 0.1;
 
-      updateHeroReplay();
+              if (entry.isIntersecting && entry.intersectionRatio >= enterThreshold) {
+                if (!heroInReplayZone) {
+                  heroInReplayZone = true;
+                  if (heroWasAway) playHeroReplay();
+                }
+                return;
+              }
+
+              if (!entry.isIntersecting || entry.intersectionRatio <= leaveThreshold) markHeroAway();
+            });
+          },
+          { rootMargin: "-4% 0px -4% 0px", threshold: [0, 0.08, 0.1, 0.18, 0.28, 0.38, 0.42, 0.6] }
+        );
+        heroObserver.observe(hero);
+      }
+
       heroReadyTimeoutId = window.setTimeout(markHeroReady, 2200);
-      window.addEventListener("scroll", requestHeroReplayUpdate, { passive: true });
-      window.addEventListener("resize", requestHeroReplayUpdate, { passive: true });
-      document.addEventListener("visibilitychange", () => {
+
+      const handleHeroVisibilityChange = () => {
         if (document.hidden) clearHeroReplay();
-      });
-      window.addEventListener("pagehide", () => {
+      };
+      const handleHeroPageHide = () => {
         window.clearTimeout(heroReadyTimeoutId);
         clearHeroReplay();
-      });
+        if (heroObserver) heroObserver.disconnect();
+      };
+      const handleHeroReducedMotionChange = () => {
+        if (reducedMotionQuery.matches) {
+          clearHeroReplay();
+          if (heroObserver) heroObserver.disconnect();
+          hero.classList.add("sf-hero-ready");
+        }
+      };
 
-      reducedMotionQuery.addEventListener?.("change", () => {
-        if (reducedMotionQuery.matches) clearHeroReplay();
+      on(document, "visibilitychange", handleHeroVisibilityChange);
+      on(window, "pagehide", handleHeroPageHide);
+      onMediaChange(reducedMotionQuery, handleHeroReducedMotionChange);
+      addCleanup(() => {
+        window.clearTimeout(heroReadyTimeoutId);
+        clearHeroReplay();
+        if (heroObserver) heroObserver.disconnect();
+        hero.classList.add("sf-hero-ready");
       });
     }
 
@@ -373,18 +472,19 @@
       };
 
       syncMarqueeLoop();
-      window.addEventListener("resize", syncMarqueeLoop, { passive: true });
-      window.addEventListener("load", syncMarqueeLoop, { once: true });
+      on(window, "resize", syncMarqueeLoop, { passive: true });
+      on(window, "load", syncMarqueeLoop, { once: true });
       root.querySelectorAll(".sf-hero-marquee-card img").forEach((image) => {
         if (image.complete) return;
-        image.addEventListener("load", syncMarqueeLoop, { once: true });
+        on(image, "load", syncMarqueeLoop, { once: true });
       });
     }
 
     setScrolled();
-    window.addEventListener("scroll", setScrolled, { passive: true });
+    on(window, "scroll", setScrolled, { passive: true });
   };
 
+  window.cleanupSteadyflowReference = cleanupSteadyflowReference;
   window.initSteadyflowReference = initSteadyflowReference;
   initSteadyflowReference();
 })();
