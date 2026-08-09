@@ -4,6 +4,7 @@ export type SkillResourceCard = {
   title: string;
   description: string;
   action: string;
+  image?: string;
 };
 
 export type SkillModule = {
@@ -45,42 +46,48 @@ export const skillModules: SkillModule[] = [
         tag: "主图",
         title: "商品主图框架",
         description: "先把人群、痛点、核心利益点压到一张图里，解决第一眼停留。",
-        action: "查看框架"
+        action: "查看框架",
+        image: "/images/hero-showcase-red-sneaker.jpg"
       },
       {
         code: "VF-02",
         tag: "场景",
         title: "场景图框架",
         description: "把商品放进真实使用场景，让用户更快判断适不适合自己。",
-        action: "查看场景"
+        action: "查看场景",
+        image: "/images/hero-showcase-panda-camera.jpg"
       },
       {
         code: "VF-03",
         tag: "卖点",
         title: "卖点图表达",
         description: "把参数、优势和使用结果转成更容易被理解的视觉语言。",
-        action: "查看卖点"
+        action: "查看卖点",
+        image: "/images/hero-showcase-snow-chain.jpg"
       },
       {
         code: "VF-04",
         tag: "详情",
         title: "详情页长图结构",
         description: "按浏览顺序安排利益点、信任点和成交点，减少内容断层。",
-        action: "查看结构"
+        action: "查看结构",
+        image: "/images/hero-showcase-dining-chair.jpg"
       },
       {
         code: "VF-05",
         tag: "私域",
         title: "私域成交视觉",
         description: "把朋友圈、社群和私聊素材统一成可持续输出的视觉模块。",
-        action: "查看私域"
+        action: "查看私域",
+        image: "/images/hero-showcase-plush-bear.jpg"
       },
       {
         code: "VF-06",
         tag: "复盘",
         title: "成套视觉检查清单",
         description: "用一套检查表判断画面是否能承接投放、搜索和转化。",
-        action: "查看清单"
+        action: "查看清单",
+        image: "/images/hero-showcase-steel-container.jpg"
       }
     ]
   },

@@ -41,7 +41,10 @@ const detailSteps = [
     <div class="skill-detail-inner">
       <div class="skill-routebar" aria-label="当前位置">
         <a href="/#sf-achievements" data-portal-route>返回 AI 实战库</a>
-        <span>{module.name}</span>
+        <div class="skill-route-meta">
+          <span class="skill-escape-hint"><kbd>Esc</kbd> 返回原位置</span>
+          <span>{module.name}</span>
+        </div>
       </div>
 
       <section class="skill-library-intro" data-skill-detail-hero>
@@ -52,8 +55,12 @@ const detailSteps = [
 
           <div class="skill-actions">
             <a class="skill-button primary" href="/#sf-counter" data-portal-route>联系咨询</a>
-            <a class="skill-button ghost" href="/#sf-achievements" data-portal-route>返回模块</a>
+            <a class="skill-button ghost" href="#skillFrameworks">查看框架</a>
           </div>
+
+          <ul class="skill-highlight-list" aria-label="模块能力">
+            {module.highlights.map((highlight) => <li>{highlight}</li>)}
+          </ul>
         </div>
 
         <div class="skill-step-flow" aria-label="模块使用路径">
@@ -81,7 +88,7 @@ const detailSteps = [
         </div>
       </section>
 
-      <section class="skill-resource-grid" aria-label={`${module.name} 框架列表`}>
+      <section id="skillFrameworks" class="skill-resource-grid" aria-label={`${module.name} 框架列表`}>
         {module.resourceCards.map((card, index) => (
           <article class="skill-resource-card">
             <figure class="skill-resource-cover">
@@ -89,7 +96,11 @@ const detailSteps = [
                 <span>{card.code}</span>
                 <span>{module.stat}</span>
               </figcaption>
-              <img src={module.image} alt="" loading={index > 2 ? "lazy" : "eager"} />
+              <img
+                src={card.image ?? module.image}
+                alt={`${card.title}参考画面`}
+                loading={index > 2 ? "lazy" : "eager"}
+              />
               <div class="skill-resource-shade"></div>
               <span class="skill-resource-tag">{card.tag}</span>
             </figure>
@@ -104,6 +115,34 @@ const detailSteps = [
             </div>
           </article>
         ))}
+      </section>
+
+      <section class="skill-method-panel" aria-label={`${module.name} 交付与执行路径`}>
+        <article>
+          <p class="skill-method-kicker">DELIVERABLES</p>
+          <h2>你会拿到什么</h2>
+          <ol class="skill-method-list">
+            {module.deliverables.map((deliverable, index) => (
+              <li>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <strong>{deliverable}</strong>
+              </li>
+            ))}
+          </ol>
+        </article>
+
+        <article>
+          <p class="skill-method-kicker">WORKFLOW</p>
+          <h2>实际怎么推进</h2>
+          <ol class="skill-method-list">
+            {module.flow.map((step, index) => (
+              <li>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <strong>{step}</strong>
+              </li>
+            ))}
+          </ol>
+        </article>
       </section>
 
       <section class="skill-bottom-cta" aria-label="下一步联系">
@@ -159,6 +198,33 @@ const detailSteps = [
     text-align: right;
   }
 
+  .skill-route-meta {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+
+  .skill-escape-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .skill-escape-hint kbd {
+    min-width: 2.15rem;
+    min-height: 1.55rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(244, 242, 235, 0.18);
+    border-radius: 0.35rem;
+    color: rgba(244, 242, 235, 0.66);
+    background: rgba(255, 255, 255, 0.045);
+    box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+    font: 700 0.66rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  }
+
   .skill-library-intro {
     display: grid;
     grid-template-columns: minmax(0, 0.92fr) minmax(360px, 0.72fr);
@@ -200,6 +266,28 @@ const detailSteps = [
     flex-wrap: wrap;
     gap: 0.8rem;
     margin-top: 2.2rem;
+  }
+
+  .skill-highlight-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin: 1.15rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .skill-highlight-list li {
+    min-height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(244, 242, 235, 0.13);
+    border-radius: 999px;
+    padding: 0 0.75rem;
+    color: rgba(244, 242, 235, 0.56);
+    background: rgba(255, 255, 255, 0.025);
+    font-size: 0.75rem;
+    font-weight: 750;
   }
 
   .skill-button {
@@ -424,6 +512,61 @@ const detailSteps = [
     border-color: #f7f5ee;
   }
 
+  .skill-method-panel {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(1rem, 2vw, 1.35rem);
+    margin-top: clamp(1rem, 2.8vw, 2rem);
+  }
+
+  .skill-method-panel > article {
+    border: 1px solid rgba(244, 242, 235, 0.12);
+    padding: clamp(1.35rem, 3vw, 2rem);
+    background: rgba(255, 255, 255, 0.025);
+  }
+
+  .skill-method-kicker {
+    margin: 0 0 0.85rem;
+    color: rgba(244, 242, 235, 0.38);
+    font: 800 0.7rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+    letter-spacing: 0.12em;
+  }
+
+  .skill-method-panel h2 {
+    margin: 0 0 1.35rem;
+    color: rgba(244, 242, 235, 0.94);
+    font-family: "Noto Serif SC", "Songti SC", "STSong", "SimSun", ui-serif, Georgia, serif;
+    font-size: clamp(1.65rem, 2.7vw, 2.65rem);
+    font-weight: 400;
+    letter-spacing: -0.05em;
+  }
+
+  .skill-method-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .skill-method-list li {
+    display: grid;
+    grid-template-columns: 2.4rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 3.25rem;
+    border-top: 1px solid rgba(244, 242, 235, 0.1);
+  }
+
+  .skill-method-list span {
+    color: rgba(244, 242, 235, 0.34);
+    font: 800 0.68rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  }
+
+  .skill-method-list strong {
+    color: rgba(244, 242, 235, 0.76);
+    font-size: 0.94rem;
+    line-height: 1.5;
+  }
+
   .skill-bottom-cta {
     margin-top: clamp(1rem, 2.8vw, 2rem);
     border: 1px solid rgba(244, 242, 235, 0.12);
@@ -456,7 +599,8 @@ const detailSteps = [
 
     .skill-library-intro,
     .skill-step-flow,
-    .skill-resource-grid {
+    .skill-resource-grid,
+    .skill-method-panel {
       grid-template-columns: 1fr;
     }
 
@@ -490,6 +634,15 @@ const detailSteps = [
       align-items: flex-start;
       flex-direction: column;
       padding-bottom: 0.85rem;
+    }
+
+    .skill-route-meta {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .skill-escape-hint {
+      display: none;
     }
   }
 </style>
