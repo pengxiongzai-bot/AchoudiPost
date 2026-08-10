@@ -539,9 +539,8 @@
       };
 
       const finishMarqueeDrag = (event) => {
-        if (!marqueeIsDragging || event.pointerId !== marqueePointerId) return;
+        if (event.pointerId !== marqueePointerId) return;
 
-        marqueeIsDragging = false;
         marqueePointerId = null;
         marqueeTrack.classList.remove("sf-is-dragging");
         if (marqueeTrack.hasPointerCapture?.(event.pointerId)) {
@@ -554,35 +553,40 @@
           releaseSuppressTimeoutId = window.setTimeout(() => {
             suppressMarqueePreviewClick = false;
           }, 250);
+          pauseMarquee(900);
         }
-        pauseMarquee(900);
+        marqueeIsDragging = false;
       };
 
       on(marqueeTrack, "pointerdown", (event) => {
         if (event.button !== 0 || !marqueeLoopWidth) return;
 
-        window.clearTimeout(resumeMarqueeTimeoutId);
-        marqueeIsPaused = true;
-        marqueeIsDragging = true;
         marqueePointerId = event.pointerId;
         dragStartX = event.clientX;
         dragStartOffset = marqueeOffset;
         dragMoved = false;
-        marqueeTrack.classList.add("sf-is-dragging");
-        marqueeTrack.setPointerCapture?.(event.pointerId);
       });
 
-      on(marqueeTrack, "pointermove", (event) => {
-        if (!marqueeIsDragging || event.pointerId !== marqueePointerId) return;
+      on(window, "pointermove", (event) => {
+        if (event.pointerId !== marqueePointerId) return;
 
         const deltaX = event.clientX - dragStartX;
-        if (Math.abs(deltaX) > 5) dragMoved = true;
-        if (dragMoved) event.preventDefault();
-        setMarqueeOffset(dragStartOffset + deltaX);
-      });
+        if (!dragMoved && Math.abs(deltaX) > 8) {
+          dragMoved = true;
+          marqueeIsDragging = true;
+          window.clearTimeout(resumeMarqueeTimeoutId);
+          marqueeIsPaused = true;
+          marqueeTrack.classList.add("sf-is-dragging");
+          marqueeTrack.setPointerCapture?.(event.pointerId);
+        }
+        if (!dragMoved) return;
 
-      on(marqueeTrack, "pointerup", finishMarqueeDrag);
-      on(marqueeTrack, "pointercancel", finishMarqueeDrag);
+        event.preventDefault();
+        setMarqueeOffset(dragStartOffset + deltaX);
+      }, { passive: false });
+
+      on(window, "pointerup", finishMarqueeDrag);
+      on(window, "pointercancel", finishMarqueeDrag);
       on(marqueeTrack, "lostpointercapture", (event) => {
         if (marqueeIsDragging && event.pointerId === marqueePointerId) finishMarqueeDrag(event);
       });
