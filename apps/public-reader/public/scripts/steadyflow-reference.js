@@ -42,6 +42,7 @@
     const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     let lastFocusedPreviewTrigger = null;
     let lastFocusedQrTrigger = null;
+    let suppressMarqueePreviewClick = false;
 
     const cleanupTasks = [];
     const addCleanup = (task) => cleanupTasks.push(task);
@@ -202,6 +203,10 @@
     imagePreviewTriggers.forEach((trigger) => {
       on(trigger, "click", (event) => {
         event.preventDefault();
+        if (suppressMarqueePreviewClick) {
+          suppressMarqueePreviewClick = false;
+          return;
+        }
         openImagePreview(trigger, { focusClose: true });
       });
     });
@@ -456,6 +461,59 @@
     }
 
     if (marqueeTrack) {
+      const marqueeViewport = marqueeTrack.closest(".sf-hero-marquee");
+      const autoSpeed = 42;
+      let marqueeLoopWidth = 0;
+      let marqueeOffset = 0;
+      let marqueeFrameId = null;
+      let marqueeLastFrameTime = 0;
+      let resumeMarqueeTimeoutId = null;
+      let releaseSuppressTimeoutId = null;
+      let marqueeIsPaused = false;
+      let marqueeIsDragging = false;
+      let marqueePointerId = null;
+      let dragStartX = 0;
+      let dragStartOffset = 0;
+      let dragMoved = false;
+
+      const normalizeMarqueeOffset = (value) => {
+        if (!marqueeLoopWidth) return value;
+        let next = value % marqueeLoopWidth;
+        if (next > 0) next -= marqueeLoopWidth;
+        return next;
+      };
+
+      const setMarqueeOffset = (value) => {
+        marqueeOffset = normalizeMarqueeOffset(value);
+        marqueeTrack.style.setProperty("--sf-marquee-x", `${marqueeOffset.toFixed(2)}px`);
+      };
+
+      const pauseMarquee = (duration = 900) => {
+        marqueeIsPaused = true;
+        window.clearTimeout(resumeMarqueeTimeoutId);
+        resumeMarqueeTimeoutId = window.setTimeout(() => {
+          marqueeIsPaused = false;
+          marqueeLastFrameTime = performance.now();
+        }, duration);
+      };
+
+      const tickMarquee = (now) => {
+        const elapsed = marqueeLastFrameTime ? Math.min(64, now - marqueeLastFrameTime) : 16;
+        marqueeLastFrameTime = now;
+
+        if (!marqueeIsDragging && !marqueeIsPaused && !document.hidden && !reducedMotionQuery.matches) {
+          setMarqueeOffset(marqueeOffset - (autoSpeed * elapsed) / 1000);
+        }
+
+        marqueeFrameId = window.requestAnimationFrame(tickMarquee);
+      };
+
+      const startMarquee = () => {
+        if (marqueeFrameId !== null || !marqueeLoopWidth) return;
+        marqueeLastFrameTime = performance.now();
+        marqueeFrameId = window.requestAnimationFrame(tickMarquee);
+      };
+
       const syncMarqueeLoop = () => {
         const cards = [...marqueeTrack.querySelectorAll("[data-sf-image-preview-trigger]")];
         const firstCard = cards[0];
@@ -465,11 +523,84 @@
           const loopWidth = firstDuplicateCard.offsetLeft - firstCard.offsetLeft;
           if (loopWidth > 0) {
             const duration = Math.min(54, Math.max(34, loopWidth / 42));
+            const previousLoopWidth = marqueeLoopWidth;
+            marqueeLoopWidth = loopWidth;
             marqueeTrack.style.setProperty("--sf-hero-marquee-loop-distance", `-${loopWidth}px`);
             marqueeTrack.style.setProperty("--sf-hero-marquee-duration", `${duration.toFixed(2)}s`);
+            marqueeTrack.classList.add("sf-is-drag-ready");
+            if (previousLoopWidth && previousLoopWidth !== loopWidth) {
+              setMarqueeOffset((marqueeOffset / previousLoopWidth) * loopWidth);
+            } else {
+              setMarqueeOffset(marqueeOffset);
+            }
+            startMarquee();
           }
         }
       };
+
+      const finishMarqueeDrag = (event) => {
+        if (!marqueeIsDragging || event.pointerId !== marqueePointerId) return;
+
+        marqueeIsDragging = false;
+        marqueePointerId = null;
+        marqueeTrack.classList.remove("sf-is-dragging");
+        if (marqueeTrack.hasPointerCapture?.(event.pointerId)) {
+          marqueeTrack.releasePointerCapture(event.pointerId);
+        }
+
+        if (dragMoved) {
+          suppressMarqueePreviewClick = true;
+          window.clearTimeout(releaseSuppressTimeoutId);
+          releaseSuppressTimeoutId = window.setTimeout(() => {
+            suppressMarqueePreviewClick = false;
+          }, 250);
+        }
+        pauseMarquee(900);
+      };
+
+      on(marqueeTrack, "pointerdown", (event) => {
+        if (event.button !== 0 || !marqueeLoopWidth) return;
+
+        window.clearTimeout(resumeMarqueeTimeoutId);
+        marqueeIsPaused = true;
+        marqueeIsDragging = true;
+        marqueePointerId = event.pointerId;
+        dragStartX = event.clientX;
+        dragStartOffset = marqueeOffset;
+        dragMoved = false;
+        marqueeTrack.classList.add("sf-is-dragging");
+        marqueeTrack.setPointerCapture?.(event.pointerId);
+      });
+
+      on(marqueeTrack, "pointermove", (event) => {
+        if (!marqueeIsDragging || event.pointerId !== marqueePointerId) return;
+
+        const deltaX = event.clientX - dragStartX;
+        if (Math.abs(deltaX) > 5) dragMoved = true;
+        if (dragMoved) event.preventDefault();
+        setMarqueeOffset(dragStartOffset + deltaX);
+      });
+
+      on(marqueeTrack, "pointerup", finishMarqueeDrag);
+      on(marqueeTrack, "pointercancel", finishMarqueeDrag);
+      on(marqueeTrack, "lostpointercapture", (event) => {
+        if (marqueeIsDragging && event.pointerId === marqueePointerId) finishMarqueeDrag(event);
+      });
+
+      on(marqueeViewport, "wheel", (event) => {
+        if (!marqueeLoopWidth) return;
+
+        const horizontalDelta = Math.abs(event.deltaX) >= Math.abs(event.deltaY) ? event.deltaX : event.shiftKey ? event.deltaY : 0;
+        if (!horizontalDelta) return;
+
+        event.preventDefault();
+        setMarqueeOffset(marqueeOffset - horizontalDelta);
+        pauseMarquee(900);
+      }, { passive: false });
+
+      onMediaChange(reducedMotionQuery, () => {
+        marqueeLastFrameTime = performance.now();
+      });
 
       syncMarqueeLoop();
       on(window, "resize", syncMarqueeLoop, { passive: true });
@@ -477,6 +608,11 @@
       root.querySelectorAll(".sf-hero-marquee-card img").forEach((image) => {
         if (image.complete) return;
         on(image, "load", syncMarqueeLoop, { once: true });
+      });
+      addCleanup(() => {
+        window.cancelAnimationFrame(marqueeFrameId);
+        window.clearTimeout(resumeMarqueeTimeoutId);
+        window.clearTimeout(releaseSuppressTimeoutId);
       });
     }
 

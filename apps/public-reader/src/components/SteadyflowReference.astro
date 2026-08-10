@@ -174,7 +174,7 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
   </div>
 </section>
 
-<script is:inline type="module" src="/scripts/steadyflow-reference.js?v=20260804-qr-card-final"></script>
+<script is:inline type="module" src="/scripts/steadyflow-reference.js?v=20260811-drag-marquee"></script>
 
 <style>
   @import url("https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@500&family=Noto+Serif+SC:wght@400;500&display=swap");
@@ -752,6 +752,7 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
     background: transparent;
     -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 3.5%, #000 96.5%, transparent 100%);
     mask-image: linear-gradient(90deg, transparent 0%, #000 3.5%, #000 96.5%, transparent 100%);
+    cursor: grab;
   }
 
   .sf-marquee-curve {
@@ -783,9 +784,14 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
     gap: var(--sf-hero-marquee-gap);
     padding: 0;
     user-select: none;
-    touch-action: manipulation;
+    touch-action: pan-y;
     animation: sf-hero-marquee-scroll var(--sf-hero-marquee-duration) linear infinite;
     will-change: transform;
+  }
+
+  .sf-hero-marquee-track.sf-is-drag-ready {
+    animation: none;
+    transform: translate3d(var(--sf-marquee-x, 0px), 0, 0);
   }
 
   .sf-hero-marquee-track.sf-is-dragging {
@@ -813,7 +819,7 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
     border: 0;
     border-radius: var(--sf-hero-marquee-radius);
     background: rgba(255, 255, 255, 0.02);
-    cursor: zoom-in;
+    cursor: grab;
     appearance: none;
   }
 
