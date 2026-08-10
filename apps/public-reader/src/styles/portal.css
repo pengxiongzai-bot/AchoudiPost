@@ -114,6 +114,11 @@ body:not([data-page="home"]) #portalContent {
   padding-top: var(--portal-floating-nav-clearance);
 }
 
+body.skill-detail-page #portalContent {
+  padding-top: 0;
+  background: #050604;
+}
+
 .site-header-inner {
   width: 100%;
   max-width: min(var(--portal-header-max), calc(100vw - 60px));

@@ -6,9 +6,10 @@ interface Props {
   title: string;
   description: string;
   hideFooter?: boolean;
+  bodyClass?: string;
 }
 
-const { activePage, title, description, hideFooter = false } = Astro.props;
+const { activePage, title, description, hideFooter = false, bodyClass } = Astro.props;
 const siteName = "AchoudiPost";
 const pageTitle = activePage === "home" ? siteName : `${title} - ${siteName}`;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://example.com").toString();
@@ -39,7 +40,7 @@ const navItems = [
     <meta name="theme-color" content="#f7f7f4" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   </head>
-  <body class="portal-page" data-page={activePage}>
+  <body class:list={["portal-page", bodyClass]} data-page={activePage}>
     <header class="site-header">
       <div class="site-header-inner">
         <a class="portal-brand" href="/" data-portal-route aria-label="AchoudiPost 首页">
