@@ -32,15 +32,10 @@ const { module } = Astro.props as { module: SkillModule };
 
       <section class="skill-library-toolbar" aria-label="框架筛选">
         <div class="skill-tabs" aria-label="当前分类">
-          <span>品类</span>
           <strong>全部</strong>
           <span>{module.job}</span>
           <span>基础框架</span>
           <span>私域落地</span>
-        </div>
-        <div class="skill-count">
-          <span>{module.resourceCards.length} 个可看框架</span>
-          <a href="/#sf-counter" data-portal-route>使用说明</a>
         </div>
       </section>
 
@@ -48,10 +43,6 @@ const { module } = Astro.props as { module: SkillModule };
         {module.resourceCards.map((card, index) => (
           <article class="skill-resource-card">
             <figure class="skill-resource-cover">
-              <figcaption>
-                <span>{card.code}</span>
-                <span>{module.stat}</span>
-              </figcaption>
               <img
                 src={card.image ?? module.image}
                 alt={`${card.title}参考画面`}
@@ -67,8 +58,7 @@ const { module } = Astro.props as { module: SkillModule };
         ))}
       </section>
 
-      <section class="skill-bottom-cta" aria-label="下一步联系">
-        <p>下一步</p>
+      <section class="skill-bottom-cta" aria-label="咨询联系">
         <h2>把你的产品、类目和当前卡点发我</h2>
         <span>我会先判断从哪个框架切入，再把它细化成你可以直接用的执行路径。</span>
         <a class="skill-button primary" href="/#sf-counter" data-portal-route>去微信联系</a>
@@ -101,8 +91,7 @@ const { module } = Astro.props as { module: SkillModule };
     max-width: 760px;
   }
 
-  .skill-kicker,
-  .skill-bottom-cta > p {
+  .skill-kicker {
     margin: 0 0 1rem;
     color: rgba(244, 242, 235, 0.48);
     font-size: 0.78rem;
@@ -151,16 +140,10 @@ const { module } = Astro.props as { module: SkillModule };
     background: #f7f5ee;
   }
 
-  .skill-count span {
-    color: rgba(244, 242, 235, 0.38);
-    font: 800 0.72rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
-    letter-spacing: 0.08em;
-  }
-
   .skill-library-toolbar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 1rem;
     margin-bottom: clamp(1.2rem, 2.8vw, 2rem);
     border-top: 1px solid rgba(244, 242, 235, 0.11);
@@ -168,8 +151,7 @@ const { module } = Astro.props as { module: SkillModule };
     min-height: 4.2rem;
   }
 
-  .skill-tabs,
-  .skill-count {
+  .skill-tabs {
     display: flex;
     align-items: center;
     gap: 0.55rem;
@@ -177,8 +159,7 @@ const { module } = Astro.props as { module: SkillModule };
   }
 
   .skill-tabs span,
-  .skill-tabs strong,
-  .skill-count a {
+  .skill-tabs strong {
     min-height: 2.35rem;
     display: inline-flex;
     align-items: center;
@@ -192,8 +173,7 @@ const { module } = Astro.props as { module: SkillModule };
     text-decoration: none;
   }
 
-  .skill-tabs strong,
-  .skill-count a {
+  .skill-tabs strong {
     color: #090a07;
     background: #f7f5ee;
     border-color: #f7f5ee;
@@ -218,18 +198,6 @@ const { module } = Astro.props as { module: SkillModule };
     aspect-ratio: 16 / 11;
     overflow: hidden;
     background: #13140f;
-  }
-
-  .skill-resource-cover figcaption {
-    position: absolute;
-    z-index: 2;
-    top: 0.85rem;
-    left: 0.85rem;
-    right: 0.85rem;
-    display: flex;
-    justify-content: space-between;
-    color: rgba(255, 255, 255, 0.55);
-    font: 800 0.68rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
   }
 
   .skill-resource-cover img {
@@ -271,7 +239,6 @@ const { module } = Astro.props as { module: SkillModule };
   .skill-bottom-cta {
     display: grid;
     grid-template-areas:
-      "kicker action"
       "title action"
       "copy action";
     grid-template-columns: minmax(0, 1fr) auto;
@@ -283,10 +250,6 @@ const { module } = Astro.props as { module: SkillModule };
     background:
       radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.1), transparent 18rem),
       rgba(255, 255, 255, 0.035);
-  }
-
-  .skill-bottom-cta > p {
-    grid-area: kicker;
   }
 
   .skill-bottom-cta h2 {
@@ -332,8 +295,7 @@ const { module } = Astro.props as { module: SkillModule };
       letter-spacing: -0.07em;
     }
 
-    .skill-library-toolbar,
-    .skill-count {
+    .skill-library-toolbar {
       align-items: flex-start;
       flex-direction: column;
       padding: 0.95rem 0;
@@ -345,7 +307,6 @@ const { module } = Astro.props as { module: SkillModule };
 
     .skill-bottom-cta {
       grid-template-areas:
-        "kicker"
         "title"
         "copy"
         "action";
