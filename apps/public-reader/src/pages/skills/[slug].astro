@@ -18,12 +18,38 @@ const skillDialog =
     ? {
         title: `${primaryResourceCard.title} Skill`,
         summary: "把产品、卖点和目标人群整理成一张更容易停留、理解和点击的主图方案。",
-        versions: ["标准版", "增强版", "稳定版"],
-        details: [
-          ["适合", "新品上架、主图点击率低、卖点分散，或需要统一主图表达的场景"],
-          ["输入", "商品图、核心卖点、目标人群、平台尺寸和参考风格"],
-          ["主要能力", "利益点提炼 / 构图层级 / 文案排布 / 视觉一致性检查"],
-          ["输出", "可继续用于主图、广告图和改投素材的一套视觉方案"]
+        activeVersionIndex: 2,
+        versions: [
+          {
+            id: "standard",
+            title: "标准版",
+            details: [
+              ["适合", "新品上架、主图缺少基础结构，或需要先把卖点排清楚的场景"],
+              ["输入", "商品图、核心卖点、目标人群和平台尺寸"],
+              ["主要能力", "卖点提炼 / 主视觉构图 / 标题层级 / 基础检查"],
+              ["输出", "一张可用于测试方向的主图结构方案"]
+            ]
+          },
+          {
+            id: "enhanced",
+            title: "增强版",
+            details: [
+              ["适合", "已有主图但点击率不稳定，需要强化利益点和画面记忆点的场景"],
+              ["输入", "商品图、竞品参考、核心卖点、目标人群和风格方向"],
+              ["主要能力", "利益点强化 / 场景氛围 / 文案排布 / 对比优化"],
+              ["输出", "一套更适合投放、搜索和活动页使用的主图方案"]
+            ]
+          },
+          {
+            id: "stable",
+            title: "稳定版",
+            details: [
+              ["适合", "新品上架、主图点击率低、卖点分散，或需要统一主图表达的场景"],
+              ["输入", "商品图、核心卖点、目标人群、平台尺寸和参考风格"],
+              ["主要能力", "利益点提炼 / 构图层级 / 文案排布 / 视觉一致性检查"],
+              ["输出", "可继续用于主图、广告图和改投素材的一套视觉方案"]
+            ]
+          }
         ],
         images: module.resourceCards.flatMap((card) =>
           card.image
@@ -116,9 +142,8 @@ const skillDialog =
               </div>
 
               <div class="skill-popup-strip" aria-label="更多案例">
-                {skillDialog.images.slice(0, 6).map((image, index) => (
+                {skillDialog.images.slice(0, 6).map((image) => (
                   <figure>
-                    <span>{index % 2 === 0 ? "整理前" : "整理后"}</span>
                     <img src={image.src} alt={image.label} loading="lazy" />
                   </figure>
                 ))}
@@ -131,21 +156,40 @@ const skillDialog =
 
               <div class="skill-popup-version" aria-label="版本选择">
                 <span>版本选择</span>
-                <div role="group" aria-label="Skill 版本">
+                <div role="tablist" aria-label="Skill 版本">
                   {skillDialog.versions.map((version, index) => (
-                    <button class:list={[{ active: index === 2 }]} type="button">{version}</button>
+                    <button
+                      id={`skillVersionTab-${version.id}`}
+                      class:list={[{ active: index === skillDialog.activeVersionIndex }]}
+                      type="button"
+                      role="tab"
+                      aria-selected={index === skillDialog.activeVersionIndex ? "true" : "false"}
+                      aria-controls={`skillVersionPanel-${version.id}`}
+                      data-skill-version-button={version.id}
+                    >
+                      {version.title}
+                    </button>
                   ))}
                 </div>
               </div>
 
-              <dl class="skill-popup-details">
-                {skillDialog.details.map(([label, value]) => (
-                  <div>
-                    <dt>{label}</dt>
-                    <dd>{value}</dd>
-                  </div>
-                ))}
-              </dl>
+              {skillDialog.versions.map((version, index) => (
+                <dl
+                  id={`skillVersionPanel-${version.id}`}
+                  class="skill-popup-details"
+                  role="tabpanel"
+                  aria-labelledby={`skillVersionTab-${version.id}`}
+                  data-skill-version-panel={version.id}
+                  hidden={index !== skillDialog.activeVersionIndex}
+                >
+                  {version.details.map(([label, value]) => (
+                    <div>
+                      <dt>{label}</dt>
+                      <dd>{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              ))}
 
               <a class="skill-popup-cta" href="/#sf-counter" data-portal-route>获取这个版本</a>
             </section>
@@ -465,8 +509,7 @@ const skillDialog =
     border-right: 1px solid rgba(244, 242, 235, 0.42);
   }
 
-  .skill-popup-stage span,
-  .skill-popup-strip span {
+  .skill-popup-stage span {
     position: absolute;
     top: 0.85rem;
     left: 0.85rem;
@@ -522,14 +565,6 @@ const skillDialog =
   .skill-popup-strip figure {
     aspect-ratio: 1 / 1;
     border: 1px solid rgba(244, 242, 235, 0.1);
-  }
-
-  .skill-popup-strip span {
-    top: 0.45rem;
-    left: 0.45rem;
-    min-height: 1.25rem;
-    padding: 0 0.4rem;
-    font-size: 0.64rem;
   }
 
   .skill-popup-info {
@@ -599,6 +634,10 @@ const skillDialog =
     display: grid;
     gap: 0.8rem;
     margin: 1.1rem 0 1.15rem;
+  }
+
+  .skill-popup-details[hidden] {
+    display: none;
   }
 
   .skill-popup-details div {

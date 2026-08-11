@@ -1168,6 +1168,21 @@ function bindSkillDetailDialog() {
   if (!triggers.length) return;
 
   dialog.dataset.skillDialogReady = "true";
+  const versionButtons = dialog.querySelectorAll<HTMLButtonElement>("[data-skill-version-button]");
+  const versionPanels = dialog.querySelectorAll<HTMLElement>("[data-skill-version-panel]");
+
+  const selectVersion = (versionId: string) => {
+    versionButtons.forEach((button) => {
+      const isSelected = button.dataset.skillVersionButton === versionId;
+      button.classList.toggle("active", isSelected);
+      button.setAttribute("aria-selected", String(isSelected));
+      button.tabIndex = isSelected ? 0 : -1;
+    });
+
+    versionPanels.forEach((panel) => {
+      panel.hidden = panel.dataset.skillVersionPanel !== versionId;
+    });
+  };
 
   const openDialog = () => {
     if (dialog.open) return;
@@ -1212,6 +1227,28 @@ function bindSkillDetailDialog() {
 
   dialog.addEventListener("cancel", () => {
     document.body.style.overflow = "";
+  });
+
+  versionButtons.forEach((button, index) => {
+    button.tabIndex = button.classList.contains("active") ? 0 : -1;
+
+    button.addEventListener("click", () => {
+      const versionId = button.dataset.skillVersionButton;
+      if (versionId) selectVersion(versionId);
+    });
+
+    button.addEventListener("keydown", (event) => {
+      const offset = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
+      if (!offset) return;
+
+      event.preventDefault();
+      const nextIndex = (index + offset + versionButtons.length) % versionButtons.length;
+      const nextButton = versionButtons[nextIndex];
+      const versionId = nextButton?.dataset.skillVersionButton;
+      if (!nextButton || !versionId) return;
+      selectVersion(versionId);
+      nextButton.focus({ preventScroll: true });
+    });
   });
 }
 
