@@ -1170,11 +1170,45 @@ function bindSkillDetailDialog() {
   dialog.dataset.skillDialogReady = "true";
   const versionButtons = dialog.querySelectorAll<HTMLButtonElement>("[data-skill-version-button]");
   const versionPanels = dialog.querySelectorAll<HTMLElement>("[data-skill-version-panel]");
+  const caseTriggers = dialog.querySelectorAll<HTMLButtonElement>("[data-skill-case-trigger]");
+  const stagePreviewTriggers = dialog.querySelectorAll<HTMLButtonElement>("[data-skill-stage-preview]");
+  const beforeStageImage = dialog.querySelector<HTMLImageElement>('[data-skill-stage-image="before"]');
+  const afterStageImage = dialog.querySelector<HTMLImageElement>('[data-skill-stage-image="after"]');
   const imagePreview = dialog.querySelector<HTMLElement>("[data-skill-image-preview]");
   const imagePreviewGrid = dialog.querySelector<HTMLElement>("[data-skill-image-preview-grid]");
   const imagePreviewTriggers = dialog.querySelectorAll<HTMLElement>("[data-skill-image-preview-trigger]");
   const imagePreviewCloseButtons = dialog.querySelectorAll<HTMLButtonElement>("[data-skill-image-preview-close]");
   let lastFocusedImagePreviewTrigger: HTMLElement | null = null;
+
+  const selectCase = (trigger: HTMLButtonElement) => {
+    const beforeSrc = trigger.dataset.skillCaseBefore;
+    const afterSrc = trigger.dataset.skillCaseAfter;
+    if (!beforeSrc || !afterSrc || !beforeStageImage || !afterStageImage) return;
+
+    const beforeLabel = trigger.dataset.skillCaseBeforeLabel ?? "替换前示例";
+    const afterLabel = trigger.dataset.skillCaseAfterLabel ?? "替换后示例";
+    const previewSources = JSON.stringify([beforeSrc, afterSrc]);
+
+    beforeStageImage.src = beforeSrc;
+    beforeStageImage.alt = beforeLabel;
+    afterStageImage.src = afterSrc;
+    afterStageImage.alt = afterLabel;
+
+    stagePreviewTriggers.forEach((button) => {
+      const isAfter = button.dataset.skillStagePreview === "after";
+      const previewSrc = isAfter ? afterSrc : beforeSrc;
+      const previewLabel = isAfter ? afterLabel : beforeLabel;
+      button.setAttribute("data-skill-preview-src", previewSrc);
+      button.setAttribute("data-skill-preview-srcs", previewSources);
+      button.setAttribute("aria-label", `放大预览 ${previewLabel}`);
+    });
+
+    caseTriggers.forEach((button) => {
+      const isSelected = button === trigger;
+      button.classList.toggle("active", isSelected);
+      button.setAttribute("aria-pressed", String(isSelected));
+    });
+  };
 
   const selectVersion = (versionId: string) => {
     versionButtons.forEach((button) => {
@@ -1187,6 +1221,9 @@ function bindSkillDetailDialog() {
     versionPanels.forEach((panel) => {
       panel.hidden = panel.dataset.skillVersionPanel !== versionId;
     });
+
+    const defaultCase = Array.from(caseTriggers).find((button) => button.dataset.skillCaseVersion === versionId);
+    if (defaultCase) selectCase(defaultCase);
   };
 
   const isImagePreviewOpen = () => imagePreview ? !imagePreview.hidden : false;
@@ -1299,6 +1336,14 @@ function bindSkillDetailDialog() {
 
   imagePreviewTriggers.forEach((trigger) => {
     trigger.addEventListener("click", () => openImagePreview(trigger));
+  });
+
+  caseTriggers.forEach((trigger) => {
+    trigger.addEventListener("click", () => {
+      const versionId = trigger.dataset.skillCaseVersion;
+      if (versionId) selectVersion(versionId);
+      else selectCase(trigger);
+    });
   });
 
   imagePreviewCloseButtons.forEach((button) => {

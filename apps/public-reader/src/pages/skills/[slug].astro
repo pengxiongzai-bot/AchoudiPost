@@ -13,61 +13,89 @@ export const getStaticPaths = (() =>
 const { module } = Astro.props as { module: SkillModule };
 const visibleResourceCards = module.slug === "visual" ? module.resourceCards.slice(0, 1) : module.resourceCards;
 const primaryResourceCard = module.resourceCards[0];
-const skillDialogImages = module.resourceCards.flatMap((card) =>
-  card.image
-    ? [{
-        src: card.image,
-        label: card.title
-      }]
-    : []
-);
-const skillDialogImagePairs = skillDialogImages.reduce<(typeof skillDialogImages)[]>((pairs, image, index) => {
-  if (index % 2 === 0) pairs.push([image]);
-  else pairs[pairs.length - 1].push(image);
-  return pairs;
-}, []);
+const productReplaceCases = [
+  {
+    id: "standard",
+    versionId: "standard",
+    title: "简单无遮挡商品替换案例",
+    before: {
+      src: "/images/skill-product-replace-standard-before.jpg",
+      label: "简单桌面场景替换前"
+    },
+    after: {
+      src: "/images/skill-product-replace-standard-after.jpg",
+      label: "简单桌面场景替换后"
+    }
+  },
+  {
+    id: "enhanced",
+    versionId: "enhanced",
+    title: "人物持物遮挡替换案例",
+    before: {
+      src: "/images/skill-product-replace-enhanced-before.jpg",
+      label: "人物持物场景替换前"
+    },
+    after: {
+      src: "/images/skill-product-replace-enhanced-after.jpg",
+      label: "人物持物场景替换后"
+    }
+  },
+  {
+    id: "stable",
+    versionId: "stable",
+    title: "复杂场景商品替换案例",
+    before: {
+      src: "/images/skill-product-replace-stable-before.jpg",
+      label: "复杂厨房场景替换前"
+    },
+    after: {
+      src: "/images/skill-product-replace-stable-after.jpg",
+      label: "复杂厨房场景替换后"
+    }
+  }
+];
 const skillDialog =
   module.slug === "visual" && primaryResourceCard
     ? {
-        title: `${primaryResourceCard.title} Skill`,
-        summary: "把产品、卖点和目标人群整理成一张更容易停留、理解和点击的主图方案。",
+        title: "产品替换 Skill",
+        summary: "将指定商品替换进目标图片，\n尽量保持原有人物、构图和环境关系。",
         activeVersionIndex: 0,
         versions: [
           {
             id: "standard",
             title: "标准版",
             details: [
-              ["适合", "新品上架、主图缺少基础结构，或需要先把卖点排清楚的场景"],
-              ["输入", "商品图、核心卖点、目标人群和平台尺寸"],
-              ["主要能力", "卖点提炼 / 主视觉构图 / 标题层级 / 基础检查"],
-              ["输出", "一张可用于测试方向的主图结构方案"]
+              ["适合", "背景简单、主体清晰的常规商品替换"],
+              ["输入", "原图 + 商品图"],
+              ["主要能力", "主体识别 / 基础比例匹配 / 基础融合"],
+              ["输出", "完成商品替换的成图"]
             ]
           },
           {
             id: "enhanced",
             title: "增强版",
             details: [
-              ["适合", "已有主图但点击率不稳定，需要强化利益点和画面记忆点的场景"],
-              ["输入", "商品图、竞品参考、核心卖点、目标人群和风格方向"],
-              ["主要能力", "利益点强化 / 场景氛围 / 文案排布 / 对比优化"],
-              ["输出", "一套更适合投放、搜索和活动页使用的主图方案"]
+              ["适合", "人物持物、局部遮挡、构图关系较复杂的替换任务"],
+              ["输入", "原图 + 商品图"],
+              ["主要能力", "主体识别 / 遮挡关系 / 比例控制 / 构图保持 / 光影融合"],
+              ["输出", "控制能力更强的商品替换结果"]
             ]
           },
           {
             id: "stable",
             title: "稳定版",
             details: [
-              ["适合", "新品上架、主图点击率低、卖点分散，或需要统一主图表达的场景"],
-              ["输入", "商品图、核心卖点、目标人群、平台尺寸和参考风格"],
-              ["主要能力", "利益点提炼 / 构图层级 / 文案排布 / 视觉一致性检查"],
-              ["输出", "可继续用于主图、广告图和改投素材的一套视觉方案"]
+              ["适合", "复杂商品替换，对一致性和成功率要求更高的场景"],
+              ["输入", "原图 + 商品图"],
+              ["主要能力", "主体识别 / 比例控制 / 遮挡处理 / 光影融合 / 结果检查 / 纠偏"],
+              ["输出", "经过检查和纠偏后的商品替换结果"]
             ]
           }
         ],
-        images: skillDialogImages,
-        imagePairs: skillDialogImagePairs
+        cases: productReplaceCases
       }
     : null;
+const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activeVersionIndex] ?? skillDialog.cases[0] : null;
 ---
 
 <PortalShell
@@ -128,7 +156,7 @@ const skillDialog =
         <a class="skill-button primary" href="/#sf-counter" data-portal-route>去微信联系</a>
       </section>
 
-      {skillDialog && (
+      {skillDialog && initialSkillDialogCase && (
         <dialog id="skillDetailDialog" class="skill-popup-dialog" data-skill-detail-dialog aria-labelledby="skillDialogTitle">
           <button class="skill-popup-close" type="button" data-skill-detail-close aria-label="关闭 Skill 详情">
             <i data-lucide="x"></i>
@@ -138,49 +166,57 @@ const skillDialog =
             <section class="skill-popup-media" aria-label="Skill 案例预览">
               <div class="skill-popup-stage">
                 <figure>
-                  <span>整理前</span>
+                  <span>替换前</span>
                   <button
                     class="skill-popup-preview-trigger"
                     type="button"
+                    data-skill-stage-preview="before"
                     data-skill-image-preview-trigger
-                    data-skill-preview-src={skillDialog.images[0]?.src ?? module.image}
-                    data-skill-preview-srcs={JSON.stringify([skillDialog.images[0]?.src ?? module.image, skillDialog.images[0]?.src ?? module.image])}
-                    aria-label={`放大预览 ${skillDialog.title}整理前示例`}
+                    data-skill-preview-src={initialSkillDialogCase.before.src}
+                    data-skill-preview-srcs={JSON.stringify([initialSkillDialogCase.before.src, initialSkillDialogCase.after.src])}
+                    aria-label={`放大预览 ${initialSkillDialogCase.before.label}`}
                   >
-                    <img src={skillDialog.images[0]?.src ?? module.image} alt={`${skillDialog.title}整理前示例`} loading="eager" />
+                    <img data-skill-stage-image="before" src={initialSkillDialogCase.before.src} alt={initialSkillDialogCase.before.label} loading="eager" />
                   </button>
                 </figure>
                 <figure>
-                  <span>整理后</span>
+                  <span>替换后</span>
                   <button
                     class="skill-popup-preview-trigger"
                     type="button"
+                    data-skill-stage-preview="after"
                     data-skill-image-preview-trigger
-                    data-skill-preview-src={skillDialog.images[0]?.src ?? module.image}
-                    data-skill-preview-srcs={JSON.stringify([skillDialog.images[0]?.src ?? module.image, skillDialog.images[0]?.src ?? module.image])}
-                    aria-label={`放大预览 ${skillDialog.title}整理后示例`}
+                    data-skill-preview-src={initialSkillDialogCase.after.src}
+                    data-skill-preview-srcs={JSON.stringify([initialSkillDialogCase.before.src, initialSkillDialogCase.after.src])}
+                    aria-label={`放大预览 ${initialSkillDialogCase.after.label}`}
                   >
-                    <img src={skillDialog.images[0]?.src ?? module.image} alt={`${skillDialog.title}整理后示例`} loading="eager" />
+                    <img data-skill-stage-image="after" src={initialSkillDialogCase.after.src} alt={initialSkillDialogCase.after.label} loading="eager" />
                   </button>
                 </figure>
                 <span class="skill-popup-arrow" aria-hidden="true">→</span>
               </div>
 
               <div class="skill-popup-strip" aria-label="更多案例">
-                {skillDialog.imagePairs.slice(0, 3).map((pair, index) => (
+                {skillDialog.cases.map((caseItem, index) => (
                   <button
-                    class="skill-popup-pair-trigger"
+                    class:list={["skill-popup-pair-trigger", { active: index === skillDialog.activeVersionIndex }]}
                     type="button"
-                    data-skill-image-preview-trigger
-                    data-skill-preview-src={pair[0]?.src}
-                    data-skill-preview-srcs={JSON.stringify(pair.map((image) => image.src))}
-                    aria-label={`放大预览第 ${index + 1} 组案例`}
+                    data-skill-case-trigger
+                    data-skill-case-id={caseItem.id}
+                    data-skill-case-version={caseItem.versionId}
+                    data-skill-case-before={caseItem.before.src}
+                    data-skill-case-after={caseItem.after.src}
+                    data-skill-case-before-label={caseItem.before.label}
+                    data-skill-case-after-label={caseItem.after.label}
+                    aria-pressed={index === skillDialog.activeVersionIndex ? "true" : "false"}
+                    aria-label={`切换到${caseItem.title}`}
                   >
-                    {pair.map((image) => (
-                      <span class="skill-popup-pair-image">
-                        <img src={image.src} alt={image.label} loading="lazy" />
-                      </span>
-                    ))}
+                    <span class="skill-popup-pair-image">
+                      <img src={caseItem.before.src} alt={caseItem.before.label} loading="lazy" />
+                    </span>
+                    <span class="skill-popup-pair-image">
+                      <img src={caseItem.after.src} alt={caseItem.after.label} loading="lazy" />
+                    </span>
                   </button>
                 ))}
               </div>
@@ -188,7 +224,12 @@ const skillDialog =
 
             <section class="skill-popup-info" aria-labelledby="skillDialogTitle">
               <h2 id="skillDialogTitle">{skillDialog.title}</h2>
-              <p>{skillDialog.summary}</p>
+              <p>{skillDialog.summary.split("\n").map((line, index) => (
+                <>
+                  {index > 0 && <br />}
+                  {line}
+                </>
+              ))}</p>
 
               <div class="skill-popup-version" aria-label="版本选择">
                 <span>版本选择</span>
@@ -527,6 +568,7 @@ const skillDialog =
 
   .skill-popup-media {
     display: grid;
+    align-content: start;
     min-width: 0;
     gap: 0.8rem;
   }
@@ -596,7 +638,7 @@ const skillDialog =
   }
 
   .skill-popup-stage figure:first-child img {
-    filter: saturate(0.74) brightness(0.8);
+    filter: none;
   }
 
   .skill-popup-arrow {
@@ -632,11 +674,12 @@ const skillDialog =
     border: 1px solid rgba(244, 242, 235, 0.1);
     padding: 0.28rem;
     background: rgba(255, 255, 255, 0.035);
-    cursor: zoom-in;
+    cursor: pointer;
   }
 
   .skill-popup-pair-trigger:hover,
-  .skill-popup-pair-trigger:focus-visible {
+  .skill-popup-pair-trigger:focus-visible,
+  .skill-popup-pair-trigger.active {
     border-color: rgba(244, 242, 235, 0.32);
     background: rgba(255, 255, 255, 0.06);
     outline: none;
