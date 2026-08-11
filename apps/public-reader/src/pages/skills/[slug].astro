@@ -11,6 +11,7 @@ export const getStaticPaths = (() =>
   }))) satisfies GetStaticPaths;
 
 const { module } = Astro.props as { module: SkillModule };
+const visibleResourceCards = module.slug === "visual" ? module.resourceCards.slice(0, 1) : module.resourceCards;
 ---
 
 <PortalShell
@@ -39,7 +40,7 @@ const { module } = Astro.props as { module: SkillModule };
       </section>
 
       <section id="skillFrameworks" class="skill-resource-grid" aria-label={`${module.name} 框架列表`}>
-        {module.resourceCards.map((card, index) => (
+        {visibleResourceCards.map((card, index) => (
           <article class="skill-resource-card">
             <figure class="skill-resource-cover">
               <img
