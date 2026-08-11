@@ -35,8 +35,8 @@ export const skillModules: SkillModule[] = [
     image:
       "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260625_213624_40d877b4-92a9-44d3-be3c-5d3332db4402.png&w=1280&q=85",
     eyebrow: "商品视觉",
-    headline: "把商品主图、场景图、卖点图整理成可复用视觉系统",
-    summary: "适合需要持续产出商品视觉的人：从第一张图开始，统一风格、卖点表达和成套展示逻辑。",
+    headline: "用 AI 视觉 Skill，\n解决电商作图问题",
+    summary: "覆盖电商图片从生成、修改到优化的各类高频需求，\n找到对应 Skill，按流程完成具体作图任务。",
     highlights: ["主图方向拆解", "场景图结构", "卖点图模板", "成套视觉规范"],
     deliverables: ["视觉风格参考", "提示词框架", "出图流程", "复用检查清单"],
     flow: ["确认商品与卖点", "拆主图和场景图结构", "生成首套视觉方向", "沉淀可复用模板"],
