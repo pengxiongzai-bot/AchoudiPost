@@ -779,15 +779,18 @@ const skillDialog =
     grid-template-columns: 1fr;
     gap: 0.75rem;
     padding: 0.75rem;
+    justify-items: center;
   }
 
   .skill-image-preview-grid[data-preview-count="2"] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .skill-image-preview-grid img {
-    width: 100%;
-    max-height: min(820px, 88dvh);
+  :global(.skill-image-preview-grid img) {
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: min(760px, 82dvh);
     display: block;
     object-fit: contain;
     background: #0b0c09;
@@ -904,7 +907,7 @@ const skillDialog =
       grid-template-columns: 1fr;
     }
 
-    .skill-image-preview-grid img {
+    :global(.skill-image-preview-grid img) {
       max-height: 38dvh;
     }
 
