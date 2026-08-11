@@ -24,7 +24,6 @@ const { module } = Astro.props as { module: SkillModule };
     <div class="skill-detail-inner">
       <section class="skill-library-intro" data-skill-detail-hero>
         <div class="skill-library-copy">
-          <p class="skill-kicker">{module.eyebrow}</p>
           <h1 id="skillDetailTitle">{module.headline}</h1>
           <p class="skill-summary">{module.summary}</p>
         </div>
@@ -89,15 +88,6 @@ const { module } = Astro.props as { module: SkillModule };
 
   .skill-library-copy {
     max-width: 760px;
-  }
-
-  .skill-kicker {
-    margin: 0 0 1rem;
-    color: rgba(244, 242, 235, 0.48);
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
   }
 
   .skill-library-copy h1 {
