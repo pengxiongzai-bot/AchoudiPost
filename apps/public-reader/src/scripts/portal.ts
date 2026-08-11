@@ -1171,7 +1171,7 @@ function bindSkillDetailDialog() {
   const versionButtons = dialog.querySelectorAll<HTMLButtonElement>("[data-skill-version-button]");
   const versionPanels = dialog.querySelectorAll<HTMLElement>("[data-skill-version-panel]");
   const imagePreview = dialog.querySelector<HTMLElement>("[data-skill-image-preview]");
-  const imagePreviewImage = dialog.querySelector<HTMLImageElement>("[data-skill-image-preview-image]");
+  const imagePreviewGrid = dialog.querySelector<HTMLElement>("[data-skill-image-preview-grid]");
   const imagePreviewTriggers = dialog.querySelectorAll<HTMLElement>("[data-skill-image-preview-trigger]");
   const imagePreviewCloseButtons = dialog.querySelectorAll<HTMLButtonElement>("[data-skill-image-preview-close]");
   let lastFocusedImagePreviewTrigger: HTMLElement | null = null;
@@ -1191,11 +1191,28 @@ function bindSkillDetailDialog() {
 
   const isImagePreviewOpen = () => imagePreview ? !imagePreview.hidden : false;
 
+  const previewSourcesForTrigger = (trigger: HTMLElement) => {
+    const groupedSources = trigger.getAttribute("data-skill-preview-srcs");
+    if (groupedSources) {
+      try {
+        const parsed = JSON.parse(groupedSources);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+        }
+      } catch {
+        // Fall through to the single-image source when JSON is malformed.
+      }
+    }
+
+    const singleSource = trigger.getAttribute("data-skill-preview-src");
+    return singleSource ? [singleSource] : [];
+  };
+
   const closeImagePreview = (options: { restoreFocus?: boolean } = {}) => {
-    if (!imagePreview || !imagePreviewImage) return;
+    if (!imagePreview || !imagePreviewGrid) return;
     imagePreview.hidden = true;
-    imagePreviewImage.removeAttribute("src");
-    imagePreviewImage.setAttribute("alt", "");
+    imagePreviewGrid.replaceChildren();
+    imagePreviewGrid.removeAttribute("data-preview-count");
 
     if (options.restoreFocus !== false && lastFocusedImagePreviewTrigger) {
       lastFocusedImagePreviewTrigger.focus({ preventScroll: true });
@@ -1204,13 +1221,19 @@ function bindSkillDetailDialog() {
   };
 
   const openImagePreview = (trigger: HTMLElement) => {
-    if (!imagePreview || !imagePreviewImage) return;
-    const src = trigger.getAttribute("data-skill-preview-src");
-    if (!src) return;
+    if (!imagePreview || !imagePreviewGrid) return;
+    const sources = previewSourcesForTrigger(trigger);
+    if (!sources.length) return;
 
     lastFocusedImagePreviewTrigger = trigger;
-    imagePreviewImage.setAttribute("src", src);
-    imagePreviewImage.setAttribute("alt", trigger.getAttribute("aria-label") ?? "图片放大预览");
+    imagePreviewGrid.replaceChildren();
+    imagePreviewGrid.dataset.previewCount = String(Math.min(sources.length, 2));
+    sources.slice(0, 2).forEach((src, index) => {
+      const image = document.createElement("img");
+      image.src = src;
+      image.alt = `${trigger.getAttribute("aria-label") ?? "图片放大预览"} ${index + 1}`;
+      imagePreviewGrid.appendChild(image);
+    });
     imagePreview.hidden = false;
     imagePreviewCloseButtons[0]?.focus({ preventScroll: true });
   };

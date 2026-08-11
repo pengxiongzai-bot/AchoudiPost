@@ -13,12 +13,25 @@ export const getStaticPaths = (() =>
 const { module } = Astro.props as { module: SkillModule };
 const visibleResourceCards = module.slug === "visual" ? module.resourceCards.slice(0, 1) : module.resourceCards;
 const primaryResourceCard = module.resourceCards[0];
+const skillDialogImages = module.resourceCards.flatMap((card) =>
+  card.image
+    ? [{
+        src: card.image,
+        label: card.title
+      }]
+    : []
+);
+const skillDialogImagePairs = skillDialogImages.reduce<(typeof skillDialogImages)[]>((pairs, image, index) => {
+  if (index % 2 === 0) pairs.push([image]);
+  else pairs[pairs.length - 1].push(image);
+  return pairs;
+}, []);
 const skillDialog =
   module.slug === "visual" && primaryResourceCard
     ? {
         title: `${primaryResourceCard.title} Skill`,
         summary: "把产品、卖点和目标人群整理成一张更容易停留、理解和点击的主图方案。",
-        activeVersionIndex: 2,
+        activeVersionIndex: 0,
         versions: [
           {
             id: "standard",
@@ -51,14 +64,8 @@ const skillDialog =
             ]
           }
         ],
-        images: module.resourceCards.flatMap((card) =>
-          card.image
-            ? [{
-                src: card.image,
-                label: card.title
-              }]
-            : []
-        )
+        images: skillDialogImages,
+        imagePairs: skillDialogImagePairs
       }
     : null;
 ---
@@ -137,6 +144,7 @@ const skillDialog =
                     type="button"
                     data-skill-image-preview-trigger
                     data-skill-preview-src={skillDialog.images[0]?.src ?? module.image}
+                    data-skill-preview-srcs={JSON.stringify([skillDialog.images[0]?.src ?? module.image, skillDialog.images[0]?.src ?? module.image])}
                     aria-label={`放大预览 ${skillDialog.title}整理前示例`}
                   >
                     <img src={skillDialog.images[0]?.src ?? module.image} alt={`${skillDialog.title}整理前示例`} loading="eager" />
@@ -149,6 +157,7 @@ const skillDialog =
                     type="button"
                     data-skill-image-preview-trigger
                     data-skill-preview-src={skillDialog.images[0]?.src ?? module.image}
+                    data-skill-preview-srcs={JSON.stringify([skillDialog.images[0]?.src ?? module.image, skillDialog.images[0]?.src ?? module.image])}
                     aria-label={`放大预览 ${skillDialog.title}整理后示例`}
                   >
                     <img src={skillDialog.images[0]?.src ?? module.image} alt={`${skillDialog.title}整理后示例`} loading="eager" />
@@ -158,18 +167,21 @@ const skillDialog =
               </div>
 
               <div class="skill-popup-strip" aria-label="更多案例">
-                {skillDialog.images.slice(0, 6).map((image) => (
-                  <figure>
-                    <button
-                      class="skill-popup-preview-trigger"
-                      type="button"
-                      data-skill-image-preview-trigger
-                      data-skill-preview-src={image.src}
-                      aria-label={`放大预览 ${image.label}`}
-                    >
-                      <img src={image.src} alt={image.label} loading="lazy" />
-                    </button>
-                  </figure>
+                {skillDialog.imagePairs.slice(0, 3).map((pair, index) => (
+                  <button
+                    class="skill-popup-pair-trigger"
+                    type="button"
+                    data-skill-image-preview-trigger
+                    data-skill-preview-src={pair[0]?.src}
+                    data-skill-preview-srcs={JSON.stringify(pair.map((image) => image.src))}
+                    aria-label={`放大预览第 ${index + 1} 组案例`}
+                  >
+                    {pair.map((image) => (
+                      <span class="skill-popup-pair-image">
+                        <img src={image.src} alt={image.label} loading="lazy" />
+                      </span>
+                    ))}
+                  </button>
                 ))}
               </div>
             </section>
@@ -225,7 +237,7 @@ const skillDialog =
               <button class="skill-popup-close skill-image-preview-close" type="button" data-skill-image-preview-close aria-label="关闭图片预览">
                 <i data-lucide="x"></i>
               </button>
-              <img data-skill-image-preview-image alt="" />
+              <div class="skill-image-preview-grid" data-skill-image-preview-grid></div>
             </figure>
           </div>
         </dialog>
@@ -531,7 +543,7 @@ const skillDialog =
   }
 
   .skill-popup-stage figure,
-  .skill-popup-strip figure {
+  .skill-popup-pair-image {
     position: relative;
     min-width: 0;
     margin: 0;
@@ -608,13 +620,30 @@ const skillDialog =
 
   .skill-popup-strip {
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 0.55rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.7rem;
   }
 
-  .skill-popup-strip figure {
-    aspect-ratio: 1 / 1;
+  .skill-popup-pair-trigger {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.28rem;
+    aspect-ratio: 16 / 7;
     border: 1px solid rgba(244, 242, 235, 0.1);
+    padding: 0.28rem;
+    background: rgba(255, 255, 255, 0.035);
+    cursor: zoom-in;
+  }
+
+  .skill-popup-pair-trigger:hover,
+  .skill-popup-pair-trigger:focus-visible {
+    border-color: rgba(244, 242, 235, 0.32);
+    background: rgba(255, 255, 255, 0.06);
+    outline: none;
+  }
+
+  .skill-popup-pair-image {
+    display: block;
   }
 
   .skill-popup-info {
@@ -737,7 +766,7 @@ const skillDialog =
   .skill-image-preview-panel {
     position: relative;
     z-index: 1;
-    max-width: min(1180px, 94vw);
+    width: min(1180px, 94vw);
     max-height: min(820px, 88dvh);
     margin: 0;
     border: 1px solid rgba(244, 242, 235, 0.16);
@@ -745,12 +774,23 @@ const skillDialog =
     box-shadow: 0 2rem 7rem rgba(0, 0, 0, 0.72);
   }
 
-  .skill-image-preview-panel img {
-    width: auto;
-    max-width: 100%;
+  .skill-image-preview-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .skill-image-preview-grid[data-preview-count="2"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .skill-image-preview-grid img {
+    width: 100%;
     max-height: min(820px, 88dvh);
     display: block;
     object-fit: contain;
+    background: #0b0c09;
   }
 
   .skill-image-preview-close {
@@ -833,8 +873,8 @@ const skillDialog =
       display: none;
     }
 
-    .skill-popup-strip figure {
-      flex: 0 0 34%;
+    .skill-popup-pair-trigger {
+      flex: 0 0 72%;
       scroll-snap-align: start;
     }
 
@@ -851,9 +891,21 @@ const skillDialog =
       padding: 0.75rem;
     }
 
-    .skill-image-preview-panel,
-    .skill-image-preview-panel img {
+    .skill-image-preview-panel {
       max-height: 82dvh;
+    }
+
+    .skill-image-preview-grid {
+      gap: 0.5rem;
+      padding: 0.5rem;
+    }
+
+    .skill-image-preview-grid[data-preview-count="2"] {
+      grid-template-columns: 1fr;
+    }
+
+    .skill-image-preview-grid img {
+      max-height: 38dvh;
     }
 
     .skill-image-preview-close {
