@@ -12,6 +12,29 @@ export const getStaticPaths = (() =>
 
 const { module } = Astro.props as { module: SkillModule };
 const visibleResourceCards = module.slug === "visual" ? module.resourceCards.slice(0, 1) : module.resourceCards;
+const primaryResourceCard = module.resourceCards[0];
+const skillDialog =
+  module.slug === "visual" && primaryResourceCard
+    ? {
+        title: `${primaryResourceCard.title} Skill`,
+        summary: "把产品、卖点和目标人群整理成一张更容易停留、理解和点击的主图方案。",
+        versions: ["标准版", "增强版", "稳定版"],
+        details: [
+          ["适合", "新品上架、主图点击率低、卖点分散，或需要统一主图表达的场景"],
+          ["输入", "商品图、核心卖点、目标人群、平台尺寸和参考风格"],
+          ["主要能力", "利益点提炼 / 构图层级 / 文案排布 / 视觉一致性检查"],
+          ["输出", "可继续用于主图、广告图和改投素材的一套视觉方案"]
+        ],
+        images: module.resourceCards.flatMap((card) =>
+          card.image
+            ? [{
+                src: card.image,
+                label: card.title
+              }]
+            : []
+        )
+      }
+    : null;
 ---
 
 <PortalShell
@@ -41,7 +64,15 @@ const visibleResourceCards = module.slug === "visual" ? module.resourceCards.sli
 
       <section id="skillFrameworks" class="skill-resource-grid" aria-label={`${module.name} 框架列表`}>
         {visibleResourceCards.map((card, index) => (
-          <article class="skill-resource-card">
+          <article
+            class="skill-resource-card"
+            role={skillDialog ? "button" : undefined}
+            tabindex={skillDialog ? 0 : undefined}
+            data-skill-detail-open={skillDialog ? "" : undefined}
+            aria-controls={skillDialog ? "skillDetailDialog" : undefined}
+            aria-haspopup={skillDialog ? "dialog" : undefined}
+            aria-label={skillDialog ? `打开 ${card.title} Skill 详情` : undefined}
+          >
             <figure class="skill-resource-cover">
               <img
                 src={card.image ?? module.image}
@@ -63,6 +94,64 @@ const visibleResourceCards = module.slug === "visual" ? module.resourceCards.sli
         <span>我会先判断从哪个框架切入，再把它细化成你可以直接用的执行路径。</span>
         <a class="skill-button primary" href="/#sf-counter" data-portal-route>去微信联系</a>
       </section>
+
+      {skillDialog && (
+        <dialog id="skillDetailDialog" class="skill-popup-dialog" data-skill-detail-dialog aria-labelledby="skillDialogTitle">
+          <button class="skill-popup-close" type="button" data-skill-detail-close aria-label="关闭 Skill 详情">
+            <i data-lucide="x"></i>
+          </button>
+
+          <div class="skill-popup-layout">
+            <section class="skill-popup-media" aria-label="Skill 案例预览">
+              <div class="skill-popup-stage">
+                <figure>
+                  <span>整理前</span>
+                  <img src={skillDialog.images[0]?.src ?? module.image} alt={`${skillDialog.title}整理前示例`} loading="eager" />
+                </figure>
+                <figure>
+                  <span>整理后</span>
+                  <img src={skillDialog.images[0]?.src ?? module.image} alt={`${skillDialog.title}整理后示例`} loading="eager" />
+                </figure>
+                <span class="skill-popup-arrow" aria-hidden="true">→</span>
+              </div>
+
+              <div class="skill-popup-strip" aria-label="更多案例">
+                {skillDialog.images.slice(0, 6).map((image, index) => (
+                  <figure>
+                    <span>{index % 2 === 0 ? "整理前" : "整理后"}</span>
+                    <img src={image.src} alt={image.label} loading="lazy" />
+                  </figure>
+                ))}
+              </div>
+            </section>
+
+            <section class="skill-popup-info" aria-labelledby="skillDialogTitle">
+              <h2 id="skillDialogTitle">{skillDialog.title}</h2>
+              <p>{skillDialog.summary}</p>
+
+              <div class="skill-popup-version" aria-label="版本选择">
+                <span>版本选择</span>
+                <div role="group" aria-label="Skill 版本">
+                  {skillDialog.versions.map((version, index) => (
+                    <button class:list={[{ active: index === 2 }]} type="button">{version}</button>
+                  ))}
+                </div>
+              </div>
+
+              <dl class="skill-popup-details">
+                {skillDialog.details.map(([label, value]) => (
+                  <div>
+                    <dt>{label}</dt>
+                    <dd>{value}</dd>
+                  </div>
+                ))}
+              </dl>
+
+              <a class="skill-popup-cta" href="/#sf-counter" data-portal-route>获取这个版本</a>
+            </section>
+          </div>
+        </dialog>
+      )}
     </div>
   </section>
 </PortalShell>
@@ -185,6 +274,19 @@ const visibleResourceCards = module.slug === "visual" ? module.resourceCards.sli
     box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.2);
   }
 
+  .skill-resource-card[data-skill-detail-open] {
+    cursor: pointer;
+    transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+  }
+
+  .skill-resource-card[data-skill-detail-open]:hover,
+  .skill-resource-card[data-skill-detail-open]:focus-visible {
+    border-color: rgba(244, 242, 235, 0.28);
+    background: rgba(255, 255, 255, 0.055);
+    transform: translateY(-2px);
+    outline: none;
+  }
+
   .skill-resource-cover {
     position: relative;
     margin: 0;
@@ -269,6 +371,259 @@ const visibleResourceCards = module.slug === "visual" ? module.resourceCards.sli
     min-width: 9rem;
   }
 
+  .skill-popup-dialog {
+    width: min(1180px, calc(100vw - 48px));
+    max-height: calc(100dvh - 64px);
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid rgba(244, 242, 235, 0.14);
+    border-radius: 4px;
+    background: #191a17;
+    color: #f4f2eb;
+    box-shadow: 0 2rem 7rem rgba(0, 0, 0, 0.68);
+    scrollbar-color: rgba(244, 242, 235, 0.26) transparent;
+    scrollbar-width: thin;
+  }
+
+  .skill-popup-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.74);
+    backdrop-filter: blur(2px);
+  }
+
+  .skill-popup-dialog::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .skill-popup-dialog::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(244, 242, 235, 0.24);
+  }
+
+  .skill-popup-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 2;
+    display: inline-flex;
+    width: 2.35rem;
+    height: 2.35rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    color: rgba(244, 242, 235, 0.88);
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .skill-popup-close:hover,
+  .skill-popup-close:focus-visible {
+    border-color: rgba(244, 242, 235, 0.18);
+    background: rgba(255, 255, 255, 0.06);
+    outline: none;
+  }
+
+  .skill-popup-close svg {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+
+  .skill-popup-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.9fr);
+    gap: clamp(1.25rem, 2.2vw, 2rem);
+    padding: clamp(1.35rem, 2.4vw, 2rem);
+  }
+
+  .skill-popup-media {
+    display: grid;
+    min-width: 0;
+    gap: 0.8rem;
+  }
+
+  .skill-popup-stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    height: clamp(290px, 50dvh, 430px);
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid rgba(244, 242, 235, 0.12);
+    background: #0f100d;
+  }
+
+  .skill-popup-stage figure,
+  .skill-popup-strip figure {
+    position: relative;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    background: #0e0f0c;
+  }
+
+  .skill-popup-stage figure:first-child {
+    border-right: 1px solid rgba(244, 242, 235, 0.42);
+  }
+
+  .skill-popup-stage span,
+  .skill-popup-strip span {
+    position: absolute;
+    top: 0.85rem;
+    left: 0.85rem;
+    z-index: 1;
+    display: inline-flex;
+    min-height: 1.5rem;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0 0.55rem;
+    color: rgba(244, 242, 235, 0.92);
+    background: rgba(0, 0, 0, 0.34);
+    font-size: 0.76rem;
+    font-weight: 800;
+  }
+
+  .skill-popup-stage img,
+  .skill-popup-strip img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+
+  .skill-popup-stage figure:first-child img {
+    filter: saturate(0.74) brightness(0.8);
+  }
+
+  .skill-popup-arrow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 2;
+    display: inline-flex;
+    width: 2.8rem;
+    height: 2.8rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(244, 242, 235, 0.66);
+    border-radius: 999px;
+    color: #f4f2eb;
+    background: rgba(25, 26, 23, 0.74);
+    font-size: 1.45rem;
+    padding: 0;
+    transform: translate(-50%, -50%);
+  }
+
+  .skill-popup-strip {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .skill-popup-strip figure {
+    aspect-ratio: 1 / 1;
+    border: 1px solid rgba(244, 242, 235, 0.1);
+  }
+
+  .skill-popup-strip span {
+    top: 0.45rem;
+    left: 0.45rem;
+    min-height: 1.25rem;
+    padding: 0 0.4rem;
+    font-size: 0.64rem;
+  }
+
+  .skill-popup-info {
+    display: grid;
+    align-content: center;
+    min-width: 0;
+    padding: clamp(1rem, 2vw, 1.4rem) clamp(0.2rem, 1.1vw, 0.85rem);
+  }
+
+  .skill-popup-info h2 {
+    margin: 0;
+    color: rgba(244, 242, 235, 0.96);
+    font-size: clamp(1.75rem, 2.6vw, 2.35rem);
+    line-height: 1.12;
+    font-weight: 900;
+  }
+
+  .skill-popup-info > p {
+    margin: 0.85rem 0 1.15rem;
+    color: rgba(244, 242, 235, 0.62);
+    line-height: 1.8;
+  }
+
+  .skill-popup-version {
+    display: grid;
+    gap: 0.8rem;
+    padding: 1rem 0;
+    border-top: 1px solid rgba(244, 242, 235, 0.1);
+    border-bottom: 1px solid rgba(244, 242, 235, 0.1);
+  }
+
+  .skill-popup-version > span,
+  .skill-popup-details dt {
+    color: rgba(244, 242, 235, 0.72);
+    font-size: 0.86rem;
+    font-weight: 850;
+  }
+
+  .skill-popup-version div {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.7rem;
+  }
+
+  .skill-popup-version button {
+    min-height: 2.45rem;
+    border: 1px solid rgba(244, 242, 235, 0.16);
+    border-radius: 999px;
+    color: rgba(244, 242, 235, 0.72);
+    background: transparent;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 850;
+    cursor: pointer;
+  }
+
+  .skill-popup-version button.active,
+  .skill-popup-version button:hover,
+  .skill-popup-version button:focus-visible {
+    border-color: #f7f5ee;
+    color: #090a07;
+    background: #f7f5ee;
+    outline: none;
+  }
+
+  .skill-popup-details {
+    display: grid;
+    gap: 0.8rem;
+    margin: 1.1rem 0 1.15rem;
+  }
+
+  .skill-popup-details div {
+    display: grid;
+    gap: 0.42rem;
+  }
+
+  .skill-popup-details dd {
+    margin: 0;
+    color: rgba(244, 242, 235, 0.78);
+    font-size: 0.94rem;
+    line-height: 1.72;
+  }
+
+  .skill-popup-cta {
+    display: inline-flex;
+    min-height: 3.05rem;
+    align-items: center;
+    justify-content: center;
+    color: #090a07;
+    background: #f7f5ee;
+    font-weight: 900;
+    text-decoration: none;
+  }
+
   @media (max-width: 860px) {
     .skill-detail {
       padding-top: 1.8rem;
@@ -310,6 +665,50 @@ const visibleResourceCards = module.slug === "visual" ? module.resourceCards.sli
     .skill-bottom-cta .skill-button {
       justify-self: start;
       margin-top: 1.15rem;
+    }
+
+    .skill-popup-dialog {
+      width: calc(100vw - 20px);
+      max-height: calc(100dvh - 20px);
+      overflow: auto;
+      overscroll-behavior: contain;
+    }
+
+    .skill-popup-layout {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      padding: 0.9rem;
+    }
+
+    .skill-popup-stage {
+      height: clamp(210px, 30dvh, 260px);
+    }
+
+    .skill-popup-strip {
+      display: flex;
+      gap: 0.55rem;
+      overflow-x: auto;
+      padding-bottom: 0.15rem;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+
+    .skill-popup-strip::-webkit-scrollbar {
+      display: none;
+    }
+
+    .skill-popup-strip figure {
+      flex: 0 0 34%;
+      scroll-snap-align: start;
+    }
+
+    .skill-popup-info {
+      align-content: start;
+      padding: 0.5rem 0.15rem 0.2rem;
+    }
+
+    .skill-popup-version div {
+      grid-template-columns: 1fr;
     }
   }
 </style>

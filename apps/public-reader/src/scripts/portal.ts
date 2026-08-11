@@ -343,6 +343,7 @@ function bindPageInteractions() {
   if (postGrid) void hydratePosts();
   void hydrateMarket();
   void hydrateTools();
+  bindSkillDetailDialog();
   void hydrateAffiliateDashboard();
   propagateReferralLinks();
   void checkService();
@@ -687,6 +688,7 @@ function handleSkillEscape(event: KeyboardEvent) {
     event.altKey ||
     !isSkillDetailPath(location.pathname) ||
     !window.matchMedia(desktopEscapeMedia).matches ||
+    document.querySelector("[data-skill-detail-dialog][open]") ||
     isEditableTarget(event.target)
   ) {
     return;
@@ -1156,6 +1158,61 @@ function bindProductDialogActions(product: StoreProduct, productDialog: HTMLDial
 function renderPrivateContactPanel(product: StoreProduct) {
   const displayPrice = product.customerPriceCents ?? product.priceCents;
   return `<p class="section-kicker">Wechat</p><h2>添加微信了解这个Skill</h2><p class="product-dialog-summary">${escapeHtml(product.title)} · ${formatCurrency(displayPrice, product.currency)}</p><div class="private-contact-card"><div class="wechat-qr-placeholder"><i data-lucide="scan-line"></i><strong>微信二维码待放置</strong><span>后续上传二维码后，这里会展示扫码入口。</span></div><div><strong>添加时请备注想了解的Skill名称</strong><p>我会在微信里确认具体内容、购买方式，并在确认后发送对应飞书知识库和视频入口。</p></div></div><p class="settlement-note">知识库会按框架和场景持续整理，购买后可查看对应内容的后续更新。</p>`;
+}
+
+function bindSkillDetailDialog() {
+  const dialog = document.querySelector<HTMLDialogElement>("[data-skill-detail-dialog]");
+  if (!dialog || dialog.dataset.skillDialogReady === "true") return;
+
+  const triggers = document.querySelectorAll<HTMLElement>("[data-skill-detail-open]");
+  if (!triggers.length) return;
+
+  dialog.dataset.skillDialogReady = "true";
+
+  const openDialog = () => {
+    if (dialog.open) return;
+    if (typeof dialog.showModal === "function") dialog.showModal();
+    else dialog.setAttribute("open", "");
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeDialog = () => {
+    if (dialog.open) dialog.close();
+    else dialog.removeAttribute("open");
+  };
+
+  triggers.forEach((trigger) => {
+    trigger.addEventListener("click", (event) => {
+      if ((event.target as Element | null)?.closest("a, button")) return;
+      openDialog();
+    });
+
+    trigger.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      openDialog();
+    });
+  });
+
+  dialog.querySelectorAll<HTMLButtonElement>("[data-skill-detail-close]").forEach((button) => {
+    button.addEventListener("click", closeDialog);
+  });
+
+  dialog.querySelectorAll<HTMLAnchorElement>("a[data-portal-route]").forEach((link) => {
+    link.addEventListener("click", () => closeDialog());
+  });
+
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) closeDialog();
+  });
+
+  dialog.addEventListener("close", () => {
+    document.body.style.overflow = "";
+  });
+
+  dialog.addEventListener("cancel", () => {
+    document.body.style.overflow = "";
+  });
 }
 
 async function hydrateAffiliateDashboard() {
