@@ -1170,6 +1170,11 @@ function bindSkillDetailDialog() {
   dialog.dataset.skillDialogReady = "true";
   const versionButtons = dialog.querySelectorAll<HTMLButtonElement>("[data-skill-version-button]");
   const versionPanels = dialog.querySelectorAll<HTMLElement>("[data-skill-version-panel]");
+  const imagePreview = dialog.querySelector<HTMLElement>("[data-skill-image-preview]");
+  const imagePreviewImage = dialog.querySelector<HTMLImageElement>("[data-skill-image-preview-image]");
+  const imagePreviewTriggers = dialog.querySelectorAll<HTMLElement>("[data-skill-image-preview-trigger]");
+  const imagePreviewCloseButtons = dialog.querySelectorAll<HTMLButtonElement>("[data-skill-image-preview-close]");
+  let lastFocusedImagePreviewTrigger: HTMLElement | null = null;
 
   const selectVersion = (versionId: string) => {
     versionButtons.forEach((button) => {
@@ -1184,6 +1189,32 @@ function bindSkillDetailDialog() {
     });
   };
 
+  const isImagePreviewOpen = () => imagePreview ? !imagePreview.hidden : false;
+
+  const closeImagePreview = (options: { restoreFocus?: boolean } = {}) => {
+    if (!imagePreview || !imagePreviewImage) return;
+    imagePreview.hidden = true;
+    imagePreviewImage.removeAttribute("src");
+    imagePreviewImage.setAttribute("alt", "");
+
+    if (options.restoreFocus !== false && lastFocusedImagePreviewTrigger) {
+      lastFocusedImagePreviewTrigger.focus({ preventScroll: true });
+    }
+    lastFocusedImagePreviewTrigger = null;
+  };
+
+  const openImagePreview = (trigger: HTMLElement) => {
+    if (!imagePreview || !imagePreviewImage) return;
+    const src = trigger.getAttribute("data-skill-preview-src");
+    if (!src) return;
+
+    lastFocusedImagePreviewTrigger = trigger;
+    imagePreviewImage.setAttribute("src", src);
+    imagePreviewImage.setAttribute("alt", trigger.getAttribute("aria-label") ?? "图片放大预览");
+    imagePreview.hidden = false;
+    imagePreviewCloseButtons[0]?.focus({ preventScroll: true });
+  };
+
   const openDialog = () => {
     if (dialog.open) return;
     if (typeof dialog.showModal === "function") dialog.showModal();
@@ -1192,6 +1223,7 @@ function bindSkillDetailDialog() {
   };
 
   const closeDialog = () => {
+    closeImagePreview({ restoreFocus: false });
     if (dialog.open) dialog.close();
     else dialog.removeAttribute("open");
   };
@@ -1221,12 +1253,33 @@ function bindSkillDetailDialog() {
     if (event.target === dialog) closeDialog();
   });
 
+  dialog.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !isImagePreviewOpen()) return;
+    event.preventDefault();
+    event.stopPropagation();
+    closeImagePreview();
+  });
+
   dialog.addEventListener("close", () => {
+    closeImagePreview({ restoreFocus: false });
     document.body.style.overflow = "";
   });
 
-  dialog.addEventListener("cancel", () => {
+  dialog.addEventListener("cancel", (event) => {
+    if (isImagePreviewOpen()) {
+      event.preventDefault();
+      closeImagePreview();
+      return;
+    }
     document.body.style.overflow = "";
+  });
+
+  imagePreviewTriggers.forEach((trigger) => {
+    trigger.addEventListener("click", () => openImagePreview(trigger));
+  });
+
+  imagePreviewCloseButtons.forEach((button) => {
+    button.addEventListener("click", () => closeImagePreview());
   });
 
   versionButtons.forEach((button, index) => {

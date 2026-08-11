@@ -132,11 +132,27 @@ const skillDialog =
               <div class="skill-popup-stage">
                 <figure>
                   <span>整理前</span>
-                  <img src={skillDialog.images[0]?.src ?? module.image} alt={`${skillDialog.title}整理前示例`} loading="eager" />
+                  <button
+                    class="skill-popup-preview-trigger"
+                    type="button"
+                    data-skill-image-preview-trigger
+                    data-skill-preview-src={skillDialog.images[0]?.src ?? module.image}
+                    aria-label={`放大预览 ${skillDialog.title}整理前示例`}
+                  >
+                    <img src={skillDialog.images[0]?.src ?? module.image} alt={`${skillDialog.title}整理前示例`} loading="eager" />
+                  </button>
                 </figure>
                 <figure>
                   <span>整理后</span>
-                  <img src={skillDialog.images[0]?.src ?? module.image} alt={`${skillDialog.title}整理后示例`} loading="eager" />
+                  <button
+                    class="skill-popup-preview-trigger"
+                    type="button"
+                    data-skill-image-preview-trigger
+                    data-skill-preview-src={skillDialog.images[0]?.src ?? module.image}
+                    aria-label={`放大预览 ${skillDialog.title}整理后示例`}
+                  >
+                    <img src={skillDialog.images[0]?.src ?? module.image} alt={`${skillDialog.title}整理后示例`} loading="eager" />
+                  </button>
                 </figure>
                 <span class="skill-popup-arrow" aria-hidden="true">→</span>
               </div>
@@ -144,7 +160,15 @@ const skillDialog =
               <div class="skill-popup-strip" aria-label="更多案例">
                 {skillDialog.images.slice(0, 6).map((image) => (
                   <figure>
-                    <img src={image.src} alt={image.label} loading="lazy" />
+                    <button
+                      class="skill-popup-preview-trigger"
+                      type="button"
+                      data-skill-image-preview-trigger
+                      data-skill-preview-src={image.src}
+                      aria-label={`放大预览 ${image.label}`}
+                    >
+                      <img src={image.src} alt={image.label} loading="lazy" />
+                    </button>
                   </figure>
                 ))}
               </div>
@@ -193,6 +217,16 @@ const skillDialog =
 
               <a class="skill-popup-cta" href="/#sf-counter" data-portal-route>获取这个版本</a>
             </section>
+          </div>
+
+          <div class="skill-image-preview" data-skill-image-preview hidden role="dialog" aria-modal="true" aria-label="图片放大预览">
+            <button class="skill-image-preview-backdrop" type="button" data-skill-image-preview-close aria-label="关闭图片预览"></button>
+            <figure class="skill-image-preview-panel">
+              <button class="skill-popup-close skill-image-preview-close" type="button" data-skill-image-preview-close aria-label="关闭图片预览">
+                <i data-lucide="x"></i>
+              </button>
+              <img data-skill-image-preview-image alt="" />
+            </figure>
           </div>
         </dialog>
       )}
@@ -505,6 +539,22 @@ const skillDialog =
     background: #0e0f0c;
   }
 
+  .skill-popup-preview-trigger {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    background: transparent;
+    cursor: zoom-in;
+  }
+
+  .skill-popup-preview-trigger:focus-visible {
+    outline: 2px solid rgba(244, 242, 235, 0.82);
+    outline-offset: -4px;
+  }
+
   .skill-popup-stage figure:first-child {
     border-right: 1px solid rgba(244, 242, 235, 0.42);
   }
@@ -663,6 +713,53 @@ const skillDialog =
     text-decoration: none;
   }
 
+  .skill-image-preview[hidden] {
+    display: none;
+  }
+
+  .skill-image-preview {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: grid;
+    place-items: center;
+    padding: clamp(1rem, 4vw, 3rem);
+  }
+
+  .skill-image-preview-backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background: rgba(0, 0, 0, 0.72);
+    cursor: zoom-out;
+  }
+
+  .skill-image-preview-panel {
+    position: relative;
+    z-index: 1;
+    max-width: min(1180px, 94vw);
+    max-height: min(820px, 88dvh);
+    margin: 0;
+    border: 1px solid rgba(244, 242, 235, 0.16);
+    background: #10110e;
+    box-shadow: 0 2rem 7rem rgba(0, 0, 0, 0.72);
+  }
+
+  .skill-image-preview-panel img {
+    width: auto;
+    max-width: 100%;
+    max-height: min(820px, 88dvh);
+    display: block;
+    object-fit: contain;
+  }
+
+  .skill-image-preview-close {
+    top: -0.95rem;
+    right: -0.95rem;
+    background: rgba(16, 17, 14, 0.92);
+    box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.42);
+  }
+
   @media (max-width: 860px) {
     .skill-detail {
       padding-top: 1.8rem;
@@ -748,6 +845,20 @@ const skillDialog =
 
     .skill-popup-version div {
       grid-template-columns: 1fr;
+    }
+
+    .skill-image-preview {
+      padding: 0.75rem;
+    }
+
+    .skill-image-preview-panel,
+    .skill-image-preview-panel img {
+      max-height: 82dvh;
+    }
+
+    .skill-image-preview-close {
+      top: 0.5rem;
+      right: 0.5rem;
     }
   }
 </style>
