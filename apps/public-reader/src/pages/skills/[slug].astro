@@ -610,7 +610,21 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
   }
 
   .skill-popup-stage figure:first-child {
-    border-right: 1px solid rgba(244, 242, 235, 0.42);
+    border-right: 0;
+  }
+
+  .skill-popup-stage::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    z-index: 2;
+    width: 1px;
+    background: rgba(244, 242, 235, 0.62);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
+    transform: translateX(-50%);
+    pointer-events: none;
   }
 
   .skill-popup-stage span {
@@ -641,11 +655,11 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
     filter: none;
   }
 
-  .skill-popup-arrow {
+  .skill-popup-stage > .skill-popup-arrow {
     position: absolute;
     top: 50%;
     left: 50%;
-    z-index: 2;
+    z-index: 3;
     display: inline-flex;
     width: 2.8rem;
     height: 2.8rem;
