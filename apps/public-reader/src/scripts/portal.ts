@@ -1174,6 +1174,7 @@ function bindSkillDetailDialog() {
   const stagePreviewTriggers = dialog.querySelectorAll<HTMLButtonElement>("[data-skill-stage-preview]");
   const beforeStageImage = dialog.querySelector<HTMLImageElement>('[data-skill-stage-image="before"]');
   const afterStageImage = dialog.querySelector<HTMLImageElement>('[data-skill-stage-image="after"]');
+  const detailsScroll = dialog.querySelector<HTMLElement>("[data-skill-details-scroll]");
   const imagePreview = dialog.querySelector<HTMLElement>("[data-skill-image-preview]");
   const imagePreviewGrid = dialog.querySelector<HTMLElement>("[data-skill-image-preview-grid]");
   const imagePreviewTriggers = dialog.querySelectorAll<HTMLElement>("[data-skill-image-preview-trigger]");
@@ -1225,6 +1226,7 @@ function bindSkillDetailDialog() {
     versionPanels.forEach((panel) => {
       panel.hidden = panel.dataset.skillVersionPanel !== versionId;
     });
+    if (detailsScroll) detailsScroll.scrollTop = 0;
 
     const defaultCase = Array.from(caseTriggers).find((button) => button.dataset.skillCaseVersion === versionId);
     if (defaultCase) selectCase(defaultCase);
