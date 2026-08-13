@@ -1178,7 +1178,11 @@ function bindSkillDetailDialog() {
   const imagePreviewGrid = dialog.querySelector<HTMLElement>("[data-skill-image-preview-grid]");
   const imagePreviewTriggers = dialog.querySelectorAll<HTMLElement>("[data-skill-image-preview-trigger]");
   const imagePreviewCloseButtons = dialog.querySelectorAll<HTMLButtonElement>("[data-skill-image-preview-close]");
+  const qrPreview = dialog.querySelector<HTMLElement>("[data-skill-qr-preview]");
+  const qrPreviewOpenButtons = dialog.querySelectorAll<HTMLButtonElement>("[data-skill-qr-open]");
+  const qrPreviewPrimaryCloseButton = dialog.querySelector<HTMLButtonElement>(".skill-qr-preview-close");
   let lastFocusedImagePreviewTrigger: HTMLElement | null = null;
+  let lastFocusedQrTrigger: HTMLElement | null = null;
 
   const selectCase = (trigger: HTMLButtonElement) => {
     const beforeSrc = trigger.dataset.skillCaseBefore;
@@ -1227,6 +1231,7 @@ function bindSkillDetailDialog() {
   };
 
   const isImagePreviewOpen = () => imagePreview ? !imagePreview.hidden : false;
+  const isQrPreviewOpen = () => qrPreview ? !qrPreview.hidden : false;
 
   const previewSourcesForTrigger = (trigger: HTMLElement) => {
     const groupedSources = trigger.getAttribute("data-skill-preview-srcs");
@@ -1257,11 +1262,22 @@ function bindSkillDetailDialog() {
     lastFocusedImagePreviewTrigger = null;
   };
 
+  const closeQrPreview = (options: { restoreFocus?: boolean } = {}) => {
+    if (!qrPreview) return;
+    qrPreview.hidden = true;
+
+    if (options.restoreFocus !== false && lastFocusedQrTrigger) {
+      lastFocusedQrTrigger.focus({ preventScroll: true });
+    }
+    lastFocusedQrTrigger = null;
+  };
+
   const openImagePreview = (trigger: HTMLElement) => {
     if (!imagePreview || !imagePreviewGrid) return;
     const sources = previewSourcesForTrigger(trigger);
     if (!sources.length) return;
 
+    closeQrPreview({ restoreFocus: false });
     lastFocusedImagePreviewTrigger = trigger;
     imagePreviewGrid.replaceChildren();
     imagePreviewGrid.dataset.previewCount = String(Math.min(sources.length, 2));
@@ -1275,6 +1291,14 @@ function bindSkillDetailDialog() {
     imagePreviewCloseButtons[0]?.focus({ preventScroll: true });
   };
 
+  const openQrPreview = (trigger: HTMLElement) => {
+    if (!qrPreview) return;
+    closeImagePreview({ restoreFocus: false });
+    lastFocusedQrTrigger = trigger;
+    qrPreview.hidden = false;
+    qrPreviewPrimaryCloseButton?.focus({ preventScroll: true });
+  };
+
   const openDialog = () => {
     if (dialog.open) return;
     if (typeof dialog.showModal === "function") dialog.showModal();
@@ -1284,6 +1308,7 @@ function bindSkillDetailDialog() {
 
   const closeDialog = () => {
     closeImagePreview({ restoreFocus: false });
+    closeQrPreview({ restoreFocus: false });
     if (dialog.open) dialog.close();
     else dialog.removeAttribute("open");
   };
@@ -1314,7 +1339,15 @@ function bindSkillDetailDialog() {
   });
 
   dialog.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape" || !isImagePreviewOpen()) return;
+    if (event.key !== "Escape") return;
+    if (isQrPreviewOpen()) {
+      event.preventDefault();
+      event.stopPropagation();
+      closeQrPreview();
+      return;
+    }
+
+    if (!isImagePreviewOpen()) return;
     event.preventDefault();
     event.stopPropagation();
     closeImagePreview();
@@ -1322,10 +1355,17 @@ function bindSkillDetailDialog() {
 
   dialog.addEventListener("close", () => {
     closeImagePreview({ restoreFocus: false });
+    closeQrPreview({ restoreFocus: false });
     document.body.style.overflow = "";
   });
 
   dialog.addEventListener("cancel", (event) => {
+    if (isQrPreviewOpen()) {
+      event.preventDefault();
+      closeQrPreview();
+      return;
+    }
+
     if (isImagePreviewOpen()) {
       event.preventDefault();
       closeImagePreview();
@@ -1336,6 +1376,15 @@ function bindSkillDetailDialog() {
 
   imagePreviewTriggers.forEach((trigger) => {
     trigger.addEventListener("click", () => openImagePreview(trigger));
+  });
+
+  qrPreviewOpenButtons.forEach((button) => {
+    button.addEventListener("click", () => openQrPreview(button));
+  });
+
+  qrPreview?.addEventListener("click", (event) => {
+    if (!(event.target as Element | null)?.closest("[data-skill-qr-close]")) return;
+    closeQrPreview();
   });
 
   caseTriggers.forEach((trigger) => {

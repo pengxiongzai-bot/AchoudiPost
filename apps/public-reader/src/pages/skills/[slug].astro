@@ -13,7 +13,8 @@ export const getStaticPaths = (() =>
 const { module } = Astro.props as { module: SkillModule };
 const visibleResourceCards = module.slug === "visual" ? module.resourceCards.slice(0, 1) : module.resourceCards;
 const primaryResourceCard = module.resourceCards[0];
-const skillDialogQrImage = "/images/wechat-qr-yunx0723-zuotu-crop.jpg";
+const skillDialogQrCourseImage = "/images/wechat-contact-course-search-v2.jpg";
+const skillDialogQrDrawingImage = "/images/wechat-contact-drawing-search-v2.jpg";
 const productReplaceCases = [
   {
     id: "standard",
@@ -269,20 +270,7 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
                 </dl>
               ))}
 
-              <figure class="skill-popup-qr">
-                <img
-                  src={skillDialogQrImage}
-                  width="664"
-                  height="664"
-                  alt="微信二维码：扫码添加 A.潮汕阿臭弟（作图），获取产品替换 Skill 版本"
-                  loading="eager"
-                  decoding="async"
-                />
-                <figcaption>
-                  <strong>扫码获取这个版本</strong>
-                  <span>添加微信备注：产品替换 Skill</span>
-                </figcaption>
-              </figure>
+              <button class="skill-popup-cta" type="button" data-skill-qr-open>获取这个版本</button>
             </section>
           </div>
 
@@ -294,6 +282,37 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
               </button>
               <div class="skill-image-preview-grid" data-skill-image-preview-grid></div>
             </figure>
+          </div>
+
+          <div class="skill-qr-preview" data-skill-qr-preview hidden role="dialog" aria-modal="true" aria-label="微信联系二维码">
+            <button class="skill-qr-preview-backdrop" type="button" data-skill-qr-close aria-label="关闭微信二维码"></button>
+            <div class="skill-qr-preview-panel">
+              <button class="skill-popup-close skill-qr-preview-close" type="button" data-skill-qr-close aria-label="关闭微信二维码">
+                <i data-lucide="x"></i>
+              </button>
+              <div class="skill-qr-preview-grid" aria-label="微信联系卡">
+                <figure class="skill-qr-preview-card">
+                  <img
+                    src={skillDialogQrCourseImage}
+                    width="862"
+                    height="1142"
+                    alt="微信二维码：A.潮汕阿臭弟（有课），备注 AIGC电商业务沟通"
+                    loading="eager"
+                    decoding="async"
+                  />
+                </figure>
+                <figure class="skill-qr-preview-card">
+                  <img
+                    src={skillDialogQrDrawingImage}
+                    width="862"
+                    height="1142"
+                    alt="微信联系页：搜索 YunX0723，备注 AIGC电商作图业务"
+                    loading="eager"
+                    decoding="async"
+                  />
+                </figure>
+              </div>
+            </div>
           </div>
         </dialog>
       )}
@@ -733,15 +752,15 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
   }
 
   .skill-popup-info > p {
-    margin: 0.72rem 0 0.95rem;
+    margin: 0.85rem 0 1.15rem;
     color: rgba(244, 242, 235, 0.62);
-    line-height: 1.68;
+    line-height: 1.8;
   }
 
   .skill-popup-version {
     display: grid;
-    gap: 0.65rem;
-    padding: 0.82rem 0;
+    gap: 0.8rem;
+    padding: 1rem 0;
     border-top: 1px solid rgba(244, 242, 235, 0.1);
     border-bottom: 1px solid rgba(244, 242, 235, 0.1);
   }
@@ -760,7 +779,7 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
   }
 
   .skill-popup-version button {
-    min-height: 2.28rem;
+    min-height: 2.45rem;
     border: 1px solid rgba(244, 242, 235, 0.16);
     border-radius: 999px;
     color: rgba(244, 242, 235, 0.72);
@@ -782,8 +801,8 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
 
   .skill-popup-details {
     display: grid;
-    gap: 0.62rem;
-    margin: 0.88rem 0 0.86rem;
+    gap: 0.8rem;
+    margin: 1.1rem 0 1.15rem;
   }
 
   .skill-popup-details[hidden] {
@@ -792,59 +811,43 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
 
   .skill-popup-details div {
     display: grid;
-    gap: 0.28rem;
+    gap: 0.42rem;
   }
 
   .skill-popup-details dd {
     margin: 0;
     color: rgba(244, 242, 235, 0.78);
-    font-size: 0.9rem;
-    line-height: 1.56;
+    font-size: 0.94rem;
+    line-height: 1.72;
   }
 
-  .skill-popup-qr {
-    display: flex;
+  .skill-popup-cta {
+    display: inline-flex;
+    min-height: 3.05rem;
     align-items: center;
-    gap: 0.78rem;
-    margin: 0.1rem 0 0;
-    border: 1px solid rgba(244, 242, 235, 0.16);
-    padding: 0.62rem 0.72rem;
+    justify-content: center;
+    border: 0;
+    padding: 0.65rem 1rem;
     background: #f7f5ee;
     color: #090a07;
-    text-align: left;
-  }
-
-  .skill-popup-qr img {
-    flex: 0 0 auto;
-    display: block;
-    width: 108px;
-    height: auto;
-    border: 1px solid rgba(9, 10, 7, 0.12);
-    background: #ffffff;
-  }
-
-  .skill-popup-qr figcaption {
-    display: grid;
-    min-width: 0;
-    gap: 0.22rem;
-    margin: 0;
-    color: #090a07;
-    line-height: 1.25;
-  }
-
-  .skill-popup-qr strong {
-    font-size: 0.86rem;
+    font: inherit;
     font-weight: 900;
+    cursor: pointer;
   }
 
-  .skill-popup-qr span {
-    color: rgba(9, 10, 7, 0.62);
-    font-size: 0.76rem;
-    font-weight: 750;
-    line-height: 1.35;
+  .skill-popup-cta:hover,
+  .skill-popup-cta:focus-visible {
+    background: #ffffff;
+    color: #090a07;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(247, 245, 238, 0.18);
   }
 
   .skill-image-preview[hidden] {
+    display: none;
+  }
+
+  .skill-qr-preview[hidden] {
     display: none;
   }
 
@@ -902,6 +905,62 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
     top: -0.95rem;
     right: -0.95rem;
     background: rgba(16, 17, 14, 0.92);
+    box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.42);
+  }
+
+  .skill-qr-preview {
+    position: fixed;
+    inset: 0;
+    z-index: 22;
+    display: grid;
+    place-items: center;
+    padding: clamp(1rem, 4vw, 3rem);
+  }
+
+  .skill-qr-preview-backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background: rgba(0, 0, 0, 0.8);
+    cursor: zoom-out;
+  }
+
+  .skill-qr-preview-panel {
+    position: relative;
+    z-index: 1;
+    width: min(860px, 92vw);
+    margin: 0;
+  }
+
+  .skill-qr-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(1rem, 2vw, 1.6rem);
+    align-items: center;
+  }
+
+  .skill-qr-preview-card {
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid rgba(244, 242, 235, 0.18);
+    border-radius: 8px;
+    background: #f7f5ee;
+    box-shadow: 0 2rem 7rem rgba(0, 0, 0, 0.62);
+  }
+
+  .skill-qr-preview-card img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: min(560px, 76dvh);
+    object-fit: contain;
+  }
+
+  .skill-qr-preview-close {
+    top: -2.5rem;
+    right: 0;
+    background: #f7f5ee;
+    color: #090a07;
     box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.42);
   }
 
@@ -1014,6 +1073,30 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
     }
 
     .skill-image-preview-close {
+      top: 0.5rem;
+      right: 0.5rem;
+    }
+
+    .skill-qr-preview {
+      padding: 0.75rem;
+    }
+
+    .skill-qr-preview-panel {
+      width: min(460px, 92vw);
+      max-height: 86dvh;
+      overflow: auto;
+    }
+
+    .skill-qr-preview-grid {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+
+    .skill-qr-preview-card img {
+      max-height: 38dvh;
+    }
+
+    .skill-qr-preview-close {
       top: 0.5rem;
       right: 0.5rem;
     }
