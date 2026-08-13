@@ -832,35 +832,8 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
     transition: filter 0.5s ease;
   }
 
-  .sf-hero-marquee-card::after {
-    content: "点击预览";
-    position: absolute;
-    right: 14px;
-    bottom: 14px;
-    z-index: 2;
-    padding: 7px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    border-radius: 999px;
-    background: rgba(7, 8, 6, 0.48);
-    color: rgba(255, 255, 255, 0.92);
-    font-size: 12px;
-    font-weight: 750;
-    line-height: 1;
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 0.25s ease, transform 0.25s ease;
-    pointer-events: none;
-    backdrop-filter: blur(10px);
-  }
-
   .sf-hero-marquee-card:hover img {
     filter: brightness(1.06);
-  }
-
-  .sf-hero-marquee-card:hover::after,
-  .sf-hero-marquee-card:focus-visible::after {
-    opacity: 1;
-    transform: translateY(0);
   }
 
   .sf-hero-marquee-card:focus-visible {
