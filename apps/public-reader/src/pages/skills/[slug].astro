@@ -592,6 +592,11 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
     height: 1.15rem;
   }
 
+  .skill-popup-dialog[data-skill-qr-active="true"] > .skill-popup-close {
+    opacity: 0;
+    pointer-events: none;
+  }
+
   .skill-popup-layout {
     display: grid;
     grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.9fr);
@@ -942,9 +947,9 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
   .skill-qr-preview-card {
     margin: 0;
     overflow: hidden;
-    border: 1px solid rgba(244, 242, 235, 0.18);
-    border-radius: 8px;
-    background: #f7f5ee;
+    border: 0;
+    border-radius: clamp(1.7rem, 3vw, 2.45rem);
+    background: transparent;
     box-shadow: 0 2rem 7rem rgba(0, 0, 0, 0.62);
   }
 

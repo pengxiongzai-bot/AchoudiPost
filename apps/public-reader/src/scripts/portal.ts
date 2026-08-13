@@ -1265,6 +1265,7 @@ function bindSkillDetailDialog() {
   const closeQrPreview = (options: { restoreFocus?: boolean } = {}) => {
     if (!qrPreview) return;
     qrPreview.hidden = true;
+    delete dialog.dataset.skillQrActive;
 
     if (options.restoreFocus !== false && lastFocusedQrTrigger) {
       lastFocusedQrTrigger.focus({ preventScroll: true });
@@ -1296,6 +1297,7 @@ function bindSkillDetailDialog() {
     closeImagePreview({ restoreFocus: false });
     lastFocusedQrTrigger = trigger;
     qrPreview.hidden = false;
+    dialog.dataset.skillQrActive = "true";
     qrPreviewPrimaryCloseButton?.focus({ preventScroll: true });
   };
 
