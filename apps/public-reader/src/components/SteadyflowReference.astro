@@ -1338,6 +1338,7 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
       0 28px 92px rgba(0, 0, 0, 0.34);
     opacity: 0;
     transform: translateY(24px);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
     will-change: opacity, transform;
   }
 
@@ -1353,15 +1354,19 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
     opacity: 0.42;
     pointer-events: none;
     transform: rotate(-3deg);
+    transition: opacity 0.3s ease;
   }
 
   .sf-contact-card::after {
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    box-shadow: inset 0 0 0 1px rgba(247, 247, 241, 0.025);
+    box-shadow:
+      inset 0 1px 0 rgba(247, 247, 241, 0.065),
+      inset 0 0 0 1px rgba(247, 247, 241, 0.025);
     content: "";
     pointer-events: none;
+    transition: box-shadow 0.3s ease;
   }
 
   .sf-contact-card h2,
@@ -1422,6 +1427,27 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
     outline-offset: 4px;
   }
 
+  .sf-counter.sf-in-view .sf-contact-card:hover,
+  .sf-counter.sf-in-view .sf-contact-card:focus-within {
+    border-color: rgba(247, 247, 241, 0.16);
+    box-shadow:
+      inset 0 1px 0 rgba(247, 247, 241, 0.08),
+      0 34px 108px rgba(0, 0, 0, 0.44);
+    transform: translateY(-4px);
+  }
+
+  .sf-contact-card:hover::before,
+  .sf-contact-card:focus-within::before {
+    opacity: 0.6;
+  }
+
+  .sf-contact-card:hover::after,
+  .sf-contact-card:focus-within::after {
+    box-shadow:
+      inset 0 1px 0 rgba(247, 247, 241, 0.11),
+      inset 0 0 0 1px rgba(247, 247, 241, 0.045);
+  }
+
   .sf-counter.sf-in-view .sf-contact-card {
     opacity: 1;
     transform: none;
@@ -1436,6 +1462,11 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
 
   .sf-counter.sf-in-view.sf-replay-pulse .sf-contact-card {
     animation: sfContactCardIn 0.72s cubic-bezier(0.2, 1, 0.28, 1) 0.1s both;
+  }
+
+  .sf-counter.sf-in-view.sf-replay-ready:not(.sf-replay-pulse) .sf-contact-card:hover,
+  .sf-counter.sf-in-view.sf-replay-ready:not(.sf-replay-pulse) .sf-contact-card:focus-within {
+    transform: translateY(-4px);
   }
 
   @keyframes sfContactCardIn {
@@ -1845,7 +1876,7 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
       line-height: 1.75;
     }
 
-    .sf-contact-button {
+    .sf-reference .sf-contact-button {
       min-height: 50px;
       padding: 0 28px;
     }
@@ -1873,7 +1904,11 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
     .sf-achievements.sf-replay-pulse .sf-section-copy span,
     .sf-achievements.sf-replay-pulse .sf-poster-card,
     .sf-contact-card,
-    .sf-contact-button:hover,
+    .sf-reference .sf-contact-button:hover,
+    .sf-counter.sf-in-view .sf-contact-card:hover,
+    .sf-counter.sf-in-view .sf-contact-card:focus-within,
+    .sf-counter.sf-in-view.sf-replay-ready:not(.sf-replay-pulse) .sf-contact-card:hover,
+    .sf-counter.sf-in-view.sf-replay-ready:not(.sf-replay-pulse) .sf-contact-card:focus-within,
     .sf-counter.sf-in-view .sf-contact-card,
     .sf-counter.sf-in-view.sf-replay-pulse .sf-contact-card {
       animation: none;
