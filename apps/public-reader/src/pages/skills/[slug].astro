@@ -339,7 +339,7 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
 
   .skill-library-intro {
     display: block;
-    padding: clamp(4rem, 8vw, 7rem) 0 clamp(2.5rem, 4vw, 3.8rem);
+    padding: clamp(4rem, 8vw, 7rem) 0 clamp(1.55rem, 2.7vw, 2.35rem);
   }
 
   .skill-library-copy {
@@ -393,7 +393,7 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
     align-items: center;
     justify-content: flex-start;
     gap: 1rem;
-    margin-bottom: clamp(1.2rem, 2.8vw, 2rem);
+    margin-bottom: clamp(0.9rem, 1.7vw, 1.25rem);
     border-top: 1px solid rgba(244, 242, 235, 0.11);
     border-bottom: 1px solid rgba(244, 242, 235, 0.11);
     min-height: 4.2rem;
@@ -609,6 +609,7 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
   .skill-popup-media {
     display: grid;
     align-content: start;
+    grid-template-rows: minmax(0, 1fr) auto;
     min-width: 0;
     gap: 0.8rem;
   }
@@ -617,8 +618,7 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
     position: relative;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    height: clamp(290px, 50dvh, 430px);
-    min-height: 0;
+    min-height: clamp(310px, 55dvh, 448px);
     overflow: hidden;
     border: 1px solid rgba(244, 242, 235, 0.12);
     background: #0f100d;
@@ -1010,6 +1010,7 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
     .skill-library-intro {
       gap: 2.5rem;
       padding-top: 3.5rem;
+      padding-bottom: 1.55rem;
     }
 
     .skill-library-copy h1 {
@@ -1055,7 +1056,7 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
     }
 
     .skill-popup-stage {
-      height: clamp(210px, 30dvh, 260px);
+      min-height: clamp(220px, 34dvh, 280px);
     }
 
     .skill-popup-strip {
