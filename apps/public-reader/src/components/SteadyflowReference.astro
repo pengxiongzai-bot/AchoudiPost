@@ -85,8 +85,8 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
         {featuredModuleCards.map((card, index) => (
           <a class="sf-poster-card" href={card.href} data-portal-route aria-label={`查看 ${card.name}`}>
             <div class="sf-poster-meta" aria-hidden="true">
-              <span>▧ Image</span>
-              <span>720 × 960</span>
+              <span>Skill {String(index + 1).padStart(2, "0")}</span>
+              <span>{card.stat}</span>
             </div>
             <div class="sf-poster-frame">
               <img src={card.image} alt="" loading={index > 1 ? "lazy" : "eager"} />
