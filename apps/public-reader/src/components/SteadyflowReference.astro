@@ -11,7 +11,6 @@ const bespokeMarqueeImages = [
   "/images/hero-showcase-steel-container.jpg"
 ];
 const heroMarqueeImages = [...bespokeMarqueeImages, ...bespokeMarqueeImages];
-const systemPreviewImage = "/images/11-eyewear-7f9784a644.png";
 const wechatQrCourseCardImage = "/images/wechat-contact-course-search-v2.jpg";
 const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
 
@@ -105,40 +104,10 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
     </section>
 
     <section class="sf-counter sf-reveal" id="sf-counter" aria-labelledby="sfCounterHeading">
-      <div class="sf-system-heading">
-        <p class="sf-section-kicker">联系阿臭弟</p>
-        <h2 id="sfCounterHeading">如何让 AIGC 赋能我的电商业务</h2>
-        <p class="sf-section-copy">
-          <span>如果你也在思考这个问题</span>
-          <span>可以把产品、类目和当前卡点发我</span>
-        </p>
-      </div>
-
-      <div class="sf-ai-workbench" aria-label="AIGC 电商业务联系方式">
-        <figure class="sf-ai-preview-card">
-          <figcaption class="sf-ai-media-label" aria-hidden="true">
-            <span>▧ Image</span>
-            <span>720 × 960</span>
-          </figcaption>
-          <div class="sf-ai-preview-frame">
-            <img src={systemPreviewImage} alt="" loading="lazy" />
-          </div>
-        </figure>
-
-        <div class="sf-ai-prompt-card" role="group" aria-label="AIGC 电商业务联系提示">
-          <div class="sf-ai-prompt-main">
-            <span class="sf-ai-prompt-tag">
-              <span class="sf-ai-tag-icon" aria-hidden="true">⌁</span>
-              微信联系
-            </span>
-            <p>YunX0723&nbsp;&nbsp;备注：AIGC电商业务沟通</p>
-          </div>
-          <div class="sf-ai-prompt-actions">
-            <span class="sf-ai-soft-icon" aria-hidden="true">⌘</span>
-            <span class="sf-ai-soft-icon" aria-hidden="true">◇</span>
-            <button class="sf-ai-send-icon" type="button" data-sf-qr-open aria-label="打开微信二维码">↑</button>
-          </div>
-        </div>
+      <div class="sf-contact-card" role="group" aria-label="AIGC 电商业务联系方式">
+        <h2 id="sfCounterHeading">用 AI Skill 解决电商作图问题</h2>
+        <p>把产品、类目和当前卡点发我，我来判断适合从哪个 Skill 切入。</p>
+        <button class="sf-contact-button" type="button" data-sf-qr-open aria-label="打开微信二维码">微信联系</button>
       </div>
     </section>
 
@@ -1333,14 +1302,13 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
 
 
   .sf-counter {
-    display: flex;
     --sf-counter-bg: rgb(9, 12, 8);
+    display: grid;
     max-width: 1260px;
     min-height: 100svh;
-    flex-direction: column;
-    align-items: center;
+    place-items: center;
     margin: 0 auto;
-    padding: clamp(120px, 13.6vh, 158px) 30px clamp(104px, 11vh, 138px);
+    padding: clamp(104px, 13vh, 148px) 30px clamp(96px, 11vh, 132px);
     background: var(--sf-counter-bg);
     box-shadow: 0 0 0 100vmax var(--sf-counter-bg);
     clip-path: inset(0 -100vmax);
@@ -1349,444 +1317,136 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
     text-align: center;
   }
 
-  .sf-system-heading {
+  .sf-contact-card {
+    position: relative;
     display: flex;
-    max-width: 680px;
+    width: min(820px, 100%);
+    min-height: clamp(360px, 47svh, 460px);
     flex-direction: column;
     align-items: center;
-  }
-
-  .sf-counter .sf-section-kicker,
-  .sf-counter h2,
-  .sf-counter .sf-section-copy span,
-  .sf-counter .sf-ai-preview-card,
-  .sf-counter .sf-ai-prompt-card {
-    opacity: 0;
-    will-change: opacity, transform, filter;
-  }
-
-  .sf-counter .sf-section-kicker {
-    margin-bottom: 16px;
-    color: rgba(247, 247, 241, 0.36);
-    transform: translateY(14px);
-  }
-
-  .sf-counter h2 {
-    max-width: 720px;
-    margin: 0;
-    color: rgba(247, 247, 241, 0.96);
-    font-family: var(--sf-serif-display);
-    font-size: clamp(46px, 3.6vw, 68px);
-    font-weight: 400;
-    letter-spacing: -0.055em;
-    line-height: 1.08;
-    text-wrap: balance;
-    transform: translateY(20px);
-  }
-
-  .sf-counter .sf-section-copy {
-    margin-top: 28px;
-    color: rgba(247, 247, 241, 0.64);
-    font-size: 16px;
-  }
-
-  .sf-counter .sf-section-copy span {
-    display: block;
-    transform: translateY(12px);
-  }
-
-  .sf-ai-workbench {
-    position: relative;
-    display: grid;
-    width: min(640px, 100%);
-    grid-template-columns: minmax(0, 1fr);
-    justify-items: center;
-    margin-top: clamp(72px, 7.6vw, 112px);
-  }
-
-  .sf-ai-preview-card {
-    width: min(360px, 64vw);
-    margin: 0;
-    transform: translateY(30px) scale(0.985);
-  }
-
-  .sf-ai-media-label {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    color: rgba(247, 247, 241, 0.46);
-    font-size: 13px;
-    font-weight: 650;
-    letter-spacing: -0.02em;
-    line-height: 1;
-  }
-
-  .sf-ai-preview-frame {
-    position: relative;
-    aspect-ratio: 3 / 4;
-    overflow: hidden;
-    border: 2px solid #177fff;
-    background: linear-gradient(180deg, rgba(247, 247, 241, 0.08), rgba(247, 247, 241, 0.02));
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
-  }
-
-  .sf-ai-preview-frame::before,
-  .sf-ai-preview-frame::after {
-    position: absolute;
-    z-index: 2;
-    width: 8px;
-    height: 8px;
-    border-radius: 2px;
-    background: #d7ecff;
-    content: "";
-  }
-
-  .sf-ai-preview-frame::before {
-    top: -5px;
-    left: -5px;
-  }
-
-  .sf-ai-preview-frame::after {
-    right: -5px;
-    bottom: -5px;
-  }
-
-  .sf-ai-preview-frame img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: brightness(0.72) saturate(0.84);
-  }
-
-  .sf-ai-prompt-card {
-    position: relative;
-    z-index: 3;
-    display: grid;
-    width: 100%;
-    justify-self: center;
-    grid-template-rows: auto auto;
+    justify-content: center;
     gap: 20px;
-    margin-top: -34px;
-    padding: 18px 20px;
     overflow: hidden;
-    border: 1px solid rgba(247, 247, 241, 0.13);
-    border-radius: 22px;
-    background: rgba(18, 18, 15, 0.86);
-    box-shadow: 0 26px 80px rgba(0, 0, 0, 0.35);
-    text-align: left;
-    transform: translateY(34px) scale(0.94);
-    backdrop-filter: blur(20px);
-    transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease;
+    border: 1px solid rgba(247, 247, 241, 0.08);
+    border-radius: 8px;
+    padding: clamp(44px, 6vw, 72px) clamp(28px, 6vw, 74px);
+    background:
+      linear-gradient(180deg, rgba(247, 247, 241, 0.035), rgba(247, 247, 241, 0.012)),
+      #151712;
+    box-shadow:
+      inset 0 1px 0 rgba(247, 247, 241, 0.05),
+      0 28px 92px rgba(0, 0, 0, 0.34);
+    opacity: 0;
+    transform: translateY(24px);
     will-change: opacity, transform;
   }
 
-  .sf-ai-prompt-card::before {
+  .sf-contact-card::before {
     position: absolute;
-    inset: 0;
-    background: linear-gradient(110deg, transparent 0%, rgba(247, 247, 241, 0.16) 44%, transparent 68%);
+    inset: -18% -10%;
+    background:
+      linear-gradient(105deg, transparent 0 27%, rgba(247, 247, 241, 0.09) 27.2%, transparent 27.5%),
+      linear-gradient(80deg, transparent 0 48%, rgba(247, 247, 241, 0.07) 48.2%, transparent 48.5%),
+      linear-gradient(118deg, transparent 0 69%, rgba(247, 247, 241, 0.08) 69.2%, transparent 69.5%),
+      linear-gradient(95deg, transparent 0 86%, rgba(247, 247, 241, 0.055) 86.2%, transparent 86.5%);
     content: "";
-    opacity: 0;
-    transform: translateX(-120%);
+    opacity: 0.42;
     pointer-events: none;
+    transform: rotate(-3deg);
   }
 
-  .sf-ai-prompt-card::after {
+  .sf-contact-card::after {
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    box-shadow: inset 0 1px 0 rgba(247, 247, 241, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(247, 247, 241, 0.025);
     content: "";
     pointer-events: none;
   }
 
-  .sf-ai-prompt-card:hover {
-    border-color: rgba(247, 247, 241, 0.24);
-    box-shadow: 0 30px 96px rgba(0, 0, 0, 0.42), 0 0 34px rgba(247, 247, 241, 0.08);
-    transform: translateY(-3px) scale(1);
+  .sf-contact-card h2,
+  .sf-contact-card p,
+  .sf-contact-button {
+    position: relative;
+    z-index: 1;
   }
 
-  .sf-ai-prompt-main {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    gap: 16px;
-  }
-
-  .sf-ai-prompt-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 38px;
-    padding: 0 13px;
-    border-radius: 13px;
-    background: rgba(247, 247, 241, 0.08);
-    color: rgba(247, 247, 241, 0.9);
-    font-size: 15px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    white-space: nowrap;
-  }
-
-  .sf-ai-tag-icon {
-    display: grid;
-    width: 22px;
-    height: 22px;
-    place-items: center;
-    border-radius: 8px;
-    background: rgba(247, 247, 241, 0.08);
-    color: rgba(247, 247, 241, 0.68);
-    font-size: 13px;
-  }
-
-  .sf-ai-prompt-main p {
+  .sf-contact-card h2 {
+    max-width: 620px;
     margin: 0;
-    color: rgba(247, 247, 241, 0.92);
-    font-size: 20px;
-    font-weight: 650;
-    letter-spacing: -0.025em;
-    line-height: 1.35;
+    color: rgba(247, 247, 241, 0.96);
+    font-family: var(--sf-serif-display);
+    font-size: clamp(42px, 4.6vw, 58px);
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1.12;
+    text-wrap: balance;
   }
 
-  .sf-ai-prompt-actions {
-    display: flex;
+  .sf-contact-card p {
+    max-width: 500px;
+    margin: 0;
+    color: rgba(247, 247, 241, 0.58);
+    font-size: 16px;
+    line-height: 1.8;
+    text-wrap: balance;
+  }
+
+  .sf-reference .sf-contact-button {
+    display: inline-flex;
+    min-height: 54px;
     align-items: center;
-    gap: 14px;
-    color: rgba(247, 247, 241, 0.55);
-  }
-
-  .sf-ai-soft-icon,
-  .sf-ai-send-icon {
-    display: grid;
-    place-items: center;
-    border-radius: 999px;
-  }
-
-  .sf-ai-soft-icon {
-    width: 28px;
-    height: 28px;
-    border: 1px solid rgba(247, 247, 241, 0.12);
-    font-size: 13px;
-  }
-
-  .sf-ai-send-icon {
-    width: 38px;
-    height: 38px;
-    margin-left: auto;
-    padding: 0;
+    justify-content: center;
+    margin-top: 8px;
     border: 0;
-    appearance: none;
-    background: rgba(247, 247, 241, 0.96);
+    border-radius: 999px;
+    padding: 0 34px;
     color: var(--sf-counter-bg);
+    background: rgba(247, 247, 241, 0.96);
+    font: inherit;
+    font-size: 16px;
+    font-weight: 850;
     cursor: pointer;
-    font-size: 20px;
-    font-weight: 900;
-    font-family: inherit;
     transition: transform 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
   }
 
-  .sf-ai-send-icon:hover,
-  .sf-ai-send-icon:focus-visible {
+  .sf-reference .sf-contact-button:hover,
+  .sf-reference .sf-contact-button:focus-visible {
     background: #ffffff;
     box-shadow: 0 0 0 6px rgba(247, 247, 241, 0.08), 0 12px 28px rgba(0, 0, 0, 0.28);
     transform: translateY(-2px);
   }
 
-  .sf-ai-send-icon:focus-visible {
+  .sf-reference .sf-contact-button:focus-visible {
     outline: 2px solid rgba(247, 247, 241, 0.92);
     outline-offset: 4px;
   }
 
-  .sf-counter.sf-in-view .sf-section-kicker {
+  .sf-counter.sf-in-view .sf-contact-card {
     opacity: 1;
     transform: none;
-    filter: none;
-    animation: sfContactFadeLift 0.52s cubic-bezier(0.22, 1, 0.36, 1) 0.08s backwards;
+    animation: sfContactCardIn 0.72s cubic-bezier(0.2, 1, 0.28, 1) 0.1s backwards;
   }
 
-  .sf-counter.sf-in-view h2 {
-    opacity: 1;
-    transform: none;
-    filter: none;
-    animation: sfContactTitleIn 0.82s cubic-bezier(0.18, 1, 0.32, 1) 0.18s backwards;
-  }
-
-  .sf-counter.sf-in-view .sf-section-copy span:first-child {
-    opacity: 1;
-    transform: none;
-    filter: none;
-    animation: sfContactFadeLift 0.52s cubic-bezier(0.22, 1, 0.36, 1) 0.62s backwards;
-  }
-
-  .sf-counter.sf-in-view .sf-section-copy span:last-child {
-    opacity: 1;
-    transform: none;
-    filter: none;
-    animation: sfContactFadeLift 0.52s cubic-bezier(0.22, 1, 0.36, 1) 0.76s backwards;
-  }
-
-  .sf-counter.sf-in-view .sf-ai-preview-card {
-    opacity: 1;
-    transform: none;
-    filter: none;
-    animation: sfContactPreviewIn 0.78s cubic-bezier(0.2, 1, 0.28, 1) 0.96s backwards;
-  }
-
-  .sf-counter.sf-in-view .sf-ai-prompt-card {
-    opacity: 1;
-    transform: none;
-    filter: none;
-    animation: sfContactPromptPop 0.68s cubic-bezier(0.16, 1.24, 0.32, 1) 1.26s backwards;
-  }
-
-  .sf-counter.sf-in-view .sf-ai-prompt-card::before {
-    animation: sfContactSweep 1.05s ease 1.68s both;
-  }
-
-  .sf-counter.sf-in-view .sf-ai-send-icon {
-    animation: sfContactSendPulse 1.8s ease 2s 2;
-  }
-
-  .sf-counter.sf-in-view.sf-replay-ready:not(.sf-replay-pulse) .sf-section-kicker,
-  .sf-counter.sf-in-view.sf-replay-ready:not(.sf-replay-pulse) h2,
-  .sf-counter.sf-in-view.sf-replay-ready:not(.sf-replay-pulse) .sf-section-copy span,
-  .sf-counter.sf-in-view.sf-replay-ready:not(.sf-replay-pulse) .sf-ai-preview-card,
-  .sf-counter.sf-in-view.sf-replay-ready:not(.sf-replay-pulse) .sf-ai-prompt-card,
-  .sf-counter.sf-in-view.sf-replay-ready:not(.sf-replay-pulse) .sf-ai-send-icon {
+  .sf-counter.sf-in-view.sf-replay-ready:not(.sf-replay-pulse) .sf-contact-card {
     opacity: 1;
     transform: none;
     animation: none;
-    filter: none;
   }
 
-  .sf-counter.sf-in-view.sf-replay-ready:not(.sf-replay-pulse) .sf-ai-prompt-card::before {
-    animation: none;
+  .sf-counter.sf-in-view.sf-replay-pulse .sf-contact-card {
+    animation: sfContactCardIn 0.72s cubic-bezier(0.2, 1, 0.28, 1) 0.1s both;
   }
 
-  .sf-counter.sf-in-view.sf-replay-pulse .sf-section-kicker {
-    animation: sfContactFadeLift 0.52s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
-  }
-
-  .sf-counter.sf-in-view.sf-replay-pulse h2 {
-    animation: sfContactTitleIn 0.82s cubic-bezier(0.18, 1, 0.32, 1) 0.18s both;
-  }
-
-  .sf-counter.sf-in-view.sf-replay-pulse .sf-section-copy span:first-child {
-    animation: sfContactFadeLift 0.52s cubic-bezier(0.22, 1, 0.36, 1) 0.62s both;
-  }
-
-  .sf-counter.sf-in-view.sf-replay-pulse .sf-section-copy span:last-child {
-    animation: sfContactFadeLift 0.52s cubic-bezier(0.22, 1, 0.36, 1) 0.76s both;
-  }
-
-  .sf-counter.sf-in-view.sf-replay-pulse .sf-ai-preview-card {
-    animation: sfContactPreviewIn 0.78s cubic-bezier(0.2, 1, 0.28, 1) 0.96s both;
-  }
-
-  .sf-counter.sf-in-view.sf-replay-pulse .sf-ai-prompt-card {
-    animation: sfContactPromptPop 0.68s cubic-bezier(0.16, 1.24, 0.32, 1) 1.26s both;
-  }
-
-  .sf-counter.sf-in-view.sf-replay-pulse .sf-ai-prompt-card::before {
-    animation: sfContactSweep 1.05s ease 1.68s both;
-  }
-
-  .sf-counter.sf-in-view.sf-replay-pulse .sf-ai-send-icon {
-    animation: sfContactSendPulse 1.8s ease 2s 2;
-  }
-
-  @keyframes sfContactFadeLift {
+  @keyframes sfContactCardIn {
     from {
       opacity: 0;
-      transform: translateY(14px);
-      filter: blur(6px);
+      transform: translateY(24px);
     }
 
     to {
       opacity: 1;
       transform: translateY(0);
-      filter: none;
-    }
-  }
-
-  @keyframes sfContactTitleIn {
-    from {
-      opacity: 0;
-      transform: translateY(22px);
-      filter: blur(10px);
-    }
-
-    58% {
-      opacity: 0.72;
-      filter: blur(2px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-      filter: none;
-    }
-  }
-
-  @keyframes sfContactPreviewIn {
-    from {
-      opacity: 0;
-      transform: translateY(32px) scale(0.985);
-      filter: blur(10px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-      filter: none;
-    }
-  }
-
-  @keyframes sfContactPromptPop {
-    from {
-      opacity: 0;
-      transform: translateY(34px) scale(0.94);
-      filter: blur(12px);
-    }
-
-    72% {
-      opacity: 1;
-      transform: translateY(-4px) scale(1.012);
-      filter: none;
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-      filter: none;
-    }
-  }
-
-  @keyframes sfContactSweep {
-    0% {
-      opacity: 0;
-      transform: translateX(-120%);
-    }
-
-    18% {
-      opacity: 1;
-    }
-
-    100% {
-      opacity: 0;
-      transform: translateX(120%);
-    }
-  }
-
-  @keyframes sfContactSendPulse {
-    0%,
-    100% {
-      transform: translateY(0);
-      box-shadow: none;
-    }
-
-    50% {
-      transform: translateY(-2px);
-      box-shadow: 0 0 18px rgba(247, 247, 241, 0.18);
     }
   }
 
@@ -1953,17 +1613,16 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
       border-radius: var(--sf-hero-marquee-radius);
     }
 
-    .sf-achievements h2,
-    .sf-counter h2 {
+    .sf-achievements h2 {
       font-size: 42px;
     }
 
-    .sf-ai-workbench {
-      margin-top: 68px;
+    .sf-contact-card {
+      width: min(760px, 100%);
     }
 
-    .sf-ai-preview-card {
-      width: min(320px, 64vw);
+    .sf-contact-card h2 {
+      font-size: clamp(38px, 6vw, 58px);
     }
   }
 
@@ -2005,12 +1664,8 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
       padding-bottom: 140px;
     }
 
-    .sf-ai-workbench {
-      margin-top: 60px;
-    }
-
-    .sf-ai-prompt-card {
-      width: min(520px, 100%);
+    .sf-contact-card {
+      min-height: clamp(300px, 46svh, 380px);
     }
   }
 
@@ -2146,8 +1801,7 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
       right: 0;
     }
 
-    .sf-achievements h2,
-    .sf-counter h2 {
+    .sf-achievements h2 {
       font-size: 38px;
     }
 
@@ -2176,45 +1830,24 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
       padding-left: 20px;
     }
 
-    .sf-counter h2 {
-      font-size: clamp(40px, 12vw, 54px);
+    .sf-contact-card {
+      min-height: clamp(280px, 52svh, 360px);
+      gap: 20px;
+      padding: 38px 24px;
     }
 
-    .sf-counter .sf-section-copy {
-      font-size: 16px;
+    .sf-contact-card h2 {
+      font-size: clamp(34px, 10vw, 46px);
     }
 
-    .sf-ai-workbench {
-      margin-top: 54px;
-    }
-
-    .sf-ai-preview-card {
-      width: min(270px, 72vw);
-    }
-
-    .sf-ai-prompt-card {
-      gap: 15px;
-      margin-top: -24px;
-      padding: 15px;
-      border-radius: 18px;
-    }
-
-    .sf-ai-prompt-main {
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
-
-    .sf-ai-prompt-main p {
+    .sf-contact-card p {
       font-size: 15px;
+      line-height: 1.75;
     }
 
-    .sf-ai-prompt-actions {
-      gap: 12px;
-    }
-
-    .sf-ai-send-icon {
-      width: 34px;
-      height: 34px;
+    .sf-contact-button {
+      min-height: 50px;
+      padding: 0 28px;
     }
   }
 
@@ -2239,34 +1872,16 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
     .sf-achievements.sf-replay-pulse h2,
     .sf-achievements.sf-replay-pulse .sf-section-copy span,
     .sf-achievements.sf-replay-pulse .sf-poster-card,
-    .sf-counter .sf-section-kicker,
-    .sf-counter h2,
-    .sf-counter .sf-section-copy span,
-    .sf-counter .sf-ai-preview-card,
-    .sf-counter .sf-ai-prompt-card,
-    .sf-ai-prompt-card:hover,
-    .sf-counter.sf-in-view .sf-section-kicker,
-    .sf-counter.sf-in-view h2,
-    .sf-counter.sf-in-view .sf-section-copy span,
-    .sf-counter.sf-in-view .sf-ai-preview-card,
-    .sf-counter.sf-in-view .sf-ai-prompt-card,
-    .sf-counter.sf-in-view .sf-ai-send-icon,
-    .sf-counter.sf-in-view.sf-replay-pulse .sf-section-kicker,
-    .sf-counter.sf-in-view.sf-replay-pulse h2,
-    .sf-counter.sf-in-view.sf-replay-pulse .sf-section-copy span,
-    .sf-counter.sf-in-view.sf-replay-pulse .sf-ai-preview-card,
-    .sf-counter.sf-in-view.sf-replay-pulse .sf-ai-prompt-card,
-    .sf-counter.sf-in-view.sf-replay-pulse .sf-ai-send-icon {
+    .sf-contact-card,
+    .sf-contact-button:hover,
+    .sf-counter.sf-in-view .sf-contact-card,
+    .sf-counter.sf-in-view.sf-replay-pulse .sf-contact-card {
       animation: none;
       opacity: 1;
       transform: none;
       transition: none;
       filter: none;
       will-change: auto;
-    }
-
-    .sf-ai-prompt-card::before {
-      display: none;
     }
 
     .sf-title-text {
