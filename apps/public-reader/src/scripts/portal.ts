@@ -1345,7 +1345,8 @@ function bindSkillDetailDialog() {
 
   triggers.forEach((trigger) => {
     trigger.addEventListener("click", (event) => {
-      if ((event.target as Element | null)?.closest("a, button")) return;
+      const interactiveTarget = (event.target as Element | null)?.closest("a, button");
+      if (interactiveTarget && interactiveTarget !== trigger) return;
       openDialog();
     });
 

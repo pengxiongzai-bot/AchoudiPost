@@ -116,6 +116,52 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
         </div>
       </section>
 
+      {skillDialog && initialSkillDialogCase && (
+        <section class="skill-proof" aria-label="产品替换 Skill 效果预览">
+          <div
+            class="skill-proof-stage"
+            role="button"
+            tabindex="0"
+            data-skill-detail-open
+            aria-controls="skillDetailDialog"
+            aria-haspopup="dialog"
+            aria-label="打开产品替换 Skill 详情"
+          >
+            <figure>
+              <span>替换前</span>
+              <img src={initialSkillDialogCase.before.src} alt={initialSkillDialogCase.before.label} loading="eager" />
+            </figure>
+            <figure>
+              <span>替换后</span>
+              <img src={initialSkillDialogCase.after.src} alt={initialSkillDialogCase.after.label} loading="eager" />
+            </figure>
+            <i aria-hidden="true">→</i>
+          </div>
+
+          <div class="skill-proof-copy">
+            <h2>先看产品替换效果</h2>
+            <p>同一张图里，只换商品。人物、构图和环境关系尽量保持，适合先验证你的作图需求。</p>
+            <ul aria-label="产品替换 Skill 能力摘要">
+              <li>保留人物和原场景</li>
+              <li>匹配商品比例与光影</li>
+              <li>按复杂度选择版本</li>
+            </ul>
+            <div class="skill-proof-actions">
+              <button
+                class="skill-button primary"
+                type="button"
+                data-skill-detail-open
+                aria-controls="skillDetailDialog"
+                aria-haspopup="dialog"
+              >
+                查看产品替换 Skill
+              </button>
+              <a class="skill-button ghost" href="/#sf-counter" data-portal-route>联系到我</a>
+            </div>
+          </div>
+        </section>
+      )}
+
       <section class="skill-library-toolbar" aria-label="框架筛选">
         <div class="skill-tabs" aria-label="当前分类">
           <strong>全部</strong>
@@ -147,15 +193,16 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
             <div class="skill-resource-content">
               <h2>{card.title}</h2>
               <p>{card.description}</p>
+              {skillDialog && <span class="skill-resource-action">查看产品替换效果</span>}
             </div>
           </article>
         ))}
       </section>
 
       <section class="skill-bottom-cta" aria-label="咨询联系">
-        <h2>把你的产品、类目和当前卡点发我</h2>
-        <span>我会先判断从哪个框架切入，再把它细化成你可以直接用的执行路径。</span>
-        <a class="skill-button primary" href="/#sf-counter" data-portal-route>去微信联系</a>
+        <h2>不知道选哪个版本，直接把图发我</h2>
+        <span>发原图、商品图和目标平台，我会先判断用标准版、增强版还是稳定版。</span>
+        <a class="skill-button primary" href="/#sf-counter" data-portal-route>联系到我</a>
       </section>
 
       {skillDialog && initialSkillDialogCase && (
@@ -371,11 +418,14 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
     align-items: center;
     justify-content: center;
     min-height: 3rem;
+    border: 0;
     border-radius: 999px;
     padding: 0 1.25rem;
+    font: inherit;
     font-size: 0.92rem;
     font-weight: 800;
     text-decoration: none;
+    cursor: pointer;
     transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
   }
 
@@ -386,6 +436,172 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
   .skill-button.primary {
     color: #0a0b08;
     background: #f7f5ee;
+  }
+
+  .skill-button.ghost {
+    border: 1px solid rgba(244, 242, 235, 0.16);
+    color: rgba(244, 242, 235, 0.82);
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  .skill-button.ghost:hover,
+  .skill-button.ghost:focus-visible {
+    border-color: rgba(244, 242, 235, 0.32);
+    background: rgba(255, 255, 255, 0.06);
+    outline: none;
+  }
+
+  .skill-proof {
+    display: grid;
+    grid-template-columns: minmax(0, 1.42fr) minmax(300px, 0.8fr);
+    align-items: stretch;
+    gap: clamp(1.1rem, 2.2vw, 1.65rem);
+    margin-bottom: clamp(1.15rem, 2.2vw, 1.7rem);
+    padding: clamp(1rem, 2.2vw, 1.45rem) 0;
+    border-top: 1px solid rgba(244, 242, 235, 0.11);
+    border-bottom: 1px solid rgba(244, 242, 235, 0.11);
+  }
+
+  .skill-proof-stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-height: clamp(260px, 34vw, 390px);
+    overflow: hidden;
+    border: 1px solid rgba(244, 242, 235, 0.14);
+    background: #10110e;
+    cursor: pointer;
+    box-shadow: 0 1.2rem 3.4rem rgba(0, 0, 0, 0.24);
+    transition: border-color 0.18s ease, transform 0.18s ease, background 0.18s ease;
+  }
+
+  .skill-proof-stage:hover,
+  .skill-proof-stage:focus-visible {
+    border-color: rgba(244, 242, 235, 0.34);
+    background: #141511;
+    outline: none;
+    transform: translateY(-1px);
+  }
+
+  .skill-proof-stage::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    z-index: 2;
+    width: 1px;
+    background: rgba(244, 242, 235, 0.54);
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .skill-proof-stage figure {
+    position: relative;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    background: #0e0f0c;
+  }
+
+  .skill-proof-stage img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+
+  .skill-proof-stage span {
+    position: absolute;
+    top: 0.85rem;
+    left: 0.85rem;
+    z-index: 1;
+    display: inline-flex;
+    min-height: 1.55rem;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0 0.58rem;
+    color: rgba(244, 242, 235, 0.92);
+    background: rgba(0, 0, 0, 0.36);
+    font-size: 0.76rem;
+    font-weight: 850;
+  }
+
+  .skill-proof-stage i {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 3;
+    display: inline-flex;
+    width: 2.55rem;
+    height: 2.55rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(244, 242, 235, 0.58);
+    border-radius: 999px;
+    color: #f4f2eb;
+    background: rgba(25, 26, 23, 0.74);
+    font-style: normal;
+    font-size: 1.35rem;
+    transform: translate(-50%, -50%);
+  }
+
+  .skill-proof-copy {
+    display: grid;
+    align-content: center;
+    min-width: 0;
+    padding: clamp(0.35rem, 1.4vw, 0.8rem) 0;
+  }
+
+  .skill-proof-copy h2 {
+    margin: 0;
+    max-width: 12em;
+    color: rgba(244, 242, 235, 0.96);
+    font-size: clamp(1.75rem, 2.7vw, 2.6rem);
+    line-height: 1.08;
+    letter-spacing: -0.04em;
+  }
+
+  .skill-proof-copy p {
+    max-width: 32rem;
+    margin: 0.9rem 0 0;
+    color: rgba(244, 242, 235, 0.66);
+    font-size: 0.98rem;
+    line-height: 1.78;
+  }
+
+  .skill-proof-copy ul {
+    display: grid;
+    gap: 0.55rem;
+    margin: 1.1rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .skill-proof-copy li {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: rgba(244, 242, 235, 0.76);
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .skill-proof-copy li::before {
+    content: "";
+    flex: 0 0 auto;
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 999px;
+    background: #f7f5ee;
+    box-shadow: 0 0 0 4px rgba(247, 245, 238, 0.08);
+  }
+
+  .skill-proof-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.35rem;
   }
 
   .skill-library-toolbar {
@@ -495,6 +711,14 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
     color: rgba(244, 242, 235, 0.62);
     font-size: 0.92rem;
     line-height: 1.78;
+  }
+
+  .skill-resource-action {
+    display: inline-flex;
+    margin-top: 1rem;
+    color: rgba(244, 242, 235, 0.88);
+    font-size: 0.86rem;
+    font-weight: 850;
   }
 
   .skill-bottom-cta {
@@ -1023,6 +1247,20 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
       align-items: flex-start;
       flex-direction: column;
       padding: 0.95rem 0;
+    }
+
+    .skill-proof {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      padding: 1rem 0;
+    }
+
+    .skill-proof-stage {
+      min-height: clamp(220px, 54vw, 310px);
+    }
+
+    .skill-proof-copy h2 {
+      max-width: none;
     }
 
     .skill-resource-content h2 + p {

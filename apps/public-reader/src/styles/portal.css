@@ -118,7 +118,7 @@ svg {
   background: rgb(7 8 6 / var(--portal-header-strip-alpha));
   box-shadow: none;
   pointer-events: none;
-  transition: border-color 0.24s ease, background-color 0.24s ease, padding 0.24s ease;
+  transition: border-color 0.24s ease, background-color 0.24s ease;
 }
 
 body:not([data-page="home"]) #portalContent {
@@ -337,6 +337,18 @@ body.skill-detail-page #portalContent {
 
 .nav-toggle {
   display: none;
+}
+
+.nav-toggle [data-nav-icon-close] {
+  display: none;
+}
+
+.nav-toggle[aria-expanded="true"] [data-nav-icon-menu] {
+  display: none;
+}
+
+.nav-toggle[aria-expanded="true"] [data-nav-icon-close] {
+  display: block;
 }
 
 .service-pulse {
@@ -1327,7 +1339,7 @@ body.skill-detail-page #portalContent {
   right: 0;
   left: 0;
   z-index: 2;
-  height: 3px;
+  height: 1px;
   background: var(--portal-signal);
   transform: scaleX(0);
   transform-origin: left;
@@ -1743,7 +1755,7 @@ body.skill-detail-page #portalContent {
   gap: 6px;
   margin-top: 22px;
   padding: 14px;
-  border-left: 3px solid var(--portal-gold);
+  border: 1px solid color-mix(in srgb, var(--portal-gold) 34%, var(--portal-line));
   background: color-mix(in srgb, var(--portal-gold) 9%, var(--portal-bg));
 }
 
@@ -2285,7 +2297,7 @@ body.skill-detail-page #portalContent {
 .route-list > a,
 .button,
 .portal-toast {
-  transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease, padding 0.16s ease, opacity 0.16s ease;
+  transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease, opacity 0.16s ease;
 }
 
 @media (max-width: 900px) {
