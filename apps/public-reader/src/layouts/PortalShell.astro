@@ -52,7 +52,8 @@ const navItems = [
         </a>
 
         <button id="navToggle" class="portal-icon-button nav-toggle" type="button" aria-label="打开导航" aria-expanded="false">
-          <i data-lucide="menu"></i>
+          <i data-lucide="menu" data-nav-icon-menu></i>
+          <i data-lucide="x" data-nav-icon-close hidden></i>
         </button>
 
         <nav id="primaryNav" class="primary-nav" aria-label="主导航">
@@ -94,6 +95,55 @@ const navItems = [
     </footer>
 
     <div id="portalToast" class="portal-toast" role="status" aria-live="polite"></div>
+    <script is:inline>
+      (() => {
+        const nav = document.querySelector("#primaryNav");
+        const toggle = document.querySelector("#navToggle");
+        if (!nav || !toggle) return;
+
+        document.documentElement.dataset.portalNavBound = "true";
+
+        const setOpen = (open) => {
+          const menuIcon = toggle.querySelector("[data-nav-icon-menu]");
+          const closeIcon = toggle.querySelector("[data-nav-icon-close]");
+          nav.classList.toggle("open", open);
+          nav.dataset.open = String(open);
+          document.body.classList.toggle("nav-open", open);
+          toggle.setAttribute("aria-expanded", String(open));
+          toggle.setAttribute("aria-label", open ? "关闭导航" : "打开导航");
+          menuIcon?.toggleAttribute("hidden", open);
+          closeIcon?.toggleAttribute("hidden", !open);
+        };
+
+        toggle.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          setOpen(!nav.classList.contains("open"));
+        });
+
+        nav.addEventListener("click", (event) => {
+          if (event.target instanceof Element && event.target.closest(".nav-link")) setOpen(false);
+        });
+
+        document.addEventListener("click", (event) => {
+          if (!nav.classList.contains("open")) return;
+          const target = event.target;
+          if (!(target instanceof Element)) return;
+          if (target.closest("#primaryNav") || target.closest("#navToggle")) return;
+          setOpen(false);
+        });
+
+        const desktopQuery = window.matchMedia("(min-width: 901px)");
+        const closeOnDesktop = (event) => {
+          if (event.matches) setOpen(false);
+        };
+        if (desktopQuery.addEventListener) desktopQuery.addEventListener("change", closeOnDesktop);
+        else {
+          const legacyAddListener = Reflect.get(desktopQuery, "addListener");
+          if (typeof legacyAddListener === "function") legacyAddListener.call(desktopQuery, closeOnDesktop);
+        }
+      })();
+    </script>
     <script>
       import "../scripts/portal.ts";
     </script>

@@ -99,6 +99,16 @@ svg {
   margin-inline: auto;
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .site-header {
   position: fixed;
   inset: 0 0 auto;
@@ -2084,8 +2094,8 @@ body.skill-detail-page #portalContent {
 
 .guide-content article {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr);
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
   padding: 8px 0 54px;
   scroll-margin-top: 120px;
 }
@@ -2093,11 +2103,6 @@ body.skill-detail-page #portalContent {
 .guide-content article + article {
   padding-top: 48px;
   border-top: 1px solid var(--portal-line);
-}
-
-.guide-number {
-  color: var(--portal-line-strong);
-  font: 700 26px/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
 }
 
 .guide-content h2 {
@@ -2384,6 +2389,18 @@ body.skill-detail-page #portalContent {
 
   .primary-nav.open {
     display: flex;
+  }
+
+  .primary-nav[data-open="true"] {
+    display: flex;
+  }
+
+  .primary-nav .nav-link {
+    width: 100%;
+    height: auto;
+    min-height: 44px;
+    justify-content: flex-start;
+    padding: 0 12px;
   }
 
   .nav-link::after {

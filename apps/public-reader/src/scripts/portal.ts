@@ -148,6 +148,8 @@ function configureBrowserScrollRestoration() {
 function setPrimaryNavigation(open: boolean) {
   if (!primaryNav || !navToggle) return;
   primaryNav.classList.toggle("open", open);
+  primaryNav.dataset.open = String(open);
+  document.body.classList.toggle("nav-open", open);
   navToggle.setAttribute("aria-expanded", String(open));
   navToggle.setAttribute("aria-label", open ? "关闭导航" : "打开导航");
   navToggle.innerHTML = `<i data-lucide="${open ? "x" : "menu"}"></i>`;
@@ -155,16 +157,38 @@ function setPrimaryNavigation(open: boolean) {
 }
 
 function bindNavigation() {
-  navToggle?.addEventListener("click", () => {
+  if (document.documentElement.dataset.portalNavBound === "true") return;
+
+  document.addEventListener("click", (event) => {
+    const target = event.target as Element | null;
+    const toggle = target?.closest<HTMLButtonElement>("#navToggle");
+    if (!toggle) return;
+    event.preventDefault();
+    event.stopPropagation();
     setPrimaryNavigation(!primaryNav?.classList.contains("open"));
   });
 
   document.addEventListener("click", (event) => {
     if (!primaryNav?.classList.contains("open")) return;
-    const target = event.target as Node;
-    if (primaryNav.contains(target) || navToggle?.contains(target)) return;
+    const target = event.target as Element | null;
+    if (target?.closest("#navToggle")) return;
+    if (target?.closest("#primaryNav .nav-link")) {
+      setPrimaryNavigation(false);
+      return;
+    }
+    if (target && primaryNav.contains(target)) return;
     setPrimaryNavigation(false);
   });
+
+  const desktopQuery = window.matchMedia(desktopEscapeMedia);
+  const closeOnDesktop = (event: MediaQueryListEvent) => {
+    if (event.matches) setPrimaryNavigation(false);
+  };
+  if (typeof desktopQuery.addEventListener === "function") desktopQuery.addEventListener("change", closeOnDesktop);
+  else {
+    const legacyAddListener = (desktopQuery as unknown as { addListener?: (callback: (event: MediaQueryListEvent) => void) => void }).addListener;
+    legacyAddListener?.call(desktopQuery, closeOnDesktop);
+  }
 }
 
 function bindHeaderSurfaceSync() {
@@ -1257,6 +1281,7 @@ function bindSkillDetailDialog() {
     imagePreview.hidden = true;
     imagePreviewGrid.replaceChildren();
     imagePreviewGrid.removeAttribute("data-preview-count");
+    delete dialog.dataset.skillImageActive;
 
     if (options.restoreFocus !== false && lastFocusedImagePreviewTrigger) {
       lastFocusedImagePreviewTrigger.focus({ preventScroll: true });
@@ -1291,6 +1316,7 @@ function bindSkillDetailDialog() {
       imagePreviewGrid.appendChild(image);
     });
     imagePreview.hidden = false;
+    dialog.dataset.skillImageActive = "true";
     imagePreviewCloseButtons[0]?.focus({ preventScroll: true });
   };
 

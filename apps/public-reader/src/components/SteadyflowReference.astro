@@ -21,7 +21,7 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
     <section class="sf-hero" id="sf-hero">
       <div class="sf-hero-content">
         <div class="sf-copy-stack">
-          <h2 class="sf-kinetic-title" aria-label="把电商 AI 实战方法，整理成可复用的 Skill">
+          <h1 class="sf-kinetic-title" aria-label="把电商 AI 实战方法，整理成可复用的 Skill">
             <span class="sf-kinetic-line" style="--line-delay: .12s">
               <span class="sf-title-static">把</span>
               <span class="sf-title-fragment">
@@ -36,7 +36,7 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
                 <span class="sf-title-text" data-text="可复用的 Skill">可复用的 Skill</span>
               </span>
             </span>
-          </h2>
+          </h1>
         </div>
         <div class="sf-hero-ctas sf-rise" style="--delay: .4s">
           <a class="sf-primary-cta" href="/#sf-achievements" data-portal-route>进入 AI 实战库</a>
@@ -84,10 +84,6 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
       <div class="sf-poster-grid sf-reveal">
         {featuredModuleCards.map((card, index) => (
           <a class="sf-poster-card" href={card.href} data-portal-route aria-label={`查看 ${card.name}`}>
-            <div class="sf-poster-meta" aria-hidden="true">
-              <span>Skill {String(index + 1).padStart(2, "0")}</span>
-              <span>{card.stat}</span>
-            </div>
             <div class="sf-poster-frame">
               <img src={card.image} alt="" loading={index > 1 ? "lazy" : "eager"} />
               <div class="sf-poster-shade"></div>
@@ -1137,18 +1133,6 @@ const wechatQrDrawingCardImage = "/images/wechat-contact-drawing-search-v2.jpg";
     display: block;
     min-width: 0;
     color: var(--sf-light);
-  }
-
-  .sf-poster-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 10px;
-    color: rgba(247, 247, 241, 0.48);
-    font-size: 12px;
-    line-height: 1;
-    white-space: nowrap;
   }
 
   .sf-poster-frame {

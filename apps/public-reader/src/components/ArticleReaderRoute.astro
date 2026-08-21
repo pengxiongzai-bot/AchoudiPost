@@ -7,5 +7,6 @@ const { slug } = Astro.props;
 ---
 
 <section class="reader-route" aria-label="AchoudiPost 文章阅读器" data-article-slug={slug}>
+  <h1 class="visually-hidden">AchoudiPost 文章</h1>
   <iframe id="articleReaderFrame" title="AchoudiPost 文章阅读器"></iframe>
 </section>

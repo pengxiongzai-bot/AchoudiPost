@@ -594,7 +594,8 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
     height: 1.15rem;
   }
 
-  .skill-popup-dialog[data-skill-qr-active="true"] > .skill-popup-close {
+  .skill-popup-dialog[data-skill-qr-active="true"] > .skill-popup-close,
+  .skill-popup-dialog[data-skill-image-active="true"] > .skill-popup-close {
     opacity: 0;
     pointer-events: none;
   }
@@ -936,8 +937,8 @@ const initialSkillDialogCase = skillDialog ? skillDialog.cases[skillDialog.activ
   }
 
   .skill-image-preview-close {
-    top: -0.95rem;
-    right: -0.95rem;
+    top: 0.65rem;
+    right: 0.65rem;
     background: rgba(16, 17, 14, 0.92);
     box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.42);
   }
